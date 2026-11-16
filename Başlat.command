@@ -20,7 +20,7 @@ try:
     opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
     with opener.open(request,timeout=2) as response:
         status=json.load(response)
-    if status.get('version')!='0.12.2': raise ValueError('version')
+    if status.get('version')!='0.13.0': raise ValueError('version')
     subprocess.run(['open',base+'/#local='+token],check=True)
     print('Çalışan Töre demo oturumu açıldı.')
 except Exception:
@@ -34,7 +34,7 @@ if [[ -x "$ROOT_DIR/server/target/debug/tore-server" ]]; then
   TORE_BINARY_HELP="$("$ROOT_DIR/server/target/debug/tore-server" --help 2>/dev/null || true)"
 fi
 # Never launch an older binary that can still run the retired local model.
-if [[ "$TORE_BINARY_HELP" != "Töre 0.12.2 "* ]]; then
+if [[ "$TORE_BINARY_HELP" != "Töre 0.13.0 "* ]]; then
   "$ROOT_DIR/scripts/build.sh"
 fi
 exec "$ROOT_DIR/server/target/debug/tore-server" \

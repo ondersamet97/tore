@@ -71,6 +71,18 @@ fn read(path: &Path) -> Result<Option<Vec<u8>>, String> {
     Ok(Some(bytes))
 }
 
+/// Read-only snapshot for another process (the MCP adapter): no directory
+/// creation, no lock file, no write. The writer replaces the file atomically,
+/// so an open descriptor always sees one complete committed version.
+pub(super) fn read_snapshot(root: &Path) -> Result<Store, String> {
+    let data = match read(&root.join("records-v1.json"))? {
+        Some(bytes) => serde_json::from_slice(&bytes).map_err(|_| "Konu deposu bozuk; okunmadı")?,
+        None => Store::default(),
+    };
+    validate_store(&data)?;
+    Ok(data)
+}
+
 pub struct Disk {
     root: PathBuf,
     _lock: File,
@@ -277,12 +289,18 @@ impl Disk {
         if r.expected_state_hash != hash(&self.data)? {
             return Err("Konu deposu değişti; geri alma önizlemesini yenileyin".into());
         }
-        let backup = self.read_backup(&r.backup_id)?;
-        validate_sources(&backup.data, conversations)?;
+        let mut data = self.read_backup(&r.backup_id)?.data;
+        validate_sources(&data, conversations)?;
+        // Sharing with a connected AI tool is consent given now, not a state to
+        // bring back: a restored snapshot never reopens a context silently.
+        let mut closed = 0;
+        for packet in data.packets.values_mut() {
+            closed += usize::from(std::mem::take(&mut packet.shared_with_tools));
+        }
         let previous = self.backup()?;
-        self.commit(backup.data)?;
+        self.commit(data)?;
         Ok(
-            json!({"restored":true,"restoredBackupId":r.backup_id,"backupId":previous["backupId"],"stateHash":hash(&self.data)?}),
+            json!({"restored":true,"restoredBackupId":r.backup_id,"backupId":previous["backupId"],"stateHash":hash(&self.data)?,"toolSharingClosed":closed}),
         )
     }
 }

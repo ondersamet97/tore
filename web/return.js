@@ -50,6 +50,8 @@ import { api } from '/private-client.js';
   }
   function readiness() {
     $('context-copy').disabled = state.busy || !state.packet || !$('context-consent').checked;
+    $('tool-share-open').disabled = state.busy || !state.packet || state.packet.sharedWithTools === true || !$('tool-share-consent').checked;
+    $('tool-share-close').disabled = state.busy || !state.packet || state.packet.sharedWithTools !== true;
     $('reply-save').disabled = state.busy || !state.packet || !$('reply-consent').checked || !$('reply-text').value.trim();
     $('migration-apply').disabled = state.busy || !state.migration || !$('migration-consent').checked || !state.migration.candidates?.length;
     $('bulk-apply').disabled = state.busy || !state.bulk || !$('bulk-consent').checked || !(state.bulk.topics?.some(t => t.newLinkCount > 0) || state.bulk.candidateCount > 0);
@@ -114,7 +116,14 @@ import { api } from '/private-client.js';
       const saved = node('details'), choices = node('div', null, 'packet-list'); saved.append(node('summary', 'Kayıtlı devam metinleri · ' + packets.length));
       for (const packet of packets) {
         const open = node('button', (targets[packet.target]?.[0] || packet.target) + ' · ' + date(packet.createdAt) + ' · ' + packet.recordIds.length + ' kayıt · ' + packet.id.slice(0, 8), 'quiet');
-        open.dataset.savedPacket = packet.id; open.onclick = () => { openContext(); displayPacket(packet); }; choices.append(open);
+        open.dataset.savedPacket = packet.id; open.onclick = () => { openContext(); displayPacket(packet); };
+        const row = node('div', null, 'packet-row'); row.append(open);
+        if (packet.sharedWithTools === true) {
+          const close = node('button', 'Kapat', 'quiet'); close.dataset.unsharePacket = packet.id; close.setAttribute('aria-label', 'Bu devam metnini bağlı AI aracına kapat');
+          close.onclick = () => run(null, 'page-error', () => setToolShare(packet.id, false));
+          row.append(node('span', 'Bağlı AI aracına açık', 'badge shared'), close);
+        }
+        choices.append(row);
       }
       saved.append(choices); list.append(saved);
     }
@@ -379,7 +388,7 @@ import { api } from '/private-client.js';
   }
   function invalidatePacket() {
     rememberReplyDraft();
-    state.packet = null; $('context-consent').checked = false; $('reply-consent').checked = false;
+    state.packet = null; $('context-consent').checked = false; $('reply-consent').checked = false; $('tool-share-consent').checked = false; text('tool-share-status', '');
     show('context-preview', false); show('reply-panel', false); text('context-copy-status', ''); readiness();
   }
   function rememberReplyDraft() {
@@ -410,12 +419,26 @@ import { api } from '/private-client.js';
   function displayPacket(packet) {
     rememberReplyDraft();
     const draft = state.replyDrafts.get(packet.id); $('reply-text').value = draft?.text || ''; $('reply-format').value = draft?.format || 'text'; error('reply-error');
-    state.packet = packet; $('context-consent').checked = false; $('reply-consent').checked = false;
+    state.packet = packet; $('context-consent').checked = false; $('reply-consent').checked = false; $('tool-share-consent').checked = false; text('tool-share-status', ''); renderToolShare();
     const target = targets[packet.target] || [packet.target, null]; text('context-target-label', target[0] + ' hesabına götüreceğin metin' + (packet.model ? ' · ' + packet.model : ' · Model belirtilmedi')); text('context-prompt', packet.text);
     if (target[1]) $('context-service-link').href = target[1]; show('context-preview', true); show('reply-panel', true); text('reply-status', 'Bu yanıt ' + date(packet.createdAt) + ' tarihli devam metnine bağlanacak.');
     const stale = (packet.sources || []).some(source => state.data.records.find(r => r.id === source.recordId)?.revision !== source.revision);
     text('context-copy-status', stale ? 'Bu kayıtlı metin eski bir anlık görüntü: kaynak kayıtları sonradan değişmiş. Güncel bağlam için yeniden önizleme hazırla.' : 'Kayıtlı anlık görüntü · ' + date(packet.createdAt) + '. Kopyalamadan önce hedefi ve tam metni yeniden incele.');
     text('reply-schema', JSON.stringify({ commentary: 'AI yorumunun metni', citations: [{ sourceId: packet.sourceIds?.[0] || 'devam-metnindeki-kaynak-kimliği', quote: 'O kaynaktaki birebir alıntı' }] }, null, 2)); readiness();
+  }
+  function renderToolShare() {
+    const shared = state.packet?.sharedWithTools === true;
+    text('tool-share-state', shared ? 'Bağlı AI aracına açık · bağlı araç bu metni okuyabilir' : 'Bağlı AI aracına kapalı');
+    $('tool-share-state').classList.toggle('shared', shared);
+    show('tool-share-open', !shared); show('tool-share-close', shared); $('tool-share-consent').closest('label').hidden = shared;
+  }
+  async function setToolShare(packetId, shared) {
+    if (shared && (state.packet?.id !== packetId || !$('tool-share-consent').checked)) throw Error('Önce tam metni incele ve bağlı AI aracına açmayı ayrıca onayla.');
+    const result = await call('records-share', { packetId, shared, confirmedByUser: true });
+    await refresh();
+    if (state.packet?.id === packetId) { state.packet = state.data.packets.find(p => p.id === packetId) || result.packet; $('tool-share-consent').checked = false; renderToolShare(); }
+    const message = shared ? 'Bu metin bağlı AI aracına açıldı. Araç yalnız bu metni okuyabilir; istediğin an kapatabilirsin.' : 'Bu metin bağlı AI aracına kapatıldı. Araç bir sonraki istekte okuyamaz; önceden okuduğu geri alınamaz.';
+    if (state.packet?.id === packetId) text('tool-share-status', message); else text('page-status', message);
   }
   async function saveReply() {
     if (!state.packet || !$('reply-consent').checked) throw Error('Önce devam metnini hazırla ve yanıt beyanını işaretle.');
@@ -488,7 +511,9 @@ import { api } from '/private-client.js';
   $('context-include-ai').onchange = () => { invalidatePacket(); if (!$('context-include-ai').checked) for (const record of topicRecords().filter(isSelectableProposal)) state.selected.delete(record.id); renderContextChoices(); };
   for (const id of ['context-question', 'context-target', 'context-model']) $(id).addEventListener(id === 'context-target' ? 'change' : 'input', invalidatePacket);
   $('context-prepare').onclick = () => run('context-prepare', 'context-error', prepareContext);
-  $('context-consent').onchange = readiness; $('reply-consent').onchange = readiness;
+  $('context-consent').onchange = readiness; $('reply-consent').onchange = readiness; $('tool-share-consent').onchange = readiness;
+  $('tool-share-open').onclick = () => run('tool-share-open', 'context-error', () => setToolShare(state.packet?.id, true));
+  $('tool-share-close').onclick = () => run('tool-share-close', 'context-error', () => setToolShare(state.packet?.id, false));
   const replyChanged = () => { $('reply-consent').checked = false; error('reply-error'); readiness(); };
   $('reply-text').oninput = replyChanged; $('reply-format').onchange = replyChanged;
   $('context-copy').onclick = () => run('context-copy', 'context-error', async () => { if (!state.packet || !$('context-consent').checked) throw Error('Önce hedefi ve metni onayla.'); if (!navigator.clipboard?.writeText) throw Error('Pano erişilemiyor. Tam metni yukarıdaki önizlemeden seçip kopyalayabilirsin.'); await navigator.clipboard.writeText(state.packet.text); text('context-copy-status', 'Metin panoya kopyalandı. Kendi sohbet hesabına yapıştır; gelen yanıtı aşağıya getir.'); });

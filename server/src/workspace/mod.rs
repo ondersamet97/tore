@@ -16,6 +16,7 @@ use axum::{
     routing::post,
 };
 use base64::Engine;
+pub use records::{SharedContext, shared_contexts};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
@@ -150,6 +151,7 @@ async fn dispatch(s: Arc<Workspace>, op: &str, r: Value) -> Result<Value, String
         }
         "records-review" => lock(&s.records)?.review(r),
         "records-prepare" => lock(&s.records)?.prepare(r),
+        "records-share" => lock(&s.records)?.share(r),
         "records-reply" => lock(&s.records)?.reply_save(r),
         "records-backup" => lock(&s.records)?.backup(),
         "records-restore" => {
@@ -175,6 +177,11 @@ async fn dispatch(s: Arc<Workspace>, op: &str, r: Value) -> Result<Value, String
         "thinkers" => lock(&s.records)?.thinkers_view(),
         "thinkers-link" => lock(&s.records)?.thinker_link(r),
         "thinkers-unlink" => lock(&s.records)?.thinker_unlink(r),
+        "map" => lock(&s.records)?.map_view(),
+        "map-add" => lock(&s.records)?.map_add(r),
+        "map-update" => lock(&s.records)?.map_update(r),
+        "map-remove" => lock(&s.records)?.map_remove(r),
+        "map-export" => lock(&s.records)?.map_export(r),
         "records-organize-preview" => {
             let disk = lock(&s.disk)?;
             lock(&s.records)?.organize_preview(&disk.data.conversations)

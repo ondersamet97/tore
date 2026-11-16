@@ -16,7 +16,7 @@ preview = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(preview)
 
 # Reviewed additions on top of the audited preview allowlist.
-EXTRA = ['scripts/export-public.py', 'ABOUT.md', 'COMMERCIAL-LICENSE.md', 'CONTRIBUTING.md']
+EXTRA = ['scripts/export-public.py', 'ABOUT.md', 'COMMERCIAL-LICENSE.md', 'CONTRIBUTING.md', 'docs/MCP.md']
 EXTRA_PATTERNS = [r'docs/RELEASE-0\.(?:1[2-9]|[2-9]\d)\.\d+\.md']
 # Screenshots are binary and cannot be pattern-scanned: each one is listed by name
 # after a person has looked at it and confirmed it shows synthetic data only.

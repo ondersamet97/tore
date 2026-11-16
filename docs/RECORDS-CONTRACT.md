@@ -10,6 +10,7 @@ Bütün işlemler mevcut token/Host/Origin korumalı `POST /api/private/tore/<i�
 | `records-create` | `{requestId?,topicId,kind,text,reason?,source?,answersQuestionId?}` | `{record}` |
 | `records-review` | aşağıdaki örnek | `{record}` |
 | `records-prepare` | aşağıdaki örnek | `{packet,findings}` |
+| `records-share` | `{packetId,shared:true veya false,confirmedByUser:true}` | `{packet,shared,changed}`; bağlı AI aracına (MCP) yalnız bu paketin metnini açar veya kapatır. Aynı istek tekrarında yazmaz. Bayrak `false` iken saklanmaz; yedekten geri alma paylaşımı her zaman kapatır. Bkz. `docs/MCP.md`. |
 | `records-reply` | `{requestId?,packetId,rawText,format:"text" veya "json",confirmedByUser:true}` | `{reply}`; geçersiz yanıt da kalıcıdır |
 | `records-backup` | `{}` | `{backupId,stateHash,createdAt}` |
 | `records-restore` | `{backupId,expectedStateHash,confirmedByUser:true}` | `{restored,restoredBackupId,backupId,stateHash}`; `backupId` geri almadan önceki durumun yeni yedeğidir |
@@ -121,6 +122,26 @@ Yer değişiminin denetim kaydı ayrı `organizationReceipts` alanındadır; `re
 Uygulama önizlemeyi bütün kaynak karması ve mevcut konu defteri karmasına bağlar; değişiklikte yeniden önizleme gerekir. Bütün plan için **tek yedek ve tek atomik kayıt** kullanılır. Aynı onay isteğinin tekrarı önceki makbuzu döndürür ve daha sonraki kullanıcı incelemesini geri almaz. Yeni hedef kalmamışsa yeni yedek veya yazma yapılmaz. 200 konu/3000 kayıt/32 MiB sınırları korunur; kısmi ilk-N aktarımı yapılmaz.
 
 `records-review`, geriye uyumlu isteğe bağlı `expectedTopicId` alanını kabul eder. Ekranın açıldığı konu ile kaydın güncel konusu farklıysa inceleme reddedilir: `Kaydın konusu değişmiş; incelemeden önce yeniden yükleyin`. Böylece konu düzenleme içerik revizyonunu değiştirmese de yeni arayüz eski konu bağlamıyla inceleme yapmaz. Önceki istemcilerin yalnız `expectedRevision` göndermesi desteklenir.
+
+## Düşünce haritası — kayıtların okur için yerleşimi (0.13.0)
+
+| İşlem | İstek | Yanıt |
+|---|---|---|
+| `map` | `{}` | `{catalog,entries:[{entry,record,thinkerIds}],stateHash}` |
+| `map-add` | `{requestId?,recordId,section,role,parentId?,counterpart?,label?,note?,order?,placement?,translationEn?,confirmedByUser:true}` | `{entry}` |
+| `map-update` | `{entryId,section,role,parentId?,counterpart?,label?,note?,order?,translationEn?,confirmedByUser:true}` | `{entry}` |
+| `map-remove` | `{entryId,confirmedByUser:true}` | `{removed}` |
+| `map-export` | `{language:"tr" veya "en",includePending?,includeSuggested?,title?,confirmedByUser:true}` | `{html,entryCount,hash,findings}` |
+
+Katalog sürümlü ve editoryaldir: dokuz bölüm (`baslangic`, `insan`, `toplum`, `bilgi`, `tarih`, `teknoloji`, `inanc`, `ekonomi`, `sanat`) ve sekiz rol (`premise`, `position`, `divergence`, `change`, `objection`, `answer`, `test`, `open_question`). Bir girdi yalnız var olan bir kaydı yerleştirir; kaydın metni, kaynağı, atfı, inceleme ve benimseme durumu haritadan değişmez. Bir kayıt haritada en fazla bir yerde durur. Haritaya koymak benimseme değildir.
+
+Bağ kuralları: `objection` bir üst girdi ister; `objection`, `test`, `divergence`, `change` ve `open_question` yalnız `premise`, `position`, `divergence` ya da `change` altına; `answer` bunlara ya da bir `objection` altına bağlanır. `open_question` rolü yalnız soru kaydıyla, diğer roller yalnız görüş ya da karar kaydıyla kullanılır. Kendine bağlanma ve döngü reddedilir. Altında girdi bulunan girdi çıkarılamaz. Çıkarmak kaydı silmez.
+
+`placement` ya `user` ya `suggested` olur. `suggested`, yerin bir asistan tarafından önerildiğini ve kişinin henüz onaylamadığını belirtir; `map-update` her zaman `user` yazar. `translationEn` `{text,by,label?}` biçimindedir (`label` kısa başlığın çevirisidir); `by` ya `ai` ya `user` olur ve arayüz ile dışa aktarım AI çevirisini her zaman öyle etiketler.
+
+`map-export` yazma yapmaz ve ağ kullanmaz; betik içermeyen tek bir HTML metni döndürür, dosyayı tarayıcı bu bilgisayara kaydeder. Varsayılan kapsam: `reviewed`, `rejected` olmayan, `superseded` olmayan kayıtlar; `not_adopted` kayıtlar yalnız `objection` ve `change` rolünde girer. `includePending` ve `includeSuggested` açıkça istenirse bekleyen ve yeri önerilmiş girdiler de girer ve öyle işaretlenir. Konuşma ve konu başlıkları, kimlikler ve kaynak dosya adları dışa aktarılmaz; tarih gün düzeyindedir. `findings` yerel özel bilgi taramasının olası eşleşmeleridir, anonimlik garantisi değildir.
+
+Girdiler konu deposunda `mapEntries` alanında tutulur; kilit, atomik yazma, yedek ve geri alma doğrulamasını paylaşır. Boş alan serileştirilmez; önceki depo ve yedek karmaları değişmez. Sınır 3000 girdidir.
 
 ## Düşünürler — kayıt ile düşünür bağlantıları
 

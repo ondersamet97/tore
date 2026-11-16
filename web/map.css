@@ -1,0 +1,30 @@
+.map-toolbar{max-width:1280px;margin:0 auto 18px;padding:0 24px;display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center}
+.map-switch{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.map-switch button{border:0;border-radius:0;background:var(--white)}
+.map-switch button[aria-pressed="true"]{background:var(--green);color:#fff}
+.map-contents{max-width:1280px;margin:0 auto 8px;padding:0 24px;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px}
+#map-tools,#map-body{max-width:900px;margin:0 auto 28px;padding-left:24px;padding-right:24px}
+#map-tools{padding-top:22px;padding-bottom:22px}
+.map-form{display:grid;gap:10px;margin:0 0 26px}
+.map-form label{display:grid;gap:4px;font-size:14px}
+.map-form label.check{display:flex;gap:8px;align-items:flex-start}
+.map-form select,.map-form input:not([type=checkbox]),.map-form textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--white)}
+.map-section{margin:44px 0 0;border-top:2px solid var(--ink);padding-top:18px}
+.map-section>h2{margin-bottom:4px}
+.map-question{color:var(--muted);margin-bottom:18px}
+.map-entry{margin:18px 0;padding:4px 0 4px 16px;border-left:3px solid var(--green)}
+.map-entry .map-entry{border-left-color:var(--line);margin:14px 0}
+.map-entry[data-role="objection"]{border-left-color:var(--danger)}
+.map-entry[data-role="test"]{border-left-style:dashed}
+.map-role{font:600 11px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:var(--green);margin:0 0 4px}
+.map-entry[data-role="objection"]>.map-role{color:var(--danger)}
+.map-entry h3{font-size:19px;margin:0 0 6px}
+.map-text{font:17px/1.6 Georgia,"Times New Roman",serif;white-space:pre-wrap;margin:0 0 6px}
+.map-original{white-space:pre-wrap;color:var(--muted);font-size:14px}
+.map-meta{font-size:13px;color:var(--muted);margin:0 0 4px}
+.map-suggested{color:#8a5a00}
+.map-test-line{font-size:13px;margin:6px 0 0;padding:6px 10px;background:var(--wash);border-radius:8px;display:inline-block}
+.map-edit{margin:10px 0 0;padding:12px;border:1px dashed var(--line);border-radius:10px;display:grid;gap:10px}
+.map-edit summary{cursor:pointer;font-size:14px}
+.map-empty{color:var(--muted);margin:30px 0}
+@media print{.topbar,.map-toolbar,.map-contents,#map-tools,.map-edit,footer,#page-status{display:none!important}body{background:#fff}}

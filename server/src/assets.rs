@@ -24,6 +24,18 @@ pub fn asset(path: &str) -> Response {
             "text/javascript; charset=utf-8",
             include_bytes!("../../web/thinkers.js"),
         )),
+        "harita" => Some((
+            "text/html; charset=utf-8",
+            include_bytes!("../../web/map.html"),
+        )),
+        "map.js" => Some((
+            "text/javascript; charset=utf-8",
+            include_bytes!("../../web/map.js"),
+        )),
+        "map.css" => Some((
+            "text/css; charset=utf-8",
+            include_bytes!("../../web/map.css"),
+        )),
         "gorusler" => Some((
             "text/html; charset=utf-8",
             include_bytes!("../../web/opinions.html"),

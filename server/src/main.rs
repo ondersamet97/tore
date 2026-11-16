@@ -1,5 +1,6 @@
 mod assets;
 mod lifecycle;
+mod mcp;
 mod network;
 mod private_fs;
 mod sources;
@@ -30,9 +31,14 @@ fn safe_directory(path: &Path) -> Result<(), String> {
 }
 async fn run() -> Result<(), String> {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some("mcp") {
+        // Synchronous stdio loop; no HTTP server, no lock, no writes.
+        return mcp::run(&args[1..]);
+    }
     if args == ["--help"] {
         println!(
-            "Töre 0.12.2 — Konuya Geri Dön: --archive MUTLAK_KLASÖR --data MUTLAK_KLASÖR [--listen 127.0.0.1:0] [--open]"
+            "Töre 0.13.0 — Konuya Geri Dön: --archive MUTLAK_KLASÖR --data MUTLAK_KLASÖR [--listen 127.0.0.1:0] [--open]\n{}",
+            mcp::help()
         );
         return Ok(());
     }

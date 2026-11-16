@@ -1,5 +1,29 @@
 # Change log
 
+## 0.13.0 — Map of my thinking, view testing and the MCP adapter (2026-11-16)
+
+### Map of my thinking
+
+- Add **Haritam** (`/harita`): a reader-facing arrangement of notebook records into nine fixed sections (starting points, how a person should live, how a society should live, knowledge and method, history, technology and AI, belief, economy, art) and eight roles (premise, position, divergence, change of view, objection, answer, refutation criterion, open question).
+- An entry only places an existing record. Source, attribution, review, adoption and history stay on the record; the map never infers, scores or labels a person.
+- **View testing:** objections, answers and refutation criteria hang from a position. Each position shows how many objections it has, how many are answered and whether a criterion is stated. New objections, answers and criteria are written as new notebook records by the person.
+- Entries carry a `placement`: `user`, or `suggested` when an assistant proposed the place. Editing an entry makes the placement the person's own. Suggested placements can be hidden and are excluded from exports unless requested.
+- Pending records can be reviewed in place ("Bu benim görüşüm" / "Benim görüşüm değil"), each behind an explicit checkbox.
+- **English view:** an optional English translation per entry, labelled as an AI translation or the author's own; the original stays visible. Reader strings and the catalogue are bilingual.
+- **Single-file export** (`map-export`): a self-contained, script-free HTML document in Turkish or English, written only with explicit consent. Default scope is reviewed, not rejected, not superseded records; pending and suggested entries are opt-in and marked. Conversation titles, topic titles and identifiers are not included. A local private-information scan reports possible matches. Nothing is sent anywhere.
+- New local operations: `map`, `map-add`, `map-update`, `map-remove`, `map-export`. Entries live in the topic notebook (`mapEntries`) and share its lock, atomic write, backups and restore validation. An empty map is not serialized, so existing store and backup hashes are unchanged.
+- Navigation shows **Haritam** on the notebook pages.
+
+### MCP adapter
+
+- Merge the read-only MCP adapter: `tore-server mcp --data <folder>` serves, over stdio, exactly the continuation contexts the person opened with `records-share`. See `docs/MCP.md`.
+
+## Unreleased
+
+- **Connected AI tool (MCP), read-only.** A prepared continuation context can be opened to an AI tool on the same computer (first target: Claude Desktop and Claude Code) with its own consent checkbox, separate from the copy consent, and closed again with one click. The tool can read exactly that text while it is open, and nothing else from töre.
+- New operation `records-share` stores the consent on the packet (`sharedWithTools`). The field is omitted while false, so existing stores, backups and their hashes are unchanged until the feature is used. Restoring a backup never reopens sharing.
+- New invocation `tore-server mcp --data DIR`: a stdio MCP server with two read-only tools, `tore_list_shared_contexts` and `tore_get_shared_context`. It starts no HTTP server, takes no lock, never writes and reads the notebook afresh on every call. See `docs/MCP.md`.
+
 ## 0.12.2 — Data-package tool removed (2026-11-16)
 
 - Remove the "Veri paketi" tool from Konuşmalarım: the `dataset` intent, the `export` operation and the `dataset.jsonl` / manifest / README package with a research or model-training purpose. töre no longer has any tool that turns conversations or notes into a dataset.

@@ -21,6 +21,12 @@ use organize::OrganizationReceipt;
 #[path = "records_thinkers.rs"]
 mod thinkers;
 use thinkers::ThinkerLink;
+#[path = "records_map.rs"]
+mod map;
+use map::MapEntry;
+#[path = "records_share.rs"]
+mod share;
+pub use share::{SharedContext, shared_contexts};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -112,6 +118,11 @@ pub struct Packet {
     pub source_ids: Vec<String>,
     pub sources: Vec<PacketSource>,
     pub hash: String,
+    /// Explicit, revocable consent to let a connected AI tool (MCP) read
+    /// exactly this packet text. Absent when false so older stores, backups
+    /// and their hashes stay byte-identical until the feature is used.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub shared_with_tools: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -146,6 +157,8 @@ struct Store {
     organization_receipts: BTreeMap<String, OrganizationReceipt>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     thinker_links: BTreeMap<String, ThinkerLink>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    map_entries: BTreeMap<String, MapEntry>,
 }
 impl Default for Store {
     fn default() -> Self {
@@ -160,6 +173,7 @@ impl Default for Store {
             bulk_receipts: BTreeMap::new(),
             organization_receipts: BTreeMap::new(),
             thinker_links: BTreeMap::new(),
+            map_entries: BTreeMap::new(),
         }
     }
 }
@@ -367,6 +381,7 @@ fn validate_store(s: &Store) -> Result<(), String> {
             }
         }
     }
+    map::validate_entries(s)?;
     for (id, p) in &s.packets {
         if id != &p.id
             || !s.topics.contains_key(&p.topic_id)
@@ -958,6 +973,7 @@ impl Disk {
             proposal_ids: r.proposal_ids,
             source_ids: sources.iter().map(|s| s.source_id.clone()).collect(),
             sources,
+            shared_with_tools: false,
         };
         let warnings = findings(&packet.id, &packet.text);
         let mut next = self.data.clone();
