@@ -6,7 +6,7 @@ Released 2026-11-16.
 
 - **Licence.** The original code is offered under the GNU Affero General Public License v3 (AGPL-3.0-only). `LICENSE` is the unmodified licence text (SHA-256 `0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0`). A separate commercial licence is available from the owner; see `COMMERCIAL-LICENSE.md`.
 - **Licence history.** 0.11.0-rc.4 and the first public version, 0.12.0, were offered under PolyForm Noncommercial 1.0.0. Rights granted for those versions under that licence are not withdrawn. This note is not legal advice.
-- **Dream notebook removed.** The experimental `/ruyalar` page, its storage, its suggestion rules and the training-dataset export are no longer part of töre. töre does not produce AI-training datasets. A `dreams-v1.json` file created by 0.12.0 stays on disk untouched and is no longer read.
+- **Dream notebook removed.** The experimental `/ruyalar` page, its storage, its suggestion rules and the training-dataset export are no longer part of töre. The older, separate data-package tool under Konuşmalarım (a locally built, consent-based package whose stated purpose can be research or model training) is unchanged in this version. A `dreams-v1.json` file created by 0.12.0 stays on disk untouched and is no longer read.
 - **About and contact.** `ABOUT.md` describes who builds töre and why. `CONTRIBUTING.md` explains that issues are welcome and code contributions wait for a contributor agreement.
 - **Wording.** The README says consistently that töre proposes source-linked candidates and the person confirms each one.
 
