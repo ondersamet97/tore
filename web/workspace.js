@@ -8,8 +8,8 @@ import { api, download } from '/private-client.js';
   const state = {
     conversations: [], conversation: null, leafId: '', rows: new Map(), developers: [],
     catalog: { models: [] }, catalogRefreshed: false, keyConfigured: false,
-    intent: 'continue', draft: null, revision: 0, preview: null, previewRevision: 0,
-    loadSequence: 0, busy: new Set(), scanned: false, drafts: [], receipts: [], draftBlocked: false, resultDraftId: null
+    draft: null, revision: 0, preview: null, previewRevision: 0,
+    loadSequence: 0, busy: new Set(), scanned: false, drafts: [], draftBlocked: false, resultDraftId: null
   };
   const roles = { user: 'Kullanıcı', human: 'Kullanıcı', assistant: 'AI yanıtı', system: 'Sistem kaydı', developer: 'Geliştirici kaydı', tool: 'Araç kaydı', unknown: 'Konuşmacı belirsiz' };
   const authorships = [['unreviewed', 'Henüz incelenmedi'], ['human_original', 'İnsan tarafından yazılmış'], ['ai_output', 'AI tarafından üretilmiş'], ['third_party', 'Üçüncü kişiye ait']];
@@ -41,7 +41,7 @@ import { api, download } from '/private-client.js';
   }
   const developerName = id => state.developers.find(d => d.id === id)?.name || id || 'Belirtilmemiş';
   const selectedRows = () => [...state.rows.values()].filter(row => row.checked);
-  const effectiveMode = () => state.intent === 'dataset' ? 'manual' : $('run-mode').value;
+  const effectiveMode = () => $('run-mode').value;
   const selectedModel = () => state.catalog.models.find(model => model.id === $('target-model').value && model.developer === $('target-developer').value);
   const zeroPrice = value => value === 0 || (typeof value === 'string' && /^(?:0+(?:\.0*)?|\.0+)$/.test(value));
   const freeModel = model => model?.free === true && zeroPrice(model.pricing?.prompt) && zeroPrice(model.pricing?.completion);
@@ -60,7 +60,7 @@ import { api, download } from '/private-client.js';
     state.revision += 1;
     if (state.draft) status('Seçim değişti. Gönderimden önce güncel önizlemeyi yeniden hazırla.');
     state.draft = null; state.draftBlocked = false; show('draft-panel', false);
-    $('send-consent').checked = false; $('export-consent').checked = false;
+    $('send-consent').checked = false;
     inlineError(); updateReady();
   }
   function renderList() {
@@ -137,7 +137,7 @@ import { api, download } from '/private-client.js';
         editor.append(labeled('Bu metnin konuşmacısı', roleSelect));
       }
       const area = document.createElement('textarea'); area.value = row.text; area.rows = Math.min(12, Math.max(4, row.text.split('\n').length + 1)); area.dataset.field = 'text'; area.spellcheck = false;
-      editor.append(labeled('Gönderilecek / paketlenecek metin', area));
+      editor.append(labeled('Gönderilecek metin', area));
       const fields = node('div', null, 'field-grid');
       const authorship = document.createElement('select'); authorship.dataset.field = 'authorship'; authorship.append(...authorships.map(([v, label]) => option(v, label, v === 'human_original' && row.role === 'assistant'))); authorship.value = row.authorship;
       if (roleSelect) roleSelect.addEventListener('change', () => {
@@ -183,16 +183,11 @@ import { api, download } from '/private-client.js';
     updateReady();
   }
   function updateReady() {
-    const selected = selectedRows(), mode = effectiveMode(), dataset = state.intent === 'dataset';
+    const selected = selectedRows(), mode = effectiveMode();
     text('selection-count', selected.length + ' seçili');
-    $('intent-continue').setAttribute('aria-pressed', String(!dataset)); $('intent-dataset').setAttribute('aria-pressed', String(dataset));
-    show('dataset-fields', dataset); show('mode-field', !dataset); show('model-field', !dataset && mode === 'live'); show('model-hint', !dataset && mode === 'live');
-    text('intent-description', dataset ? 'Seçtiğin metinleri amaç ve hak beyanıyla taşınabilir bir paket yap. Bu adım veri göndermez veya satmaz.' : 'Seçtiğin bağlamı ve yeni sorunu başka bir modele taşı. Yanıt ayrı bir dal olarak saklanır.');
-    text('mode-status', dataset ? 'Yerel veri paketi · Bir alıcıya gönderilmez.' : mode === 'live' ? 'Canlı kullanım · Onaydan sonra seçili metin ve soru harici modele gönderilir. Ücretli uçlar kapalıdır.' : mode === 'simulation' ? 'SİMÜLASYON · İnternete çıkmaz. Üretilen yanıt sentetiktir; model yeteneği kanıtı değildir.' : 'Elle aktarım · Model çağrısı yapılmaz. Onayladığın bağlamı kopyalar veya indirirsin.');
+    show('model-field', mode === 'live'); show('model-hint', mode === 'live');
+    text('mode-status', mode === 'live' ? 'Canlı kullanım · Onaydan sonra seçili metin ve soru harici modele gönderilir. Ücretli uçlar kapalıdır.' : mode === 'simulation' ? 'SİMÜLASYON · İnternete çıkmaz. Üretilen yanıt sentetiktir; model yeteneği kanıtı değildir.' : 'Elle aktarım · Model çağrısı yapılmaz. Onayladığın bağlamı kopyalar veya indirirsin.');
     $('mode-status').classList.toggle('simulation', mode === 'simulation');
-    const label = $('target-label').firstChild; label.textContent = dataset ? 'Hedef geliştirici / alıcı niyeti' : 'Hedef geliştirici';
-    $('question-label').firstChild.textContent = dataset ? 'Paket notu — isteğe bağlı' : 'Yeni sorun';
-    $('target-question').placeholder = dataset ? 'Bu paketin kapsamı veya kullanım sınırı hakkında notun…' : 'Bu bağlamla neyi tartışmak istersin?';
     let reason = '';
     if (!state.conversation || !state.leafId) reason = 'Önce bir konuşma ve dal seç.';
     else if (!selected.length) reason = 'En az bir mesajı açıkça seç.';
@@ -201,15 +196,12 @@ import { api, download } from '/private-client.js';
     else if (selected.some(row => !['user', 'assistant'].includes(row.role))) reason = 'Genel metinlerin konuşmacısını açıkça seç.';
     else if (selected.some(row => row.role === 'assistant' && row.authorship === 'human_original')) reason = 'AI yanıtını insanın özgün katkısı olarak işaretleyemezsin.';
     else if (!$('target-developer').value) reason = 'Bir hedef geliştirici seç.';
-    else if (!dataset && !$('target-question').value.trim()) reason = 'Devam etmek için yeni sorunu yaz.';
-    else if (dataset && selected.some(row => row.authorship === 'unreviewed' || row.rights !== 'user_attested')) reason = 'Paket için her seçili mesajın yazarlığını incele ve kullanım hakkını beyan et.';
-    else if (dataset && $('dataset-purpose').value === 'training' && selected.some(row => row.authorship !== 'human_original')) reason = 'Eğitim paketine yalnız insan tarafından yazılmış, hak beyanı verilmiş metinleri alabilirsin.';
-    else if (!dataset && mode === 'live' && !state.catalogRefreshed) reason = 'Canlı kullanım için bağlantı ayarlarından model kataloğunu yenile.';
-    else if (!dataset && mode === 'live' && !state.keyConfigured) reason = 'Canlı kullanım için bağlantı ayarlarına bir oturum anahtarı ekle.';
-    else if (!dataset && mode === 'live' && !freeModel(selectedModel())) reason = 'Bu geliştirici için uygun ücretsiz model seç.';
-    $('prepare-draft').disabled = Boolean(reason) || state.busy.has('prepare-draft'); text('prepare-hint', reason || (dataset ? 'Paket yerelde hazırlanır. İndirmeden önce ayrı onay istenir.' : 'Önce tam metin, hedef ve soru gösterilir.'));
-    const consent = state.draft?.intent === 'dataset' ? $('export-consent').checked : $('send-consent').checked;
-    $('execute-draft').disabled = !state.draft || state.draftBlocked || !consent || state.busy.has('execute-draft');
+    else if (!$('target-question').value.trim()) reason = 'Devam etmek için yeni sorunu yaz.';
+    else if (mode === 'live' && !state.catalogRefreshed) reason = 'Canlı kullanım için bağlantı ayarlarından model kataloğunu yenile.';
+    else if (mode === 'live' && !state.keyConfigured) reason = 'Canlı kullanım için bağlantı ayarlarına bir oturum anahtarı ekle.';
+    else if (mode === 'live' && !freeModel(selectedModel())) reason = 'Bu geliştirici için uygun ücretsiz model seç.';
+    $('prepare-draft').disabled = Boolean(reason) || state.busy.has('prepare-draft'); text('prepare-hint', reason || 'Önce tam metin, hedef ve soru gösterilir.');
+    $('execute-draft').disabled = !state.draft || state.draftBlocked || !$('send-consent').checked || state.busy.has('execute-draft');
     $('commit-import').disabled = !state.preview || !$('import-preview-list').querySelector('input:checked') || state.busy.has('commit-import');
     $('scan-pii').disabled = !selected.length; $('apply-masks').disabled = !selected.length;
   }
@@ -250,7 +242,7 @@ import { api, download } from '/private-client.js';
     for (const finding of unique.slice(0, 30)) { const row = node('div', null, 'pii-row'); row.append(node('span', maskNames[finding.kind]), node('code', finding.value)); list.append(row); }
     if (unique.length > 30) list.append(node('p', 'İlk 30 farklı aday gösteriliyor; maskeleme tüm seçili metne uygulanır.', 'hint'));
     const questionFindings = findings($('target-question').value);
-    text('question-pii', questionFindings.length ? 'Sorunda / paket notunda da ' + questionFindings.length + ' aday bilgi bulundu. Yukarıdaki maskeleme yalnız mesajları değiştirir; soru alanını ayrıca düzenle.' : 'Soru / paket notu da aynı örüntülerle tarandı.');
+    text('question-pii', questionFindings.length ? 'Sorunda da ' + questionFindings.length + ' aday bilgi bulundu. Yukarıdaki maskeleme yalnız mesajları değiştirir; soru alanını ayrıca düzenle.' : 'Soru da aynı örüntülerle tarandı.');
   }
 
   function toggleImport(visible) {
@@ -313,7 +305,7 @@ import { api, download } from '/private-client.js';
     const payload = {
       conversationId: state.conversation.id, leafId: state.leafId,
       items: selectedRows().map(row => ({ messageId: row.message.id, ...(row.message.role === 'unknown' ? { role: row.role } : {}), text: row.text, authorship: row.authorship, rights: row.rights, feedback: row.feedback })),
-      intent: state.intent, purpose: state.intent === 'dataset' ? $('dataset-purpose').value : 'research',
+      intent: 'continue',
       developer: $('target-developer').value, modelId: effectiveMode() === 'live' ? $('target-model').value : '',
       mode: effectiveMode(), question: $('target-question').value.trim()
     };
@@ -322,18 +314,16 @@ import { api, download } from '/private-client.js';
     state.draft = result.draft; state.draftBlocked = Boolean(result.findings?.length); renderDraft(result.findings || []); await refreshHistory();
   }
   function renderDraft(serverFindings) {
-    const draft = state.draft, dataset = draft.intent === 'dataset';
-    text('draft-mode', dataset ? 'Yerel paket' : draft.mode === 'simulation' ? 'SİMÜLASYON' : draft.mode === 'manual' ? 'Elle aktarım' : 'CANLI · Ücretsiz model');
-    text('draft-purpose', dataset ? (draft.purpose === 'training' ? 'Model eğitimi' : 'Araştırma') + ' veri paketi' : 'Konuşmaya devam');
-    text('draft-target', developerName(draft.developer) + (draft.modelId ? ' / ' + draft.modelId : dataset ? ' · alıcı niyeti' : ''));
+    const draft = state.draft;
+    text('draft-mode', draft.mode === 'simulation' ? 'SİMÜLASYON' : draft.mode === 'manual' ? 'Elle aktarım' : 'CANLI · Ücretsiz model');
+    text('draft-target', developerName(draft.developer) + (draft.modelId ? ' / ' + draft.modelId : ''));
     text('draft-hash', draft.hash); text('draft-question', draft.question || 'Not eklenmedi.'); text('draft-context', draft.contextText);
     const warnings = [...(draft.warnings || [])]; if (serverFindings.length) warnings.push('Yerel sunucu ' + serverFindings.length + ' olası özel bilgi buldu. Bulunan bilgileri metin, soru veya inceleme notunda maskeleyip yeni önizleme hazırla. Bu taslağın çıkışı kapalıdır.');
     text('draft-warnings', warnings.join('\n')); show('draft-warnings', warnings.length > 0);
-    show('send-consent-label', !dataset); show('export-consent-label', dataset);
-    $('send-consent').checked = false; $('export-consent').checked = false;
+    $('send-consent').checked = false;
     text('send-consent-text', draft.mode === 'live' ? 'Yukarıdaki taslağı ve soruyu, gösterilen model ve geliştiriciye OpenRouter üzerinden bir kez göndermeyi onaylıyorum.' : draft.mode === 'simulation' ? 'Yukarıdaki taslak ve soru için açıkça sentetik bir simülasyon yanıtı oluşturulmasını onaylıyorum. Bu bir gerçek model yanıtı değildir.' : 'Yukarıdaki bağlamı ve soruyu belirtilen hedef için kopyalamaya veya indirmeye hazırlamayı onaylıyorum. Töre model çağrısı yapmayacak.');
-    text('execute-draft', dataset ? 'Onayla ve paketi oluştur' : draft.mode === 'live' ? 'Onayla ve ücretsiz modele gönder' : draft.mode === 'simulation' ? 'Onayla ve simülasyonu çalıştır' : 'Onayla ve aktarım metnini hazırla');
-    text('draft-status', 'Metin, hedef, soru veya kullanım amacı değişirse bu önizlemenin onayı kaldırılır.');
+    text('execute-draft', draft.mode === 'live' ? 'Onayla ve ücretsiz modele gönder' : draft.mode === 'simulation' ? 'Onayla ve simülasyonu çalıştır' : 'Onayla ve aktarım metnini hazırla');
+    text('draft-status', 'Metin, hedef veya soru değişirse bu önizlemenin onayı kaldırılır.');
     show('draft-panel', true); updateReady(); $('draft-panel').scrollIntoView?.({ behavior: 'smooth', block: 'start' });
   }
   function resultAction(label, action) {
@@ -341,19 +331,13 @@ import { api, download } from '/private-client.js';
   }
   async function executeDraft() {
     const draft = state.draft;
-    if (!draft || state.draftBlocked || !(draft.intent === 'dataset' ? $('export-consent').checked : $('send-consent').checked)) throw Error('Önce güvenli önizlemeye ait onayı işaretle.');
+    if (!draft || state.draftBlocked || !$('send-consent').checked) throw Error('Önce güvenli önizlemeye ait onayı işaretle.');
     let result;
-    try { result = await call(draft.intent === 'dataset' ? 'export' : 'send', { draftId: draft.id, hash: draft.hash, confirmed: true }); }
+    try { result = await call('send', { draftId: draft.id, hash: draft.hash, confirmed: true }); }
     catch (error) { invalidate(); refreshHistory().catch(() => {}); throw Error(error.message + ' Yeniden denemeden önce yeni önizleme hazırla.'); }
     state.resultDraftId = draft.id;
     $('result-actions').replaceChildren(); text('result-status', ''); show('result-text', false); show('result-panel', true);
-    if (draft.intent === 'dataset') {
-      text('result-heading', 'Veri paketin hazır.'); text('result-description', 'Üç dosya bu cihazda hazırlandı. Hiçbir veri alıcısına gönderilmedi. Amaç ve hak beyanların manifestte; kullanım sınırları okuma notunda yer alır.');
-      const stringify = value => typeof value === 'string' ? value : JSON.stringify(value, null, 2) + '\n';
-      resultAction('Veri · JSONL indir', () => download(result.datasetJsonl, 'dataset.jsonl', 'application/x-ndjson'));
-      resultAction('Manifest · JSON indir', () => download(stringify(result.manifest), 'manifest.json', 'application/json'));
-      resultAction('Kullanım notu · README indir', () => download(result.readme, 'README.md', 'text/markdown;charset=utf-8'));
-    } else if (draft.mode === 'manual') {
+    if (draft.mode === 'manual') {
       const context = result.contextText || draft.contextText;
       text('result-heading', 'Bağlamın elle aktarmaya hazır.'); text('result-description', 'Töre harici modele çağrı yapmadı. Kopyaladığın metni nerede kullanacağına sen karar verirsin.'); text('result-text', context); show('result-text', true);
       resultAction('Bağlamı kopyala', async () => { if (!navigator.clipboard?.writeText) throw Error('Tarayıcı panoya erişemiyor. Metni seçerek kopyalayabilir veya indirebilirsin.'); await navigator.clipboard.writeText(context); text('result-status', 'Onayladığın metin panoya kopyalandı.'); });
@@ -367,26 +351,25 @@ import { api, download } from '/private-client.js';
         setConversation(result.conversation);
       }
     }
-    state.draft = null; $('send-consent').checked = false; $('export-consent').checked = false; show('draft-panel', false);
-    status(draft.intent === 'dataset' ? 'Paket yerelde oluşturuldu. İndirme bağlantıları hazır.' : draft.mode === 'simulation' ? 'Simülasyon tamamlandı. Harici model çağrısı yapılmadı.' : draft.mode === 'manual' ? 'Elle aktarım metni hazır. Harici model çağrısı yapılmadı.' : 'Canlı işlem tamamlandı. Yanıtın kaynağı ve işlem kaydı saklandı.');
+    state.draft = null; $('send-consent').checked = false; show('draft-panel', false);
+    status(draft.mode === 'simulation' ? 'Simülasyon tamamlandı. Harici model çağrısı yapılmadı.' : draft.mode === 'manual' ? 'Elle aktarım metni hazır. Harici model çağrısı yapılmadı.' : 'Canlı işlem tamamlandı. Yanıtın kaynağı ve işlem kaydı saklandı.');
     await refreshHistory(); updateReady(); $('result-panel').scrollIntoView?.({ behavior: 'smooth', block: 'start' });
   }
   async function revoke(id) {
     await call('revoke', { draftId: id });
     if (state.resultDraftId === id) { $('result-actions').replaceChildren(); text('result-status', 'Bu taslağın yeni kopyalama ve indirme işlemleri kapatıldı. Önceden alınmış kopyalar geri çağrılamaz.'); }
-    if (state.draft?.id === id) { state.draft = null; show('draft-panel', false); $('send-consent').checked = false; $('export-consent').checked = false; }
+    if (state.draft?.id === id) { state.draft = null; show('draft-panel', false); $('send-consent').checked = false; }
     status('Taslağın izni geri çekildi. Önceden gönderilmiş veya indirilmiş kopyalar geri alınmadı.');
     await refreshHistory(); updateReady();
   }
   async function refreshHistory() {
-    const result = await call('drafts'); state.drafts = result.drafts || []; state.receipts = result.receipts || [];
+    const result = await call('drafts'); state.drafts = result.drafts || [];
     text('history-count', state.drafts.length); const list = $('draft-history'); list.replaceChildren();
     if (!state.drafts.length) list.append(node('p', 'Henüz hazırlanmış veya onaylanmış taslak yok.', 'empty'));
-    const names = { ready: 'Onay bekliyor', revoked: 'İzni geri çekildi', sent: 'İşlem tamamlandı', sending: 'İşlem başlatıldı', unknown: 'Sonuç belirsiz; tekrar onay gerekli', exported: 'Paket oluşturuldu', completed: 'Tamamlandı', used: 'İşlendi' };
+    const names = { ready: 'Onay bekliyor', revoked: 'İzni geri çekildi', sent: 'İşlem tamamlandı', sending: 'İşlem başlatıldı', unknown: 'Sonuç belirsiz; tekrar onay gerekli', completed: 'Tamamlandı', used: 'İşlendi' };
     for (const draft of [...state.drafts].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || ''))).slice(0, 50)) {
       const row = node('div', null, 'history-row'), content = node('div');
-      const packaged = state.receipts.some(receipt => receipt.draftId === draft.id && receipt.status === 'packaged');
-      content.append(node('p', (draft.intent === 'dataset' ? 'Veri paketi' : draft.mode === 'simulation' ? 'Simülasyon' : draft.mode === 'manual' ? 'Elle aktarım' : 'Canlı devam') + ' · ' + developerName(draft.developer)), node('small', (packaged && draft.status === 'ready' ? 'Paket oluşturuldu' : names[draft.status] || draft.status || 'Kayıtlı') + ' · ' + String(draft.hash || draft.id).slice(0, 16)));
+      content.append(node('p', (draft.intent !== 'continue' ? 'Eski taslak · artık desteklenmiyor' : draft.mode === 'simulation' ? 'Simülasyon' : draft.mode === 'manual' ? 'Elle aktarım' : 'Canlı devam') + ' · ' + developerName(draft.developer)), node('small', (names[draft.status] || draft.status || 'Kayıtlı') + ' · ' + String(draft.hash || draft.id).slice(0, 16)));
       row.append(content);
       if (draft.status !== 'revoked') { const button = node('button', 'İzni geri çek', 'quiet'); button.id = 'revoke-' + draft.id; button.addEventListener('click', () => run(button, () => revoke(draft.id))); row.append(button); }
       list.append(row);
@@ -408,12 +391,11 @@ import { api, download } from '/private-client.js';
   $('scan-pii').addEventListener('click', renderScan);
   $('apply-masks').addEventListener('click', () => { for (const row of selectedRows()) { row.text = masked(row.text); row.feedback = masked(row.feedback); } invalidate(); renderMessages(); renderScan(); status('Seçili örüntüler yalnız seçtiğin mesajların kopyasında ve inceleme notlarında maskelendi. Kaynak metin korunuyor.'); });
   $('literal-masks').addEventListener('input', () => { if (state.scanned) renderScan(); });
-  for (const intent of ['continue', 'dataset']) $('intent-' + intent).addEventListener('click', () => { if (state.intent === intent) return; state.intent = intent; invalidate(); });
-  for (const id of ['run-mode', 'target-model', 'dataset-purpose']) $(id).addEventListener('change', invalidate);
+  for (const id of ['run-mode', 'target-model']) $(id).addEventListener('change', invalidate);
   $('target-developer').addEventListener('change', () => { invalidate(); renderModels(); });
   $('target-question').addEventListener('input', () => { invalidate(); if (state.scanned) renderScan(); });
   $('prepare-draft').addEventListener('click', () => run($('prepare-draft'), prepareDraft));
-  for (const id of ['send-consent', 'export-consent']) $(id).addEventListener('change', updateReady);
+  $('send-consent').addEventListener('change', updateReady);
   $('execute-draft').addEventListener('click', () => run($('execute-draft'), executeDraft, 'draft-status'));
   $('revoke-draft').addEventListener('click', () => run($('revoke-draft'), async () => { if (state.draft) await revoke(state.draft.id); }, 'draft-status'));
   $('settings-toggle').addEventListener('click', () => { const visible = $('settings-panel').hidden; show('settings-panel', visible); $('settings-toggle').setAttribute('aria-expanded', String(visible)); if (visible) $('api-key').focus(); });

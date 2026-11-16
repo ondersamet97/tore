@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 0.12.1" src="https://img.shields.io/badge/version-0.12.1-2b4eff">
+  <img alt="Version 0.12.2" src="https://img.shields.io/badge/version-0.12.2-2b4eff">
   <img alt="Status: preview" src="https://img.shields.io/badge/status-preview-0f1115">
   <img alt="Licence: AGPL-3.0" src="https://img.shields.io/badge/licence-AGPL--3.0-0f1115">
   <img alt="Platform: macOS" src="https://img.shields.io/badge/platform-macOS-0f1115">
@@ -48,7 +48,7 @@ töre is built around one question: **where did I leave off?**
   <img src="docs/images/record.png" alt="A decision opened next to the original quote it came from, with separate review, adoption and currency states" width="760">
 </p>
 
-## What is in 0.12.1
+## What is in 0.12.2
 
 ### Topics: return to unfinished thinking
 
@@ -105,6 +105,7 @@ node --test local-reader/tests/*.test.cjs
 - Private operations are protected by a session token and Host/Origin checks.
 - Copying context to the clipboard is a separate, deliberate action. The destination service receives the text only if you paste and send it there; clipboard history and the destination's retention are outside töre's control.
 - Optional connections to AI services exist but are experimental and are not needed for anything described above.
+- töre has no tool that packages your conversations or notes as a dataset for research or model training.
 - This repository contains source code and synthetic fixtures only. It contains no personal notebook, conversation or credential.
 
 ## Limitations
@@ -119,7 +120,7 @@ töre is a single-user preview. There is no multi-user isolation, cloud sync, ho
 | [Record and API contract](docs/RECORDS-CONTRACT.md) | Record states, operations and storage rules |
 | [Demo script](docs/PREVIEW-DEMO.md) | A synthetic walk-through in two to three minutes |
 | [Known limitations](docs/PREVIEW-LIMITATIONS.md) | What this preview does not do |
-| [0.12.1 release note](docs/RELEASE-0.12.1.md) | What changed and how it was checked |
+| [0.12.2 release note](docs/RELEASE-0.12.2.md) | What changed and how it was checked |
 | [Third-party notices](docs/THIRD-PARTY-NOTICES.md) | Licences of bundled and linked components |
 
 ## Releases

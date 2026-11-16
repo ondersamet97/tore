@@ -417,16 +417,6 @@ async fn dispatch(s: Arc<Workspace>, op: &str, r: Value) -> Result<Value, String
                 json!({"revoked":true,"note":"Yeni işlemler durduruldu. Başlatılmış bir istek hâlâ tamamlanabilir; önceden gönderilen veya indirilmiş içerik geri alınamaz."}),
             )
         }
-        "export" => {
-            let mut disk = lock(&s.disk)?;
-            let draft = confirmed(&disk, &r, "dataset")?;
-            let package = policy::package(&draft)?;
-            let mut next = disk.data.clone();
-            next.receipts
-                .push(receipt(&draft, "packaged", None, Value::Null, None));
-            disk.commit(next)?;
-            serde_json::to_value(package).map_err(|_| "Paket kodlanamadı".into())
-        }
         "send" => send(s, r).await,
         "catalog" => {
             if r["refresh"] == true {
@@ -448,7 +438,7 @@ async fn dispatch(s: Arc<Workspace>, op: &str, r: Value) -> Result<Value, String
         _ => Err("Bilinmeyen Töre işlemi".into()),
     }
 }
-fn confirmed(disk: &store::Disk, r: &Value, intent: &str) -> Result<TransferDraft, String> {
+fn confirmed(disk: &store::Disk, r: &Value) -> Result<TransferDraft, String> {
     if r["confirmed"] != true {
         return Err("Bu tam önizleme için açık onay gerekli".into());
     }
@@ -457,7 +447,8 @@ fn confirmed(disk: &store::Disk, r: &Value, intent: &str) -> Result<TransferDraf
         .drafts
         .get(field(r, "draftId")?)
         .ok_or("Taslak bulunamadı")?;
-    if d.hash != field(r, "hash")? || d.intent != intent || d.status != "ready" {
+    // Drafts stored by older versions may carry a removed intent; they load but never run.
+    if d.hash != field(r, "hash")? || d.intent != "continue" || d.status != "ready" {
         return Err("Taslak değişmiş, izin geri çekilmiş veya işlem zaten başlatılmış; yeni önizleme hazırlayın".into());
     }
     policy::safe(d)?;
@@ -488,7 +479,7 @@ fn receipt(
 async fn send(s: Arc<Workspace>, r: Value) -> Result<Value, String> {
     let (draft, key) = {
         let mut disk = lock(&s.disk)?;
-        let d = confirmed(&disk, &r, "continue")?;
+        let d = confirmed(&disk, &r)?;
         let key = if d.mode == "live" {
             let k = lock(&s.key)?.clone();
             if k.is_empty() {

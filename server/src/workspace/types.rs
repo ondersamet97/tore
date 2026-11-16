@@ -54,7 +54,6 @@ pub struct TransferDraft {
     pub conversation_id: String,
     pub leaf_id: String,
     pub intent: String,
-    pub purpose: String,
     pub developer: String,
     pub model_id: String,
     pub mode: String,
@@ -80,13 +79,4 @@ pub struct TransferReceipt {
     pub usage: serde_json::Value,
     pub created_at: String,
     pub conversation_id: Option<String>,
-}
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DatasetPackage {
-    pub schema_version: u32,
-    pub package_id: String,
-    pub dataset_jsonl: String,
-    pub manifest: serde_json::Value,
-    pub readme: String,
 }

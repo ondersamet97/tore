@@ -1,5 +1,10 @@
 # Change log
 
+## 0.12.2 — Data-package tool removed (2026-11-16)
+
+- Remove the "Veri paketi" tool from Konuşmalarım: the `dataset` intent, the `export` operation and the `dataset.jsonl` / manifest / README package with a research or model-training purpose. töre no longer has any tool that turns conversations or notes into a dataset.
+- Continuing a conversation with another model (the `continue` intent) is unchanged. Drafts saved by older versions with the removed intent still load, are shown as no longer supported and cannot be executed.
+
 ## 0.12.1 — Open-source licence and a narrower scope (2026-11-16)
 
 - **Licence.** The original code is offered under the GNU Affero General Public License v3 (AGPL-3.0-only) from this version. A separate commercial licence is available from the owner for uses that cannot meet the AGPL terms. 0.11.0-rc.4 and 0.12.0 were offered under PolyForm Noncommercial 1.0.0; rights granted for those versions are not withdrawn.

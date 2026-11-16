@@ -48,7 +48,7 @@ async fn import(app: &Router) -> Conversation {
 }
 fn request(c: &Conversation, intent: &str, developer: &str) -> Value {
     let m = &c.messages[0];
-    json!({"conversationId":c.id,"leafId":c.selected_leaf_id.as_ref().unwrap_or(&m.id),"items":[{"messageId":m.id,"role":if m.role=="unknown"{"user"}else{m.role.as_str()},"text":"Gözden geçirilmiş [E-POSTA] metni","authorship":"human_original","rights":"user_attested","feedback":"Kullanıcı tercihi"}],"intent":intent,"purpose":"research","developer":developer,"modelId":"","mode":if intent=="dataset"{"manual"}else{"simulation"},"question":""})
+    json!({"conversationId":c.id,"leafId":c.selected_leaf_id.as_ref().unwrap_or(&m.id),"items":[{"messageId":m.id,"role":if m.role=="unknown"{"user"}else{m.role.as_str()},"text":"Gözden geçirilmiş [E-POSTA] metni","authorship":"human_original","rights":"user_attested","feedback":"Kullanıcı tercihi"}],"intent":intent,"developer":developer,"modelId":"","mode":"simulation","question":""})
 }
 #[tokio::test]
 async fn public_flow_isolates_consent_reopens_and_revokes() {
@@ -67,16 +67,6 @@ async fn public_flow_isolates_consent_reopens_and_revokes() {
             &app,
             "send",
             json!({"draftId":d["id"],"hash":d["hash"],"confirmed":false})
-        )
-        .await
-        .0,
-        StatusCode::BAD_REQUEST
-    );
-    assert_eq!(
-        call(
-            &app,
-            "export",
-            json!({"draftId":d["id"],"hash":d["hash"],"confirmed":true})
         )
         .await
         .0,
@@ -112,21 +102,8 @@ async fn public_flow_isolates_consent_reopens_and_revokes() {
     );
     let (_, unchanged) = call(&app, "conversation", json!({"id":c.id})).await;
     assert_eq!(unchanged, serde_json::to_value(&c).unwrap());
-    let (_, x) = call(&app, "prepare", request(&c, "dataset", "openai")).await;
+    let (_, x) = call(&app, "prepare", request(&c, "continue", "openai")).await;
     let d = &x["draft"];
-    let (status, pack) = call(
-        &app,
-        "export",
-        json!({"draftId":d["id"],"hash":d["hash"],"confirmed":true}),
-    )
-    .await;
-    assert_eq!(status, StatusCode::OK, "{pack}");
-    assert_eq!(
-        pack["manifest"]["consent"]["trainingPermissionGranted"],
-        false
-    );
-    assert!(!pack.to_string().contains("Seçilen insan mesajı"));
-    assert!(!pack.to_string().contains("/Users/"));
     assert_eq!(
         call(&app, "revoke", json!({"draftId":d["id"]})).await.0,
         StatusCode::OK
@@ -134,7 +111,7 @@ async fn public_flow_isolates_consent_reopens_and_revokes() {
     assert_eq!(
         call(
             &app,
-            "export",
+            "send",
             json!({"draftId":d["id"],"hash":d["hash"],"confirmed":true})
         )
         .await
@@ -233,7 +210,7 @@ async fn ten_families_simulation_and_redaction_guard() {
         "/Users/test/secret.txt",
         "C:\\Users\\test\\secret.txt",
     ] {
-        let mut r = request(&c, "dataset", "openai");
+        let mut r = request(&c, "continue", "openai");
         r["items"][0]["text"] = json!(secret);
         let (_, x) = call(&app, "prepare", r).await;
         assert!(!x["findings"].as_array().unwrap().is_empty(), "{secret}");
@@ -241,7 +218,7 @@ async fn ten_families_simulation_and_redaction_guard() {
         assert_eq!(
             call(
                 &app,
-                "export",
+                "send",
                 json!({"draftId":d["id"],"hash":d["hash"],"confirmed":true})
             )
             .await
@@ -253,7 +230,7 @@ async fn ten_families_simulation_and_redaction_guard() {
     std::fs::remove_dir_all(p).unwrap();
 }
 #[test]
-fn ai_authorship_and_training_cannot_be_promoted() {
+fn ai_authorship_cannot_be_promoted() {
     let c = Conversation {
         schema_version: 1,
         id: "c".into(),
@@ -279,12 +256,69 @@ fn ai_authorship_and_training_cannot_be_promoted() {
         }],
         warnings: vec![],
     };
-    let mut r = request(&c, "dataset", "openai");
+    let mut r = request(&c, "continue", "openai");
     assert!(policy::prepare(&c, serde_json::from_value(r.clone()).unwrap()).is_err());
     r["items"][0]["authorship"] = json!("ai_output");
+    assert!(policy::prepare(&c, serde_json::from_value(r).unwrap()).is_ok());
+}
+#[tokio::test]
+async fn dataset_intent_and_export_operation_are_removed() {
+    let p = dir();
+    let app = router(
+        p.clone(),
+        "test-token".into(),
+        "http://127.0.0.1:12345".into(),
+    )
+    .unwrap();
+    let c = import(&app).await;
+    let mut r = request(&c, "dataset", "openai");
+    r["mode"] = json!("manual");
+    let (status, out) = call(&app, "prepare", r).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(out["error"], "Taslak seçimi geçersiz");
+    let mut r = request(&c, "continue", "openai");
     r["purpose"] = json!("training");
-    let (d, _) = policy::prepare(&c, serde_json::from_value(r).unwrap()).unwrap();
-    assert!(policy::package(&d).is_err());
+    assert_eq!(call(&app, "prepare", r).await.0, StatusCode::BAD_REQUEST);
+    let (_, x) = call(&app, "prepare", request(&c, "continue", "openai")).await;
+    let d = x["draft"].clone();
+    assert!(d.get("purpose").is_none());
+    let (status, out) = call(
+        &app,
+        "export",
+        json!({"draftId":d["id"],"hash":d["hash"],"confirmed":true}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(out["error"], "Bilinmeyen Töre işlemi");
+    drop(app);
+    // A draft stored by an older version with the removed intent still loads but cannot run.
+    let file = p.join("workspace-v1.json");
+    let mut stored: Value = serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
+    let old = &mut stored["drafts"][d["id"].as_str().unwrap()];
+    old["intent"] = json!("dataset");
+    old["purpose"] = json!("training");
+    std::fs::write(&file, serde_json::to_vec(&stored).unwrap()).unwrap();
+    let app = router(
+        p.clone(),
+        "test-token".into(),
+        "http://127.0.0.1:12345".into(),
+    )
+    .unwrap();
+    let (status, list) = call(&app, "drafts", json!({})).await;
+    assert_eq!(status, StatusCode::OK, "{list}");
+    assert_eq!(list["drafts"][0]["intent"], "dataset");
+    assert_eq!(
+        call(
+            &app,
+            "send",
+            json!({"draftId":d["id"],"hash":d["hash"],"confirmed":true})
+        )
+        .await
+        .0,
+        StatusCode::BAD_REQUEST
+    );
+    drop(app);
+    std::fs::remove_dir_all(p).unwrap();
 }
 
 #[test]

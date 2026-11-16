@@ -31,7 +31,6 @@ pub struct Prepare {
     pub leaf_id: String,
     pub items: Vec<Item>,
     pub intent: String,
-    pub purpose: String,
     pub developer: String,
     pub model_id: String,
     pub mode: String,
@@ -57,8 +56,7 @@ pub fn findings(message_id: &str, text: &str) -> Vec<Value> {
 }
 pub fn prepare(c: &Conversation, r: Prepare) -> Result<(TransferDraft, Vec<Value>), String> {
     if r.conversation_id != c.id
-        || !matches!(r.intent.as_str(), "continue" | "dataset")
-        || !matches!(r.purpose.as_str(), "research" | "training")
+        || r.intent != "continue"
         || !matches!(r.mode.as_str(), "simulation" | "live" | "manual")
     {
         return Err("Taslak seçimi geçersiz".into());
@@ -68,9 +66,6 @@ pub fn prepare(c: &Conversation, r: Prepare) -> Result<(TransferDraft, Vec<Value
         .is_some_and(|a| a.iter().any(|d| d["id"] == r.developer))
     {
         return Err("Hedef geliştiriciyi seçin".into());
-    }
-    if r.intent == "dataset" && r.mode != "manual" {
-        return Err("Veri paketi bir model çağrısı değildir".into());
     }
     if r.model_id.len() > 200
         || (r.mode == "live" && r.model_id.trim().is_empty())
@@ -163,33 +158,14 @@ pub fn prepare(c: &Conversation, r: Prepare) -> Result<(TransferDraft, Vec<Value
             .unwrap_or(usize::MAX)
     });
     found.extend(findings("question", &r.question));
-    let context_text = messages
-        .iter()
-        .map(|m| {
-            format!(
-                "{}: {}{}",
-                if m.role == "user" {
-                    "Kullanıcı"
-                } else {
-                    "Asistan"
-                },
-                m.text,
-                if m.feedback.is_empty() {
-                    String::new()
-                } else {
-                    format!("\nKullanıcı inceleme notu: {}", m.feedback)
-                }
-            )
-        })
-        .chain((!r.question.is_empty()).then(|| format!("Yeni kullanıcı sorusu: {}", r.question)))
-        .collect::<Vec<_>>()
-        .join("\n\n");
     let mut warnings = vec![
         "Tarama tüm özel bilgileri bulamaz; anonimlik veya hak sahipliği doğrulaması değildir."
             .into(),
     ];
     if !found.is_empty() {
-        warnings.push("Bulunan özel bilgileri maskeleyip yeniden önizleyin; bu taslak gönderilemez veya paketlenemez.".into());
+        warnings.push(
+            "Bulunan özel bilgileri maskeleyip yeniden önizleyin; bu taslak gönderilemez.".into(),
+        );
     }
     let mut draft = TransferDraft {
         schema_version: 1,
@@ -198,12 +174,11 @@ pub fn prepare(c: &Conversation, r: Prepare) -> Result<(TransferDraft, Vec<Value
         conversation_id: c.id.clone(),
         leaf_id: r.leaf_id,
         intent: r.intent,
-        purpose: r.purpose,
         developer: r.developer,
         model_id: r.model_id,
         mode: r.mode,
         question: r.question,
-        context_text,
+        context_text: String::new(),
         messages,
         warnings,
         status: "ready".into(),
@@ -223,19 +198,17 @@ pub fn prepare(c: &Conversation, r: Prepare) -> Result<(TransferDraft, Vec<Value
                 .into(),
         );
     }
-    if draft.intent == "continue" {
-        draft.context_text = payload(&draft)
-            .iter()
-            .map(|m| {
-                format!(
-                    "{}:\n{}",
-                    m["role"].as_str().unwrap(),
-                    m["content"].as_str().unwrap()
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n\n");
-    }
+    draft.context_text = payload(&draft)
+        .iter()
+        .map(|m| {
+            format!(
+                "{}:\n{}",
+                m["role"].as_str().unwrap(),
+                m["content"].as_str().unwrap()
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n\n");
     draft.hash = digest(&serde_json::to_vec(&draft).map_err(|_| "Taslak kodlanamadı")?);
     Ok((draft, found))
 }
@@ -261,38 +234,6 @@ pub fn payload(d: &TransferDraft) -> Vec<Value> {
         out.push(json!({"role":"user","content":d.question}));
     }
     out
-}
-pub fn package(d: &TransferDraft) -> Result<DatasetPackage, String> {
-    if d.intent != "dataset" {
-        return Err("Konuşmaya devam izni veri paketi izni değildir".into());
-    }
-    safe(d)?;
-    if d.messages
-        .iter()
-        .any(|m| m.rights != "user_attested" || m.authorship == "unreviewed")
-    {
-        return Err("Her mesajın yazarlığını inceleyin ve hak durumunu ayrı beyan edin".into());
-    }
-    if d.purpose == "training" && d.messages.iter().any(|m| m.authorship != "human_original") {
-        return Err("Eğitim amaçlı bu demo paketi yalnız kullanıcıya ait olduğu beyan edilmiş özgün insan katkılarını alır".into());
-    }
-    let rows:Vec<Value>=d.messages.iter().map(|m|json!({"schemaVersion":1,"id":digest(m.id.as_bytes()),"sourceConversationId":digest(d.conversation_id.as_bytes()),"role":m.role,"text":m.text,"authorshipStatus":m.authorship,"rightsStatus":m.rights,"feedback":m.feedback,"reviewStatus":"user_reviewed","purpose":d.purpose})).collect();
-    let dataset = rows
-        .iter()
-        .map(|r| serde_json::to_string(r).unwrap())
-        .collect::<Vec<_>>()
-        .join("\n")
-        + "\n";
-    let package_id = id();
-    let manifest = json!({"schemaVersion":1,"packageId":package_id,"createdAt":now(),"datasetSha256":digest(dataset.as_bytes()),"recordCount":rows.len(),"sourceConversationIds":[digest(d.conversation_id.as_bytes())],"sourceMessageIds":d.messages.iter().map(|m|digest(m.id.as_bytes())).collect::<Vec<_>>(),"draftHash":d.hash,"purpose":d.purpose,"intendedDeveloper":d.developer,"note":d.question,"consent":{"type":"package_preparation_only","attestedBy":"local_user","legalRightsVerified":false,"trainingPermissionGranted":false,"saleOrDelivery":false},"licenseStatus":"no_license_granted_demo_only","masking":{"userReviewed":true,"automaticScan":"no_remaining_known_patterns","anonymityGuaranteed":false},"revocation":"Future transfers can be stopped in Töre; delivered copies and trained models cannot be recalled by this demo."});
-    let readme="# Töre teknik demo veri paketi\n\nBu paket satış, teslimat veya eğitim izni değildir. Kullanıcı beyanı hukuki doğrulama değildir.\n\n- dataset.jsonl: her satır seçilmiş, kullanıcı tarafından incelenmiş bir mesajdır. id ve sourceConversationId kaynak kimliğinin SHA-256 özetidir; role kaynak konuşmacıyı, text incelenmiş metni belirtir.\n- authorshipStatus: human_original / ai_output / third_party. rightsStatus=user_attested yalnız kullanıcının beyanıdır. feedback kullanıcının inceleme notudur; AI önerisi insan beyanına çevrilmez.\n- manifest.json: şema, amaç (research/training), kaynak özetleri, içerik özeti, maskeleme ve ayrı paket hazırlama izni.\n- Ekler, ham kaynak dosyaları, kaynak yolları, API anahtarı ve maskelenen özgün değerler bu paketin parçası değildir.\n\nSınırlamalar: otomatik tarama anonimlik sağlamaz; kişi ve kurum isimlerini kaçırabilir. AI/üçüncü kişi içeriği eğitim için otomatik uygun sayılmaz. İzin geri çekme yalnız gelecekteki işlemleri durdurur; teslim edilmiş kopya veya eğitilmiş modelin unutmasını sağlamaz.\n".to_string();
-    Ok(DatasetPackage {
-        schema_version: 1,
-        package_id,
-        dataset_jsonl: dataset,
-        manifest,
-        readme,
-    })
 }
 pub fn branch(d: &TransferDraft, text: String) -> Conversation {
     let conversation_id = id();

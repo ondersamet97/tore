@@ -11,7 +11,7 @@
 <body>
   <a class="skip-link" href="#workbench">Çalışma alanına geç</a>
   <header class="topbar">
-    <a class="brand" href="/calisma" aria-label="Töre çalışma alanı">töre<span class="brand-dot">.</span><span class="version">0.12.1</span></a>
+    <a class="brand" href="/calisma" aria-label="Töre çalışma alanı">töre<span class="brand-dot">.</span><span class="version">0.12.2</span></a>
     <nav aria-label="Ana gezinme"><a href="/konular">Konularım</a><a href="/dusunurler">Düşünürler</a><a href="/gorusler">Görüşlerim</a><a href="/calisma" aria-current="page">Konuşmalarım</a><a href="/arsiv">Arşiv</a></nav>
     <div class="header-actions"><span class="local-indicator"><span aria-hidden="true"></span>Yerel çalışma</span><button id="settings-toggle" class="quiet" aria-controls="settings-panel" aria-expanded="false">Bağlantı ayarları</button></div>
   </header>
@@ -46,8 +46,8 @@
         <h1>Bir konuşmadan<br>sonrakine, <em>senin seçiminle.</em></h1>
         <p>Farklı AI uygulamalarındaki konuşmalarını bir araya getir. Kaynağı ayır, özel bilgileri maskele ve yalnız seçtiğin bağlamla devam et.</p>
         <button id="welcome-import" class="primary">İlk konuşmanı ekle <span aria-hidden="true">↗</span></button>
-        <ol class="welcome-steps"><li><span>01</span>Konuşmanı içe aktar</li><li><span>02</span>Seç ve gözden geçir</li><li><span>03</span>Devam et veya paketle</li></ol>
-        <p class="fine-print">Teknik demo · İçe aktarma paylaşım izni vermez. Bir veri paketi oluşturmak veri satışı veya hak doğrulaması anlamına gelmez.</p>
+        <ol class="welcome-steps"><li><span>01</span>Konuşmanı içe aktar</li><li><span>02</span>Seç ve gözden geçir</li><li><span>03</span>Başka bir modelle devam et</li></ol>
+        <p class="fine-print">Teknik demo · İçe aktarma paylaşım izni vermez.</p>
       </section>
 
       <section id="conversation-workspace" hidden aria-labelledby="conversation-title">
@@ -73,29 +73,26 @@
 
           <aside class="destination-panel panel" aria-labelledby="destination-heading">
             <p class="eyebrow">03 / Bir sonraki adım</p><h2 id="destination-heading">Bağlamına yön ver.</h2>
-            <div class="intent-tabs" role="group" aria-label="Çalışmanın amacı"><button id="intent-continue" aria-pressed="true">Konuşmaya devam</button><button id="intent-dataset" aria-pressed="false">Veri paketi</button></div>
             <p id="intent-description" class="hint">Seçtiğin bağlamı ve yeni sorunu başka bir modele taşı. Yanıt ayrı bir dal olarak saklanır.</p>
             <label id="mode-field">Çalışma biçimi<select id="run-mode"><option value="live">Canlı · ücretsiz model</option><option value="simulation">Simülasyon · örnek yanıt</option><option value="manual">Elle aktar · kopyala / indir</option></select></label>
             <p id="mode-status" class="mode-status" role="status"></p>
             <label id="target-label">Hedef geliştirici<select id="target-developer"></select></label>
             <label id="model-field">Model<select id="target-model"><option value="">Önce kataloğu yenile</option></select></label>
             <p id="model-hint" class="hint"></p>
-            <div id="dataset-fields" hidden><label>Paketin kullanım amacı<select id="dataset-purpose"><option value="research">Araştırma</option><option value="training">Model eğitimi</option></select></label><p class="hint">Eğitim paketine AI çıktısı veya üçüncü kişi metni alınmaz. Her öğenin yazarlığı incelenmeli ve hak beyanı verilmelidir.</p></div>
             <label id="question-label">Yeni sorun<textarea id="target-question" rows="4" maxlength="4000" placeholder="Bu bağlamla neyi tartışmak istersin?"></textarea></label>
             <button id="prepare-draft" class="primary wide" disabled>Önizlemeyi hazırla <span aria-hidden="true">→</span></button><p id="prepare-hint" class="hint"></p><p id="action-error" class="inline-error" role="alert" hidden></p>
-            <div class="boundary-note"><span aria-hidden="true">◇</span><p>Önizleme oluşturmak gönderim yapmaz. Sonraki adımda metni, hedefi ve amacı ayrı onaylarsın.</p></div>
+            <div class="boundary-note"><span aria-hidden="true">◇</span><p>Önizleme oluşturmak gönderim yapmaz. Sonraki adımda metni, hedefi ve soruyu ayrı onaylarsın.</p></div>
           </aside>
         </div>
       </section>
 
       <section id="draft-panel" class="draft-panel panel" hidden aria-labelledby="draft-heading">
         <div class="section-heading"><div><p class="eyebrow">Son kontrol / Onayın bekleniyor</p><h2 id="draft-heading">Çıkacak metin tam olarak bu.</h2></div><span id="draft-mode" class="source-badge"></span></div>
-        <dl class="draft-facts"><div><dt>Amaç</dt><dd id="draft-purpose"></dd></div><div><dt>Hedef</dt><dd id="draft-target"></dd></div><div><dt>Taslak özeti</dt><dd><code id="draft-hash"></code></dd></div></dl>
-        <div class="draft-question"><h3>Soru / paket notu</h3><p id="draft-question"></p></div>
+        <dl class="draft-facts"><div><dt>Amaç</dt><dd id="draft-purpose">Konuşmaya devam</dd></div><div><dt>Hedef</dt><dd id="draft-target"></dd></div><div><dt>Taslak özeti</dt><dd><code id="draft-hash"></code></dd></div></dl>
+        <div class="draft-question"><h3>Soru</h3><p id="draft-question"></p></div>
         <pre id="draft-context" class="context-preview" tabindex="0"></pre>
         <div id="draft-warnings" class="notice" hidden></div>
         <label id="send-consent-label" class="check consent"><input type="checkbox" id="send-consent"><span id="send-consent-text"></span></label>
-        <label id="export-consent-label" class="check consent" hidden><input type="checkbox" id="export-consent"><span>Bu önizlemedeki metinleri, seçili amaç ve hedef için paketlemeyi onaylıyorum. Hak beyanlarım bana ait; bu paket bir lisans sözleşmesi veya hak doğrulaması değildir.</span></label>
         <div class="button-row"><button id="execute-draft" class="primary" disabled>Onayla ve devam et</button><button id="revoke-draft" class="quiet">Bu taslağın iznini geri çek</button></div><p id="draft-status" class="hint" role="status"></p>
       </section>
 

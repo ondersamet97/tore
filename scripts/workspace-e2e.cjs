@@ -130,7 +130,7 @@ async function start() {
         state.url = url.origin;
         state.token = ready.localToken;
         const status = await api('status');
-        assert.equal(status.version, '0.12.1');
+        assert.equal(status.version, '0.12.2');
         return status;
       }
     } catch (error) {
@@ -230,15 +230,15 @@ async function main() {
     assert.ok(original.messages.every(m => m.authorshipStatus === 'unreviewed'));
   });
 
-  function prepareRequest(developer, intent = 'continue', edits = {}) {
+  function prepareRequest(developer, edits = {}) {
     return {
       conversationId: original.id, leafId: selectedAnswer.id,
       items: [
         { messageId: userMessage.id, text: 'Bu teknik demoyu açıkla. [E-POSTA]', authorship: 'human_original', rights: 'user_attested', feedback: 'Sentetik kullanıcı notu' },
         { messageId: selectedAnswer.id, text: selectedAnswer.text, authorship: 'ai_output', rights: 'user_attested', feedback: '' },
       ],
-      intent, purpose: 'research', developer, modelId: '', mode: intent === 'dataset' ? 'manual' : 'simulation',
-      question: intent === 'dataset' ? '' : 'Seçilen bağlamı devam ettir.',
+      intent: 'continue', developer, modelId: '', mode: 'simulation',
+      question: 'Seçilen bağlamı devam ettir.',
       ...edits,
     };
   }
@@ -270,7 +270,6 @@ async function main() {
         await api('send', { ...confirm(preview.draft), confirmed: false }, 400);
         await api('send', { draftId: preview.draft.id, hash: preview.draft.hash }, 400);
         await api('send', { ...confirm(preview.draft), hash: 'changed-hash' }, 400);
-        await api('export', confirm(preview.draft), 400);
       }
       const sent = await api('send', confirm(preview.draft));
       assert.equal(sent.receipt.status, 'simulation');
@@ -294,43 +293,15 @@ async function main() {
     assert.ok(catalog.models.length >= 10);
   });
 
-  let packageDraft;
-  await step('separate_dataset_permission_and_three_files', async () => {
-    const preview = await api('prepare', prepareRequest('openai', 'dataset'));
-    packageDraft = preview.draft;
-    await api('send', confirm(packageDraft), 400);
-    await api('export', { ...confirm(packageDraft), confirmed: false }, 400);
-    const pack = await api('export', confirm(packageDraft));
-    const rows = pack.datasetJsonl.trim().split('\n').map(line => JSON.parse(line));
-    assert.equal(rows.length, 2);
-    assert.equal(rows[0].authorshipStatus, 'human_original');
-    assert.equal(rows[1].authorshipStatus, 'ai_output');
-    assert.equal(pack.manifest.recordCount, rows.length);
-    assert.equal(pack.manifest.datasetSha256, sha256(pack.datasetJsonl));
-    assert.equal(pack.manifest.consent.legalRightsVerified, false);
-    assert.equal(pack.manifest.consent.trainingPermissionGranted, false);
-    assert.equal(pack.manifest.consent.saleOrDelivery, false);
-    assert.equal(pack.manifest.licenseStatus, 'no_license_granted_demo_only');
-    const serialized = JSON.stringify(pack);
-    for (const excluded of [sourceEmail, otherBranch, hiddenThought, attachment, original.id, userMessage.id]) {
-      assert.ok(!serialized.includes(excluded), 'Package contains unselected, original or attachment data');
-    }
-    const output = path.join(temporaryRoot, 'export');
-    await fs.mkdir(output);
-    await fs.writeFile(path.join(output, 'dataset.jsonl'), pack.datasetJsonl);
-    await fs.writeFile(path.join(output, 'manifest.json'), JSON.stringify(pack.manifest, null, 2));
-    await fs.writeFile(path.join(output, 'README.md'), pack.readme);
-    assert.deepEqual((await fs.readdir(output)).sort(), ['README.md', 'dataset.jsonl', 'manifest.json']);
-    assert.equal(sha256(await fs.readFile(path.join(output, 'dataset.jsonl'))), pack.manifest.datasetSha256);
-    assert.ok((await fs.readFile(path.join(output, 'README.md'), 'utf8')).includes('teknik demo'));
-    return { fileCount: 3, recordCount: rows.length, datasetSha256: pack.manifest.datasetSha256 };
-  });
-
-  await step('training_rejects_ai_content_and_revocation_blocks_export', async () => {
-    const training = await api('prepare', prepareRequest('openai', 'dataset', { purpose: 'training' }));
-    await api('export', confirm(training.draft), 400);
-    assert.equal((await api('revoke', { draftId: packageDraft.id })).revoked, true);
-    await api('export', confirm(packageDraft), 400);
+  let revokedDraft;
+  await step('dataset_intent_and_export_removed_and_revocation_blocks_send', async () => {
+    await api('prepare', prepareRequest('openai', { intent: 'dataset', mode: 'manual' }), 400);
+    await api('prepare', prepareRequest('openai', { purpose: 'research' }), 400);
+    const preview = await api('prepare', prepareRequest('openai'));
+    revokedDraft = preview.draft;
+    await api('export', confirm(revokedDraft), 400);
+    assert.equal((await api('revoke', { draftId: revokedDraft.id })).revoked, true);
+    await api('send', confirm(revokedDraft), 400);
   });
 
   const fakeKey = `synthetic-e2e-never-persist-${randomUUID()}`;
@@ -356,8 +327,8 @@ async function main() {
     assert.deepEqual(saved.conversations.find(c => c.id === original.id), original);
     const history = await api('drafts');
     assert.equal(history.receipts.filter(r => r.status === 'simulation').length, simulationCount);
-    assert.equal(history.drafts.find(d => d.id === packageDraft.id).status, 'revoked');
-    await api('export', confirm(packageDraft), 400);
+    assert.equal(history.drafts.find(d => d.id === revokedDraft.id).status, 'revoked');
+    await api('send', confirm(revokedDraft), 400);
     return { restoredConversations: saved.conversations.length, restoredSimulationReceipts: simulationCount };
   });
   await step('final_graceful_shutdown', shutdown);

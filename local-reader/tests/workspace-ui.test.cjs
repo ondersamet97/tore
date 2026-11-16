@@ -41,7 +41,7 @@ async function setup(t, options={}) {
     if(options.failOp===op)return {ok:false,status:400,json:async()=>({error:'SENTETİK işlem hatası'})};
     let result;
     switch(op){
-      case 'status':result={version:'0.12.1',conversationCount:conversations.length,draftCount:drafts.length,keyConfigured:configured,budgetUsd:0,developers};break;
+      case 'status':result={version:'0.12.2',conversationCount:conversations.length,draftCount:drafts.length,keyConfigured:configured,budgetUsd:0,developers};break;
       case 'list':result={conversations};break;
       case 'conversation':result=conversations.find(c=>c.id===body.id);break;
       case 'catalog':result={models,source:body.refresh?'remote-test':'local-test',updatedAt:'2026-11-14T10:00:00Z',warnings:[]};break;
@@ -60,10 +60,6 @@ async function setup(t, options={}) {
         const d=drafts.find(d=>d.id===body.draftId); assert.equal(body.hash,d.hash); assert.equal(body.confirmed,true); d.status='sent';
         const c=d.mode==='manual'?null:conversation({id:'new-branch-'+sequence,title:'SENTETİK simülasyon dalı',selectedLeafId:'new-answer',messages:[message('new-answer','assistant','SİMÜLASYON — sentetik yanıt')],sourceApp:'tore'});
         if(c)conversations.push(c);const receipt={draftId:d.id,status:d.mode,mode:d.mode,developer:d.developer};receipts.push(receipt);result={conversation:c,receipt,contextText:d.contextText};break;
-      }
-      case 'export':{
-        const d=drafts.find(d=>d.id===body.draftId);assert.equal(d.intent,'dataset');assert.equal(body.hash,d.hash);assert.equal(body.confirmed,true);receipts.push({draftId:d.id,status:'packaged'});
-        result={packageId:'synthetic-package',datasetJsonl:d.items.map(item=>JSON.stringify({text:item.text,role:'user'})).join('\n')+'\n',manifest:{draftHash:d.hash,purpose:d.purpose,licenseStatus:'no_license_granted_demo_only'},readme:'# SENTETİK demo\nHak doğrulaması değildir.'};break;
       }
       case 'revoke':drafts.find(d=>d.id===body.draftId).status='revoked';result={revoked:true};break;
       default:throw Error('Beklenmeyen test isteği: '+op);
@@ -108,17 +104,18 @@ test('seçim ve maskeleme yalnız incelenen kopyayı etkiler; elle aktarım aç�
   assert.match(h.$('result-heading').textContent,/elle aktarmaya hazır/);await h.click(h.$('result-actions').querySelector('button'));assert.equal(h.w.copiedText,h.$('result-text').textContent);
 });
 
-test('amaç veya metin değişikliği eski onayı iptal eder; veri paketi ayrı hak ve paket onayı gerektirir',async t=>{
+test('metin değişikliği eski onayı iptal eder; çalışma alanı yalnız konuşmaya devam taslağı hazırlar',async t=>{
   const h=await setup(t,{conversation:{messages:[message('m1','user','SENTETİK temiz katkım')]}});await h.open();await h.check(h.card('m1').querySelector('input[type=checkbox]'));
+  for(const id of ['intent-continue','intent-dataset','dataset-fields','dataset-purpose','export-consent','export-consent-label'])assert.equal(h.$(id),null,id);
+  assert.doesNotMatch(h.w.document.body.textContent,/[Vv]eri paketi|paketle|[Mm]odel eğitimi/);
   h.change('run-mode','manual');h.change('target-question','Bu fikri aç.');await h.click('prepare-draft');await h.check('send-consent');assert.equal(h.$('execute-draft').disabled,false);
-  h.change(h.field('m1','text'),'SENTETİK düzeltilmiş katkım');assert.equal(h.$('draft-panel').hidden,true);assert.equal(h.$('send-consent').checked,false);
-  await h.click('intent-dataset');assert.equal(h.$('prepare-draft').disabled,true);
-  h.change(h.field('m1','authorship'),'human_original');h.change(h.field('m1','rights'),'user_attested');h.change('dataset-purpose','training');await h.click('prepare-draft');
-  const prepared=h.requests.filter(r=>r.op==='prepare').at(-1).body;assert.equal(prepared.intent,'dataset');assert.equal(prepared.purpose,'training');assert.equal(prepared.mode,'manual');
-  assert.equal(h.$('send-consent-label').hidden,true);assert.equal(h.$('export-consent-label').hidden,false);assert.equal(h.$('export-consent').checked,false);assert.equal(h.$('execute-draft').disabled,true);
-  await h.check('export-consent');await h.click('execute-draft');assert.equal(h.requests.filter(r=>r.op==='export').length,1);assert.equal(h.requests.filter(r=>r.op==='send').length,0);
-  const downloads=[...h.$('result-actions').querySelectorAll('button')];assert.equal(downloads.length,3);for(const b of downloads)await h.click(b);
-  assert.deepEqual(h.downloads.map(d=>d.name),['dataset.jsonl','manifest.json','README.md']);assert.match(await h.blobs[0].text(),/düzeltilmiş/);assert.match(await h.blobs[1].text(),/no_license_granted_demo_only/);
+  h.change(h.field('m1','text'),'SENTETİK düzeltilmiş katkım');assert.equal(h.$('draft-panel').hidden,true);assert.equal(h.$('send-consent').checked,false);assert.equal(h.$('prepare-draft').disabled,false);
+  await h.click('prepare-draft');const prepared=h.requests.filter(r=>r.op==='prepare').at(-1).body;
+  assert.equal(prepared.intent,'continue');assert.equal('purpose' in prepared,false);assert.equal(prepared.mode,'manual');assert.equal(prepared.items[0].text,'SENTETİK düzeltilmiş katkım');
+  assert.equal(h.$('draft-purpose').textContent,'Konuşmaya devam');assert.equal(h.$('execute-draft').disabled,true);
+  await h.check('send-consent');await h.click('execute-draft');assert.equal(h.requests.filter(r=>r.op==='send').length,1);assert.equal(h.requests.some(r=>r.op==='export'),false);
+  const actions=[...h.$('result-actions').querySelectorAll('button')];assert.equal(actions.length,2);await h.click(actions[1]);
+  assert.deepEqual(h.downloads.map(d=>d.name),['tore-devam-baglami.txt']);assert.match(await h.blobs[0].text(),/düzeltilmiş/);
   const draftId=h.drafts.at(-1).id;await h.click('revoke-'+draftId);assert.equal(h.requests.at(-2).op,'revoke');assert.equal(h.$('result-actions').children.length,0);assert.match(h.$('result-status').textContent,/geri çağrılamaz/);
 });
 
@@ -190,7 +187,6 @@ test('sistem ve araç kayıtları aktarılmaz; AI yanıtının insan beyanı se�
   const h=await setup(t,{conversation:{messages:[message('sys','system','SENTETİK talimat'),message('m1','user','SENTETİK kullanıcı','sys'),message('m2','assistant','SENTETİK AI','m1')]}});await h.open();
   assert.equal(h.card('sys').querySelector('input[type=checkbox]').disabled,true);await h.check(h.card('m2').querySelector('input[type=checkbox]'));
   assert.equal(h.field('m2','authorship').querySelector('[value=human_original]').disabled,true);
-  h.change(h.field('m2','authorship'),'ai_output');h.change(h.field('m2','rights'),'user_attested');await h.click('intent-dataset');h.change('dataset-purpose','training');assert.equal(h.$('prepare-draft').disabled,true);assert.match(h.$('prepare-hint').textContent,/yalnız insan/);
 });
 
 test('hizmet hataları inline görünür; başarısız işlem başarı ekranı üretmez',async t=>{
