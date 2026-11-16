@@ -19,6 +19,8 @@ I do a lot of my thinking in conversations with AI tools. Those conversations pr
 
 töre is my attempt to answer that question for myself first, with my own conversations, and then for anyone else who works the same way.
 
+I use it on my own archive. In a check on 14 November 2026 it held 365 of my own conversations from ChatGPT, Claude and Codex, about 10,000 messages. Those are one person's records, not a user count.
+
 ## What I hold to
 
 - **My words, the source and the AI's interpretation stay separate.** An AI suggestion never becomes my view on its own.
