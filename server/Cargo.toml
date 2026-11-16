@@ -1,0 +1,39 @@
+[package]
+name = "tore-server"
+version = "0.12.0"
+edition = "2024"
+publish = false
+license = "PolyForm-Noncommercial-1.0.0"
+
+[dependencies]
+tore-core = { path = "../core" }
+axum = "=0.8.9"
+tokio = { version = "=1.54.1", features = ["macros", "rt-multi-thread", "net", "sync", "signal", "process", "time"] }
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.145"
+ed25519-dalek = "=2.2.0"
+base64 = "=0.22.1"
+chrono = { version = "=0.4.42", default-features = false, features = ["clock", "std"] }
+uuid = { version = "=1.18.1", features = ["v4"] }
+sha2 = "=0.10.9"
+fs2 = "=0.4.3"
+libc = "=0.2.191"
+reqwest = { version = "=0.12.24", default-features = false, features = ["rustls-tls"] }
+jsonwebtoken = { version = "=9.3.1", default-features = false }
+quick-xml = "=0.38.3"
+url = "=2.5.7"
+axum-server = { version = "=0.7.3", features = ["tls-rustls-no-provider"] }
+rustls = { version = "=0.23.35", default-features = false, features = ["ring", "std", "tls12"] }
+
+zip = { version = "2.4.2", default-features = false, features = ["deflate"] }
+zstd = "0.13.3"
+regex = "1.12.2"
+
+[profile.release]
+lto = true
+opt-level = "s"
+strip = true
+
+[dev-dependencies]
+tower = { version = "=0.5.3", features = ["util"] }
+http-body-util = "=0.1.5"

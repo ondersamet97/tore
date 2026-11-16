@@ -1,0 +1,20 @@
+.timer{font:600 20px/1 Georgia,serif;color:var(--muted);font-variant-numeric:tabular-nums}.timer.over{color:var(--danger)}
+.field-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+#dream-review hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+#dream-review h2{font-size:23px;margin-top:22px}
+.code-groups{display:grid;gap:14px;margin:14px 0 26px}
+.code-group{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.code-group legend{font-size:12px;font-weight:650;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:0;margin-bottom:8px;width:100%}
+.chip{display:inline-flex;align-items:center;gap:6px;margin:0;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--white);font-weight:450;cursor:pointer}
+.chip:has(input:checked){border-color:var(--green);background:var(--wash)}
+.chip input{accent-color:var(--green);margin:0}
+.badge.suggested{background:#e8eef7;border-color:#c8d4e6;color:#3b5577}
+.badge.consent{background:#e3eedd;border-color:#b7c9ae;color:var(--green)}
+.name-list{display:grid;gap:6px;margin:10px 0 14px}
+.name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.name-row strong{min-width:110px}
+.name-row button{padding:5px 9px;font-size:13px;border-color:var(--line)}
+.dream-card h3{font-family:Georgia,serif;font-size:17px;font-weight:400}
+.small-gap{margin:12px 0 0}
+@media(max-width:880px){.field-grid.four{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.field-grid.four{grid-template-columns:1fr}.name-row strong{min-width:0;width:100%}}

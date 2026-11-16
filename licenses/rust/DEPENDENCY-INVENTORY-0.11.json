@@ -1,0 +1,2119 @@
+{
+  "date": "2026-11-15",
+  "serverLockSha256": "dc5a3f7789b170da03097a83d3264e5b3c6c5302050133886b1407792d5522a0",
+  "coreLockSha256": "43d8d31ce6bedc33ed9108ea64692a879c36d866e8af983184bf2036987f1ff7",
+  "scope": "All registry packages locked by server; core registry packages are a subset. Active graph is the host macOS normal/build graph, not an all-target binary bill of materials.",
+  "packages": [
+    {
+      "package": "adler2",
+      "version": "2.0.1",
+      "declaredLicense": "0BSD OR MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/adler2-2.0.1/LICENSE-0BSD",
+        "licenses/rust/adler2-2.0.1/LICENSE-APACHE",
+        "licenses/rust/adler2-2.0.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "aho-corasick",
+      "version": "1.1.5",
+      "declaredLicense": "Unlicense OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/aho-corasick-1.1.5/COPYING",
+        "licenses/rust/aho-corasick-1.1.5/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "android_system_properties",
+      "version": "0.1.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/android_system_properties-0.1.6/LICENSE-APACHE",
+        "licenses/rust/android_system_properties-0.1.6/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "arbitrary",
+      "version": "1.5.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/arbitrary-1.5.0/LICENSE-APACHE",
+        "licenses/rust/arbitrary-1.5.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "arc-swap",
+      "version": "1.9.5",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/arc-swap-1.9.5/LICENSE-APACHE",
+        "licenses/rust/arc-swap-1.9.5/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "atomic-waker",
+      "version": "1.1.2",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/atomic-waker-1.1.2/LICENSE-APACHE",
+        "licenses/rust/atomic-waker-1.1.2/LICENSE-MIT",
+        "licenses/rust/atomic-waker-1.1.2/LICENSE-THIRD-PARTY"
+      ]
+    },
+    {
+      "package": "autocfg",
+      "version": "1.5.1",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/autocfg-1.5.1/LICENSE-APACHE",
+        "licenses/rust/autocfg-1.5.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "axum",
+      "version": "0.8.9",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/axum-0.8.9/LICENSE"
+      ]
+    },
+    {
+      "package": "axum-core",
+      "version": "0.5.6",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/axum-core-0.5.6/LICENSE"
+      ]
+    },
+    {
+      "package": "axum-server",
+      "version": "0.7.3",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/axum-server-0.7.3/LICENSE"
+      ]
+    },
+    {
+      "package": "base64",
+      "version": "0.22.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/base64-0.22.1/LICENSE-APACHE",
+        "licenses/rust/base64-0.22.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "base64",
+      "version": "0.23.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/base64-0.23.1/LICENSE-APACHE",
+        "licenses/rust/base64-0.23.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "base64ct",
+      "version": "1.8.3",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/base64ct-1.8.3/LICENSE-APACHE",
+        "licenses/rust/base64ct-1.8.3/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "bitflags",
+      "version": "2.13.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/bitflags-2.13.2/LICENSE-APACHE",
+        "licenses/rust/bitflags-2.13.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "block-buffer",
+      "version": "0.10.4",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/block-buffer-0.10.4/LICENSE-APACHE",
+        "licenses/rust/block-buffer-0.10.4/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "bumpalo",
+      "version": "3.20.4",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/bumpalo-3.20.4/LICENSE-APACHE",
+        "licenses/rust/bumpalo-3.20.4/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "bytes",
+      "version": "1.12.1",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/bytes-1.12.1/LICENSE"
+      ]
+    },
+    {
+      "package": "cc",
+      "version": "1.11.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/cc-1.11.2/LICENSE-APACHE",
+        "licenses/rust/cc-1.11.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "cfg-if",
+      "version": "1.0.5",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/cfg-if-1.0.5/LICENSE-APACHE",
+        "licenses/rust/cfg-if-1.0.5/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "cfg_aliases",
+      "version": "0.2.2",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/cfg_aliases-0.2.2/LICENSE",
+        "licenses/rust/cfg_aliases-0.2.2/NOTICES.md"
+      ]
+    },
+    {
+      "package": "chacha20",
+      "version": "0.10.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/chacha20-0.10.2/LICENSE-APACHE",
+        "licenses/rust/chacha20-0.10.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "chrono",
+      "version": "0.4.42",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/chrono-0.4.42/LICENSE.txt"
+      ]
+    },
+    {
+      "package": "const-oid",
+      "version": "0.9.6",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/const-oid-0.9.6/LICENSE-APACHE",
+        "licenses/rust/const-oid-0.9.6/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "core-foundation-sys",
+      "version": "0.8.7",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/core-foundation-sys-0.8.7/LICENSE-APACHE",
+        "licenses/rust/core-foundation-sys-0.8.7/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "cpufeatures",
+      "version": "0.2.17",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/cpufeatures-0.2.17/LICENSE-APACHE",
+        "licenses/rust/cpufeatures-0.2.17/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "cpufeatures",
+      "version": "0.3.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/cpufeatures-0.3.1/LICENSE-APACHE",
+        "licenses/rust/cpufeatures-0.3.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "crc32fast",
+      "version": "1.5.5",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/crc32fast-1.5.5/LICENSE-APACHE",
+        "licenses/rust/crc32fast-1.5.5/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "crossbeam-utils",
+      "version": "0.8.23",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/crossbeam-utils-0.8.23/LICENSE-APACHE",
+        "licenses/rust/crossbeam-utils-0.8.23/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "crypto-common",
+      "version": "0.1.7",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/crypto-common-0.1.7/LICENSE-APACHE",
+        "licenses/rust/crypto-common-0.1.7/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "curve25519-dalek",
+      "version": "4.1.3",
+      "declaredLicense": "BSD-3-Clause",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/curve25519-dalek-4.1.3/LICENSE"
+      ]
+    },
+    {
+      "package": "curve25519-dalek-derive",
+      "version": "0.1.1",
+      "declaredLicense": "MIT/Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/curve25519-dalek-derive-0.1.1/LICENSE-APACHE",
+        "licenses/rust/curve25519-dalek-derive-0.1.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "der",
+      "version": "0.7.10",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/der-0.7.10/LICENSE-APACHE",
+        "licenses/rust/der-0.7.10/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "derive_arbitrary",
+      "version": "1.5.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/derive_arbitrary-1.5.0/LICENSE-APACHE",
+        "licenses/rust/derive_arbitrary-1.5.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "digest",
+      "version": "0.10.7",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/digest-0.10.7/LICENSE-APACHE",
+        "licenses/rust/digest-0.10.7/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "displaydoc",
+      "version": "0.2.7",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/displaydoc-0.2.7/LICENSE-APACHE",
+        "licenses/rust/displaydoc-0.2.7/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "ed25519",
+      "version": "2.2.3",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/ed25519-2.2.3/LICENSE-APACHE",
+        "licenses/rust/ed25519-2.2.3/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "ed25519-dalek",
+      "version": "2.2.0",
+      "declaredLicense": "BSD-3-Clause",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/ed25519-dalek-2.2.0/LICENSE"
+      ]
+    },
+    {
+      "package": "equivalent",
+      "version": "1.0.3",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/equivalent-1.0.3/LICENSE-APACHE",
+        "licenses/rust/equivalent-1.0.3/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "errno",
+      "version": "0.3.15",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/errno-0.3.15/LICENSE-APACHE",
+        "licenses/rust/errno-0.3.15/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "fiat-crypto",
+      "version": "0.2.9",
+      "declaredLicense": "MIT OR Apache-2.0 OR BSD-1-Clause",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/fiat-crypto-0.2.9/COPYRIGHT",
+        "licenses/rust/fiat-crypto-0.2.9/LICENSE-APACHE",
+        "licenses/rust/fiat-crypto-0.2.9/LICENSE-BSD-1",
+        "licenses/rust/fiat-crypto-0.2.9/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "find-msvc-tools",
+      "version": "0.1.15",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/find-msvc-tools-0.1.15/LICENSE-APACHE",
+        "licenses/rust/find-msvc-tools-0.1.15/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "flate2",
+      "version": "1.1.11",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/flate2-1.1.11/LICENSE-APACHE",
+        "licenses/rust/flate2-1.1.11/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "fnv",
+      "version": "1.0.7",
+      "declaredLicense": "Apache-2.0 / MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/fnv-1.0.7/LICENSE-APACHE",
+        "licenses/rust/fnv-1.0.7/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "form_urlencoded",
+      "version": "1.2.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/form_urlencoded-1.2.2/LICENSE-APACHE",
+        "licenses/rust/form_urlencoded-1.2.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "fs-err",
+      "version": "3.3.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/fs-err-3.3.2/LICENSE-APACHE",
+        "licenses/rust/fs-err-3.3.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "fs2",
+      "version": "0.4.3",
+      "declaredLicense": "MIT/Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/fs2-0.4.3/LICENSE-APACHE",
+        "licenses/rust/fs2-0.4.3/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "futures-channel",
+      "version": "0.3.34",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/futures-channel-0.3.34/LICENSE-APACHE",
+        "licenses/rust/futures-channel-0.3.34/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "futures-core",
+      "version": "0.3.34",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/futures-core-0.3.34/LICENSE-APACHE",
+        "licenses/rust/futures-core-0.3.34/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "futures-sink",
+      "version": "0.3.34",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/futures-sink-0.3.34/LICENSE-APACHE",
+        "licenses/rust/futures-sink-0.3.34/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "futures-task",
+      "version": "0.3.34",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/futures-task-0.3.34/LICENSE-APACHE",
+        "licenses/rust/futures-task-0.3.34/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "futures-util",
+      "version": "0.3.34",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/futures-util-0.3.34/LICENSE-APACHE",
+        "licenses/rust/futures-util-0.3.34/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "generic-array",
+      "version": "0.14.7",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/generic-array-0.14.7/LICENSE"
+      ]
+    },
+    {
+      "package": "getrandom",
+      "version": "0.2.17",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/getrandom-0.2.17/LICENSE-APACHE",
+        "licenses/rust/getrandom-0.2.17/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "getrandom",
+      "version": "0.3.4",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/getrandom-0.3.4/LICENSE-APACHE",
+        "licenses/rust/getrandom-0.3.4/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "getrandom",
+      "version": "0.4.3",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/getrandom-0.4.3/LICENSE-APACHE",
+        "licenses/rust/getrandom-0.4.3/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "h2",
+      "version": "0.4.20",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/h2-0.4.20/LICENSE"
+      ]
+    },
+    {
+      "package": "hashbrown",
+      "version": "0.17.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/hashbrown-0.17.1/LICENSE-APACHE",
+        "licenses/rust/hashbrown-0.17.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "http",
+      "version": "1.5.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/http-1.5.0/LICENSE-APACHE",
+        "licenses/rust/http-1.5.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "http-body",
+      "version": "1.1.0",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/http-body-1.1.0/LICENSE"
+      ]
+    },
+    {
+      "package": "http-body-util",
+      "version": "0.1.5",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/http-body-util-0.1.5/LICENSE"
+      ]
+    },
+    {
+      "package": "httparse",
+      "version": "1.10.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/httparse-1.10.1/LICENSE-APACHE",
+        "licenses/rust/httparse-1.10.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "httpdate",
+      "version": "1.0.3",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/httpdate-1.0.3/LICENSE-APACHE",
+        "licenses/rust/httpdate-1.0.3/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "hyper",
+      "version": "1.12.0",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/hyper-1.12.0/LICENSE"
+      ]
+    },
+    {
+      "package": "hyper-rustls",
+      "version": "0.27.10",
+      "declaredLicense": "Apache-2.0 OR ISC OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/hyper-rustls-0.27.10/LICENSE-APACHE",
+        "licenses/rust/hyper-rustls-0.27.10/LICENSE-ISC",
+        "licenses/rust/hyper-rustls-0.27.10/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "hyper-util",
+      "version": "0.1.21",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/hyper-util-0.1.21/LICENSE"
+      ]
+    },
+    {
+      "package": "iana-time-zone",
+      "version": "0.1.65",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/iana-time-zone-0.1.65/LICENSE-APACHE",
+        "licenses/rust/iana-time-zone-0.1.65/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "iana-time-zone-haiku",
+      "version": "0.1.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/iana-time-zone-haiku-0.1.2/LICENSE-APACHE",
+        "licenses/rust/iana-time-zone-haiku-0.1.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "icu_collections",
+      "version": "2.4.0",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/icu_collections-2.4.0/LICENSE"
+      ]
+    },
+    {
+      "package": "icu_locale_core",
+      "version": "2.4.0",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/icu_locale_core-2.4.0/LICENSE"
+      ]
+    },
+    {
+      "package": "icu_normalizer",
+      "version": "2.4.0",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/icu_normalizer-2.4.0/LICENSE"
+      ]
+    },
+    {
+      "package": "icu_normalizer_data",
+      "version": "2.4.0",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/icu_normalizer_data-2.4.0/LICENSE"
+      ]
+    },
+    {
+      "package": "icu_properties",
+      "version": "2.4.0",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/icu_properties-2.4.0/LICENSE"
+      ]
+    },
+    {
+      "package": "icu_properties_data",
+      "version": "2.4.0",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/icu_properties_data-2.4.0/LICENSE"
+      ]
+    },
+    {
+      "package": "icu_provider",
+      "version": "2.4.0",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/icu_provider-2.4.0/LICENSE"
+      ]
+    },
+    {
+      "package": "idna",
+      "version": "1.1.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/idna-1.1.0/LICENSE-APACHE",
+        "licenses/rust/idna-1.1.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "idna_adapter",
+      "version": "1.2.2",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/idna_adapter-1.2.2/LICENSE-APACHE",
+        "licenses/rust/idna_adapter-1.2.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "indexmap",
+      "version": "2.14.2",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/indexmap-2.14.2/LICENSE-APACHE",
+        "licenses/rust/indexmap-2.14.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "ipnet",
+      "version": "2.12.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/ipnet-2.12.2/LICENSE-APACHE",
+        "licenses/rust/ipnet-2.12.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "itoa",
+      "version": "1.0.19",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/itoa-1.0.19/LICENSE-APACHE",
+        "licenses/rust/itoa-1.0.19/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "jobserver",
+      "version": "0.1.35",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/jobserver-0.1.35/LICENSE-APACHE",
+        "licenses/rust/jobserver-0.1.35/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "js-sys",
+      "version": "0.3.82",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/js-sys-0.3.82/LICENSE-APACHE",
+        "licenses/rust/js-sys-0.3.82/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "jsonwebtoken",
+      "version": "9.3.1",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/jsonwebtoken-9.3.1/LICENSE"
+      ]
+    },
+    {
+      "package": "libc",
+      "version": "0.2.191",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/libc-0.2.191/LICENSE-APACHE",
+        "licenses/rust/libc-0.2.191/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "litemap",
+      "version": "0.8.3",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/litemap-0.8.3/LICENSE"
+      ]
+    },
+    {
+      "package": "log",
+      "version": "0.4.35",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/log-0.4.35/LICENSE-APACHE",
+        "licenses/rust/log-0.4.35/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "lru-slab",
+      "version": "0.1.3",
+      "declaredLicense": "MIT OR Apache-2.0 OR Zlib",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/lru-slab-0.1.3/LICENSE-APACHE",
+        "licenses/rust/lru-slab-0.1.3/LICENSE-MIT",
+        "licenses/rust/lru-slab-0.1.3/LICENSE-ZLIB"
+      ]
+    },
+    {
+      "package": "matchit",
+      "version": "0.8.4",
+      "declaredLicense": "MIT AND BSD-3-Clause",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/matchit-0.8.4/LICENSE",
+        "licenses/rust/matchit-0.8.4/LICENSE.httprouter"
+      ]
+    },
+    {
+      "package": "memchr",
+      "version": "2.8.3",
+      "declaredLicense": "Unlicense OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/memchr-2.8.3/COPYING",
+        "licenses/rust/memchr-2.8.3/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "mime",
+      "version": "0.3.18",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/mime-0.3.18/LICENSE-APACHE",
+        "licenses/rust/mime-0.3.18/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "miniz_oxide",
+      "version": "0.9.1",
+      "declaredLicense": "MIT OR Zlib OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/miniz_oxide-0.9.1/LICENSE",
+        "licenses/rust/miniz_oxide-0.9.1/LICENSE-APACHE.md",
+        "licenses/rust/miniz_oxide-0.9.1/LICENSE-MIT.md",
+        "licenses/rust/miniz_oxide-0.9.1/LICENSE-ZLIB.md"
+      ]
+    },
+    {
+      "package": "mio",
+      "version": "1.2.5",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/mio-1.2.5/LICENSE"
+      ]
+    },
+    {
+      "package": "num-traits",
+      "version": "0.2.19",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/num-traits-0.2.19/LICENSE-APACHE",
+        "licenses/rust/num-traits-0.2.19/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "once_cell",
+      "version": "1.21.4",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/once_cell-1.21.4/LICENSE-APACHE",
+        "licenses/rust/once_cell-1.21.4/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "percent-encoding",
+      "version": "2.3.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/percent-encoding-2.3.2/LICENSE-APACHE",
+        "licenses/rust/percent-encoding-2.3.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "pin-project-lite",
+      "version": "0.2.17",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/pin-project-lite-0.2.17/LICENSE-APACHE",
+        "licenses/rust/pin-project-lite-0.2.17/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "pkcs8",
+      "version": "0.10.2",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/pkcs8-0.10.2/LICENSE-APACHE",
+        "licenses/rust/pkcs8-0.10.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "pkg-config",
+      "version": "0.3.34",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/pkg-config-0.3.34/LICENSE-APACHE",
+        "licenses/rust/pkg-config-0.3.34/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "potential_utf",
+      "version": "0.1.6",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/potential_utf-0.1.6/LICENSE"
+      ]
+    },
+    {
+      "package": "proc-macro2",
+      "version": "1.0.107",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/proc-macro2-1.0.107/LICENSE-APACHE",
+        "licenses/rust/proc-macro2-1.0.107/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "quick-xml",
+      "version": "0.38.3",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/quick-xml-0.38.3/LICENSE-MIT.md"
+      ]
+    },
+    {
+      "package": "quinn",
+      "version": "0.11.12",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/quinn-0.11.12/LICENSE-APACHE",
+        "licenses/rust/quinn-0.11.12/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "quinn-proto",
+      "version": "0.11.19",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/quinn-proto-0.11.19/LICENSE-APACHE",
+        "licenses/rust/quinn-proto-0.11.19/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "quinn-udp",
+      "version": "0.5.16",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/quinn-udp-0.5.16/LICENSE-APACHE",
+        "licenses/rust/quinn-udp-0.5.16/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "quote",
+      "version": "1.0.47",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/quote-1.0.47/LICENSE-APACHE",
+        "licenses/rust/quote-1.0.47/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "r-efi",
+      "version": "5.3.0",
+      "declaredLicense": "MIT OR Apache-2.0 OR LGPL-2.1-or-later",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/r-efi-5.3.0/AUTHORS"
+      ]
+    },
+    {
+      "package": "r-efi",
+      "version": "6.0.0",
+      "declaredLicense": "MIT OR Apache-2.0 OR LGPL-2.1-or-later",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/r-efi-6.0.0/AUTHORS"
+      ]
+    },
+    {
+      "package": "rand",
+      "version": "0.10.3",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/rand-0.10.3/COPYRIGHT",
+        "licenses/rust/rand-0.10.3/LICENSE-APACHE",
+        "licenses/rust/rand-0.10.3/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "rand_core",
+      "version": "0.6.4",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/rand_core-0.6.4/COPYRIGHT",
+        "licenses/rust/rand_core-0.6.4/LICENSE-APACHE",
+        "licenses/rust/rand_core-0.6.4/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "rand_core",
+      "version": "0.10.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/rand_core-0.10.1/COPYRIGHT",
+        "licenses/rust/rand_core-0.10.1/LICENSE-APACHE",
+        "licenses/rust/rand_core-0.10.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "rand_pcg",
+      "version": "0.10.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/rand_pcg-0.10.2/COPYRIGHT",
+        "licenses/rust/rand_pcg-0.10.2/LICENSE-APACHE",
+        "licenses/rust/rand_pcg-0.10.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "regex",
+      "version": "1.13.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/regex-1.13.1/LICENSE-APACHE",
+        "licenses/rust/regex-1.13.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "regex-automata",
+      "version": "0.4.18",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/regex-automata-0.4.18/LICENSE-APACHE",
+        "licenses/rust/regex-automata-0.4.18/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "regex-syntax",
+      "version": "0.8.11",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/regex-syntax-0.8.11/LICENSE-APACHE",
+        "licenses/rust/regex-syntax-0.8.11/LICENSE-MIT",
+        "licenses/rust/regex-syntax-0.8.11/src/unicode_tables/LICENSE-UNICODE"
+      ]
+    },
+    {
+      "package": "reqwest",
+      "version": "0.12.24",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/reqwest-0.12.24/LICENSE-APACHE",
+        "licenses/rust/reqwest-0.12.24/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "ring",
+      "version": "0.17.14",
+      "declaredLicense": "Apache-2.0 AND ISC",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/ring-0.17.14/LICENSE",
+        "licenses/rust/ring-0.17.14/LICENSE-BoringSSL",
+        "licenses/rust/ring-0.17.14/LICENSE-other-bits"
+      ]
+    },
+    {
+      "package": "rustc-hash",
+      "version": "2.1.3",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/rustc-hash-2.1.3/LICENSE-APACHE",
+        "licenses/rust/rustc-hash-2.1.3/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "rustc_version",
+      "version": "0.4.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/rustc_version-0.4.1/LICENSE-APACHE",
+        "licenses/rust/rustc_version-0.4.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "rustls",
+      "version": "0.23.35",
+      "declaredLicense": "Apache-2.0 OR ISC OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/rustls-0.23.35/LICENSE-APACHE",
+        "licenses/rust/rustls-0.23.35/LICENSE-ISC",
+        "licenses/rust/rustls-0.23.35/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "rustls-pemfile",
+      "version": "2.2.0",
+      "declaredLicense": "Apache-2.0 OR ISC OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/rustls-pemfile-2.2.0/LICENSE",
+        "licenses/rust/rustls-pemfile-2.2.0/LICENSE-APACHE",
+        "licenses/rust/rustls-pemfile-2.2.0/LICENSE-ISC",
+        "licenses/rust/rustls-pemfile-2.2.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "rustls-pki-types",
+      "version": "1.16.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/rustls-pki-types-1.16.0/LICENSE-APACHE",
+        "licenses/rust/rustls-pki-types-1.16.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "rustls-webpki",
+      "version": "0.103.17",
+      "declaredLicense": "ISC",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/rustls-webpki-0.103.17/LICENSE"
+      ]
+    },
+    {
+      "package": "rustversion",
+      "version": "1.0.23",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/rustversion-1.0.23/LICENSE-APACHE",
+        "licenses/rust/rustversion-1.0.23/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "ryu",
+      "version": "1.0.23",
+      "declaredLicense": "Apache-2.0 OR BSL-1.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/ryu-1.0.23/LICENSE-APACHE",
+        "licenses/rust/ryu-1.0.23/LICENSE-BOOST"
+      ]
+    },
+    {
+      "package": "semver",
+      "version": "1.0.28",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/semver-1.0.28/LICENSE-APACHE",
+        "licenses/rust/semver-1.0.28/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "serde",
+      "version": "1.0.228",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/serde-1.0.228/LICENSE-APACHE",
+        "licenses/rust/serde-1.0.228/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "serde_core",
+      "version": "1.0.228",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/serde_core-1.0.228/LICENSE-APACHE",
+        "licenses/rust/serde_core-1.0.228/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "serde_derive",
+      "version": "1.0.228",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/serde_derive-1.0.228/LICENSE-APACHE",
+        "licenses/rust/serde_derive-1.0.228/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "serde_json",
+      "version": "1.0.145",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/serde_json-1.0.145/LICENSE-APACHE",
+        "licenses/rust/serde_json-1.0.145/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "serde_path_to_error",
+      "version": "0.1.20",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/serde_path_to_error-0.1.20/LICENSE-APACHE",
+        "licenses/rust/serde_path_to_error-0.1.20/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "serde_urlencoded",
+      "version": "0.7.1",
+      "declaredLicense": "MIT/Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/serde_urlencoded-0.7.1/LICENSE-APACHE",
+        "licenses/rust/serde_urlencoded-0.7.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "sha2",
+      "version": "0.10.9",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/sha2-0.10.9/LICENSE-APACHE",
+        "licenses/rust/sha2-0.10.9/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "shlex",
+      "version": "2.0.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/shlex-2.0.1/LICENSE-APACHE",
+        "licenses/rust/shlex-2.0.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "signal-hook-registry",
+      "version": "1.4.8",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/signal-hook-registry-1.4.8/LICENSE-APACHE",
+        "licenses/rust/signal-hook-registry-1.4.8/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "signature",
+      "version": "2.2.0",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/signature-2.2.0/LICENSE-APACHE",
+        "licenses/rust/signature-2.2.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "simd-adler32",
+      "version": "0.3.10",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/simd-adler32-0.3.10/LICENSE.md"
+      ]
+    },
+    {
+      "package": "slab",
+      "version": "0.4.12",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/slab-0.4.12/LICENSE"
+      ]
+    },
+    {
+      "package": "smallvec",
+      "version": "1.16.5",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/smallvec-1.16.5/LICENSE-APACHE",
+        "licenses/rust/smallvec-1.16.5/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "socket2",
+      "version": "0.6.5",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/socket2-0.6.5/LICENSE-APACHE",
+        "licenses/rust/socket2-0.6.5/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "spki",
+      "version": "0.7.3",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/spki-0.7.3/LICENSE-APACHE",
+        "licenses/rust/spki-0.7.3/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "stable_deref_trait",
+      "version": "1.2.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/stable_deref_trait-1.2.1/LICENSE-APACHE",
+        "licenses/rust/stable_deref_trait-1.2.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "subtle",
+      "version": "2.6.1",
+      "declaredLicense": "BSD-3-Clause",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/subtle-2.6.1/LICENSE"
+      ]
+    },
+    {
+      "package": "syn",
+      "version": "2.0.119",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/syn-2.0.119/LICENSE-APACHE",
+        "licenses/rust/syn-2.0.119/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "syn",
+      "version": "3.0.10",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/syn-3.0.10/LICENSE-APACHE",
+        "licenses/rust/syn-3.0.10/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "sync_wrapper",
+      "version": "1.0.2",
+      "declaredLicense": "Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/sync_wrapper-1.0.2/LICENSE"
+      ]
+    },
+    {
+      "package": "synstructure",
+      "version": "0.14.0",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/synstructure-0.14.0/LICENSE"
+      ]
+    },
+    {
+      "package": "thiserror",
+      "version": "2.0.21",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/thiserror-2.0.21/LICENSE-APACHE",
+        "licenses/rust/thiserror-2.0.21/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "thiserror-impl",
+      "version": "2.0.21",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/thiserror-impl-2.0.21/LICENSE-APACHE",
+        "licenses/rust/thiserror-impl-2.0.21/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "tinystr",
+      "version": "0.8.5",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tinystr-0.8.5/LICENSE"
+      ]
+    },
+    {
+      "package": "tinyvec",
+      "version": "1.13.3",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/tinyvec-1.13.3/LICENSE-APACHE.md",
+        "licenses/rust/tinyvec-1.13.3/LICENSE-MIT.md",
+        "licenses/rust/tinyvec-1.13.3/LICENSE-ZLIB.md"
+      ]
+    },
+    {
+      "package": "tokio",
+      "version": "1.54.1",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tokio-1.54.1/LICENSE"
+      ]
+    },
+    {
+      "package": "tokio-macros",
+      "version": "2.7.2",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tokio-macros-2.7.2/LICENSE"
+      ]
+    },
+    {
+      "package": "tokio-rustls",
+      "version": "0.26.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tokio-rustls-0.26.6/LICENSE-APACHE",
+        "licenses/rust/tokio-rustls-0.26.6/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "tokio-util",
+      "version": "0.7.20",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tokio-util-0.7.20/LICENSE"
+      ]
+    },
+    {
+      "package": "tower",
+      "version": "0.5.3",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tower-0.5.3/LICENSE"
+      ]
+    },
+    {
+      "package": "tower-http",
+      "version": "0.6.11",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tower-http-0.6.11/LICENSE"
+      ]
+    },
+    {
+      "package": "tower-layer",
+      "version": "0.3.3",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tower-layer-0.3.3/LICENSE"
+      ]
+    },
+    {
+      "package": "tower-service",
+      "version": "0.3.3",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tower-service-0.3.3/LICENSE"
+      ]
+    },
+    {
+      "package": "tracing",
+      "version": "0.1.44",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tracing-0.1.44/LICENSE"
+      ]
+    },
+    {
+      "package": "tracing-core",
+      "version": "0.1.36",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/tracing-core-0.1.36/LICENSE"
+      ]
+    },
+    {
+      "package": "try-lock",
+      "version": "0.2.5",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/try-lock-0.2.5/LICENSE"
+      ]
+    },
+    {
+      "package": "typenum",
+      "version": "1.20.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/typenum-1.20.1/LICENSE",
+        "licenses/rust/typenum-1.20.1/LICENSE-APACHE",
+        "licenses/rust/typenum-1.20.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "unicode-ident",
+      "version": "1.0.27",
+      "declaredLicense": "(MIT OR Apache-2.0) AND Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/unicode-ident-1.0.27/LICENSE-APACHE",
+        "licenses/rust/unicode-ident-1.0.27/LICENSE-MIT",
+        "licenses/rust/unicode-ident-1.0.27/LICENSE-UNICODE"
+      ]
+    },
+    {
+      "package": "untrusted",
+      "version": "0.9.0",
+      "declaredLicense": "ISC",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/untrusted-0.9.0/LICENSE.txt"
+      ]
+    },
+    {
+      "package": "url",
+      "version": "2.5.7",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/url-2.5.7/LICENSE-APACHE",
+        "licenses/rust/url-2.5.7/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "utf8_iter",
+      "version": "1.1.0",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/utf8_iter-1.1.0/COPYRIGHT",
+        "licenses/rust/utf8_iter-1.1.0/LICENSE-APACHE",
+        "licenses/rust/utf8_iter-1.1.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "utf_types",
+      "version": "1.0.0",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/utf_types-1.0.0/COPYRIGHT",
+        "licenses/rust/utf_types-1.0.0/LICENSE-APACHE",
+        "licenses/rust/utf_types-1.0.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "uuid",
+      "version": "1.18.1",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/uuid-1.18.1/LICENSE-APACHE",
+        "licenses/rust/uuid-1.18.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "version_check",
+      "version": "0.9.5",
+      "declaredLicense": "MIT/Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/version_check-0.9.5/LICENSE-APACHE",
+        "licenses/rust/version_check-0.9.5/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "want",
+      "version": "0.3.2",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/want-0.3.2/LICENSE"
+      ]
+    },
+    {
+      "package": "wasi",
+      "version": "0.11.1+wasi-snapshot-preview1",
+      "declaredLicense": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/wasi-0.11.1+wasi-snapshot-preview1/LICENSE-APACHE",
+        "licenses/rust/wasi-0.11.1+wasi-snapshot-preview1/LICENSE-Apache-2.0_WITH_LLVM-exception",
+        "licenses/rust/wasi-0.11.1+wasi-snapshot-preview1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "wasip2",
+      "version": "1.0.4+wasi-0.2.12",
+      "declaredLicense": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/wasip2-1.0.4+wasi-0.2.12/LICENSE-APACHE",
+        "licenses/rust/wasip2-1.0.4+wasi-0.2.12/LICENSE-Apache-2.0_WITH_LLVM-exception",
+        "licenses/rust/wasip2-1.0.4+wasi-0.2.12/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "wasm-bindgen",
+      "version": "0.2.105",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/wasm-bindgen-0.2.105/LICENSE-APACHE",
+        "licenses/rust/wasm-bindgen-0.2.105/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "wasm-bindgen-futures",
+      "version": "0.4.55",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/wasm-bindgen-futures-0.4.55/LICENSE-APACHE",
+        "licenses/rust/wasm-bindgen-futures-0.4.55/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "wasm-bindgen-macro",
+      "version": "0.2.105",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/wasm-bindgen-macro-0.2.105/LICENSE-APACHE",
+        "licenses/rust/wasm-bindgen-macro-0.2.105/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "wasm-bindgen-macro-support",
+      "version": "0.2.105",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/wasm-bindgen-macro-support-0.2.105/LICENSE-APACHE",
+        "licenses/rust/wasm-bindgen-macro-support-0.2.105/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "wasm-bindgen-shared",
+      "version": "0.2.105",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/wasm-bindgen-shared-0.2.105/LICENSE-APACHE",
+        "licenses/rust/wasm-bindgen-shared-0.2.105/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "web-sys",
+      "version": "0.3.82",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/web-sys-0.3.82/LICENSE-APACHE",
+        "licenses/rust/web-sys-0.3.82/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "web-time",
+      "version": "1.1.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/web-time-1.1.0/LICENSE-APACHE",
+        "licenses/rust/web-time-1.1.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "webpki-roots",
+      "version": "1.0.12",
+      "declaredLicense": "CDLA-Permissive-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/webpki-roots-1.0.12/LICENSE"
+      ]
+    },
+    {
+      "package": "winapi",
+      "version": "0.3.9",
+      "declaredLicense": "MIT/Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/winapi-0.3.9/LICENSE-APACHE",
+        "licenses/rust/winapi-0.3.9/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "winapi-i686-pc-windows-gnu",
+      "version": "0.4.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/winapi-i686-pc-windows-gnu-0.4.0/COPYRIGHT-HEADER",
+        "licenses/rust/winapi-i686-pc-windows-gnu-0.4.0/LICENSE-APACHE",
+        "licenses/rust/winapi-i686-pc-windows-gnu-0.4.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "winapi-x86_64-pc-windows-gnu",
+      "version": "0.4.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/winapi-x86_64-pc-windows-gnu-0.4.0/COPYRIGHT-HEADER",
+        "licenses/rust/winapi-x86_64-pc-windows-gnu-0.4.0/LICENSE-APACHE",
+        "licenses/rust/winapi-x86_64-pc-windows-gnu-0.4.0/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "windows-core",
+      "version": "0.62.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows-core-0.62.2/license-apache-2.0",
+        "licenses/rust/windows-core-0.62.2/license-mit"
+      ]
+    },
+    {
+      "package": "windows-implement",
+      "version": "0.60.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows-implement-0.60.2/license-apache-2.0",
+        "licenses/rust/windows-implement-0.60.2/license-mit"
+      ]
+    },
+    {
+      "package": "windows-interface",
+      "version": "0.59.3",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows-interface-0.59.3/license-apache-2.0",
+        "licenses/rust/windows-interface-0.59.3/license-mit"
+      ]
+    },
+    {
+      "package": "windows-link",
+      "version": "0.2.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows-link-0.2.1/license-apache-2.0",
+        "licenses/rust/windows-link-0.2.1/license-mit"
+      ]
+    },
+    {
+      "package": "windows-result",
+      "version": "0.4.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows-result-0.4.1/license-apache-2.0",
+        "licenses/rust/windows-result-0.4.1/license-mit"
+      ]
+    },
+    {
+      "package": "windows-strings",
+      "version": "0.5.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows-strings-0.5.1/license-apache-2.0",
+        "licenses/rust/windows-strings-0.5.1/license-mit"
+      ]
+    },
+    {
+      "package": "windows-sys",
+      "version": "0.52.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows-sys-0.52.0/license-apache-2.0",
+        "licenses/rust/windows-sys-0.52.0/license-mit"
+      ]
+    },
+    {
+      "package": "windows-sys",
+      "version": "0.61.2",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows-sys-0.61.2/license-apache-2.0",
+        "licenses/rust/windows-sys-0.61.2/license-mit"
+      ]
+    },
+    {
+      "package": "windows-targets",
+      "version": "0.52.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows-targets-0.52.6/license-apache-2.0",
+        "licenses/rust/windows-targets-0.52.6/license-mit"
+      ]
+    },
+    {
+      "package": "windows_aarch64_gnullvm",
+      "version": "0.52.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows_aarch64_gnullvm-0.52.6/license-apache-2.0",
+        "licenses/rust/windows_aarch64_gnullvm-0.52.6/license-mit"
+      ]
+    },
+    {
+      "package": "windows_aarch64_msvc",
+      "version": "0.52.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows_aarch64_msvc-0.52.6/license-apache-2.0",
+        "licenses/rust/windows_aarch64_msvc-0.52.6/license-mit"
+      ]
+    },
+    {
+      "package": "windows_i686_gnu",
+      "version": "0.52.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows_i686_gnu-0.52.6/license-apache-2.0",
+        "licenses/rust/windows_i686_gnu-0.52.6/license-mit"
+      ]
+    },
+    {
+      "package": "windows_i686_gnullvm",
+      "version": "0.52.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows_i686_gnullvm-0.52.6/license-apache-2.0",
+        "licenses/rust/windows_i686_gnullvm-0.52.6/license-mit"
+      ]
+    },
+    {
+      "package": "windows_i686_msvc",
+      "version": "0.52.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows_i686_msvc-0.52.6/license-apache-2.0",
+        "licenses/rust/windows_i686_msvc-0.52.6/license-mit"
+      ]
+    },
+    {
+      "package": "windows_x86_64_gnu",
+      "version": "0.52.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows_x86_64_gnu-0.52.6/license-apache-2.0",
+        "licenses/rust/windows_x86_64_gnu-0.52.6/license-mit"
+      ]
+    },
+    {
+      "package": "windows_x86_64_gnullvm",
+      "version": "0.52.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows_x86_64_gnullvm-0.52.6/license-apache-2.0",
+        "licenses/rust/windows_x86_64_gnullvm-0.52.6/license-mit"
+      ]
+    },
+    {
+      "package": "windows_x86_64_msvc",
+      "version": "0.52.6",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/windows_x86_64_msvc-0.52.6/license-apache-2.0",
+        "licenses/rust/windows_x86_64_msvc-0.52.6/license-mit"
+      ]
+    },
+    {
+      "package": "wit-bindgen",
+      "version": "0.57.1",
+      "declaredLicense": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": false,
+      "noticeFiles": [
+        "licenses/rust/wit-bindgen-0.57.1/LICENSE-APACHE",
+        "licenses/rust/wit-bindgen-0.57.1/LICENSE-Apache-2.0_WITH_LLVM-exception",
+        "licenses/rust/wit-bindgen-0.57.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "writeable",
+      "version": "0.6.4",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/writeable-0.6.4/LICENSE"
+      ]
+    },
+    {
+      "package": "yoke",
+      "version": "0.8.4",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/yoke-0.8.4/LICENSE"
+      ]
+    },
+    {
+      "package": "yoke-derive",
+      "version": "0.8.4",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/yoke-derive-0.8.4/LICENSE"
+      ]
+    },
+    {
+      "package": "zerofrom",
+      "version": "0.1.8",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zerofrom-0.1.8/LICENSE"
+      ]
+    },
+    {
+      "package": "zerofrom-derive",
+      "version": "0.1.8",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zerofrom-derive-0.1.8/LICENSE"
+      ]
+    },
+    {
+      "package": "zeroize",
+      "version": "1.9.1",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zeroize-1.9.1/LICENSE-APACHE",
+        "licenses/rust/zeroize-1.9.1/LICENSE-MIT"
+      ]
+    },
+    {
+      "package": "zerotrie",
+      "version": "0.2.5",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zerotrie-0.2.5/LICENSE"
+      ]
+    },
+    {
+      "package": "zerovec",
+      "version": "0.11.9",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zerovec-0.11.9/LICENSE"
+      ]
+    },
+    {
+      "package": "zerovec-derive",
+      "version": "0.11.7",
+      "declaredLicense": "Unicode-3.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zerovec-derive-0.11.7/LICENSE"
+      ]
+    },
+    {
+      "package": "zip",
+      "version": "2.6.1",
+      "declaredLicense": "MIT",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zip-2.6.1/LICENSE"
+      ]
+    },
+    {
+      "package": "zopfli",
+      "version": "0.8.4",
+      "declaredLicense": "Apache-2.0",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zopfli-0.8.4/COPYING"
+      ]
+    },
+    {
+      "package": "zstd",
+      "version": "0.13.5",
+      "declaredLicense": "BSD-3-Clause",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zstd-0.13.5/LICENSE"
+      ]
+    },
+    {
+      "package": "zstd-safe",
+      "version": "7.4.1",
+      "declaredLicense": "BSD-3-Clause",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zstd-safe-7.4.1/LICENSE"
+      ]
+    },
+    {
+      "package": "zstd-sys",
+      "version": "2.1.3+zstd.1.5.7",
+      "declaredLicense": "BSD-3-Clause AND BSD-2-Clause",
+      "activeInAuditedMacNormalBuildGraph": true,
+      "noticeFiles": [
+        "licenses/rust/zstd-sys-2.1.3+zstd.1.5.7/LICENSE",
+        "licenses/rust/zstd-sys-2.1.3+zstd.1.5.7/LICENSE.BSD-2-Clause",
+        "licenses/rust/zstd-sys-2.1.3+zstd.1.5.7/LICENSE.BSD-3-Clause",
+        "licenses/rust/zstd-sys-2.1.3+zstd.1.5.7/zstd/COPYING",
+        "licenses/rust/zstd-sys-2.1.3+zstd.1.5.7/zstd/LICENSE"
+      ]
+    }
+  ]
+}

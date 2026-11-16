@@ -1,0 +1,12 @@
+# Two-to-three-minute synthetic demo
+
+Start with `bash Preview.command`. This opens a separate `.preview-data` store. Do not use personal exports for this demonstration. The topic is a fictional neighbourhood library; the example is not the developer's opinion.
+
+1. **0:00–0:35 — Import and select.** Open **Konuşmalarım**, choose **Başka bir uygulamadan metin**, then **Töre konuşma dosyası** and import `fixtures/return-topic.json`. Select the preview conversation. Beside the user's Saturday-opening message choose **Alıntıdan görüş, karar veya soru oluştur**.
+2. **0:35–1:05 — Make a source-linked decision.** Create a topic called **SENTETİK kitaplık**. Select the exact source quote and create a **Karar** candidate. Review it, correct the wording to a two-Saturday trial, add a reason, explicitly mark it reviewed/adopted/current, and choose a work priority. The original quote and speaker remain visible.
+3. **1:05–1:35 — Return to the topic.** Open **Kaldığım yer**. The adopted current decision appears with its reason. Add the volunteer-hours sentence as an **Açık soru**. A question stays a question; selecting or answering it does not close it. Mark the decision superseded to see it leave current decisions; open its history, then explicitly restore current status if wanted.
+4. **1:35–2:10 — Continue manually.** Select the reviewed/current decision and open question. Choose a destination such as ChatGPT and prepare the full context. Review the text, source IDs, original speakers and destination. Only then allow copying. No provider is contacted. To keep this demonstration offline, do not paste into an external service.
+5. **2:10–2:40 — Bring a response back.** Paste `SENTETİK AI yorumu: iki haftadan sonra katılımı yeniden inceleyin.` as plain text, confirm that it is AI output and save. Convert only a selected excerpt to a new candidate. It is labelled AI material and starts unadopted. For the failure case, paste `{broken` with JSON selected; the error and original text remain available for correction.
+6. **2:40–3:00 — Verify persistence.** Create a local backup. Stop the preview process with Ctrl-C and start `Preview.command` again. Open the same topic and inspect the decision revision and saved AI commentary. Existing opinion cards are available separately; migration is an explicit maintenance action with a preview and backup.
+
+This script demonstrates local behaviour, not model intelligence, a working OAuth account or a public launch. No real conversation, screenshot of personal data, paid request or local model is needed.

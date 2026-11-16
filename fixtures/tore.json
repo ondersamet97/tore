@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "synthetic-tore-demo",
+  "provider": "generic",
+  "sourceApp": "Sentetik genel örnek",
+  "sourceConversationId": "synthetic-tore-demo",
+  "title": "Sentetik Töre — haklar yeniden incelenir",
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:01:00Z",
+  "selectedLeafId": "assistant-example",
+  "messages": [
+    {"id":"human-example","sourceId":"human-example","parentId":null,"role":"user","phase":null,"text":"Yapay test metni: Bu cümleyi istersem düzenleyip seçebilmeliyim.","attachments":[],"timestamp":"2026-01-01T00:00:00Z","sourceLocator":"fixture#human","authorshipStatus":"human_original"},
+    {"id":"assistant-example","sourceId":"assistant-example","parentId":"human-example","role":"assistant","phase":"final_answer","model":"synthetic-model","text":"Yapay asistan yanıtı: Dosyadaki önceki yazarlık etiketi otomatik onay sayılmamalı.","attachments":[],"timestamp":"2026-01-01T00:01:00Z","sourceLocator":"fixture#assistant","authorshipStatus":"ai_output"}
+  ],
+  "warnings": []
+}

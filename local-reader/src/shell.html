@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="{{CSP}}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Töre 0.12.0 — Raporlar ve düşünce profilleri</title>
+<style>{{STYLE}}</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><h1>Töre</h1><span class="version">0.12.0</span></div>
+  <p class="tagline">Raporlarınız, kaynaklarınız ve düşünceleriniz.</p>
+  <div class="toolbar">
+    <button id="choose">Veri klasörünü seç</button>
+    <button id="upload" class="primary" disabled>Rapor yükle</button>
+    <span id="folder">Henüz bir veri klasörü seçilmedi</span>
+    <details class="actions"><summary>Arşiv işlemleri</summary><div class="action-menu">
+      <button id="trash" disabled>Çöp kutusu</button>
+      <button id="backup" disabled>Yedek al</button>
+      <button id="restore" disabled>Yedekten geri yükle</button>
+    </div></details>
+  </div>
+  <nav class="main-nav" aria-label="Ana gezinme"><a href="/calisma">AI çalışma alanı</a><button id="nav-reports" aria-current="page">Raporlar</button><button id="nav-self">Profilim</button><button id="nav-thinkers">Düşünürler</button><button id="nav-comparisons">Özel karşılaştırmalar</button><button id="native-stop" hidden>Uygulamayı kapat</button><a href="/ag" class="network-link" id="network-link" hidden>Ağ</a><a href="/kaynaklar" class="network-link" id="sources-link" hidden>Kaynaklar</a><a href="/yardimci" class="network-link" id="assistant-link" hidden>Yerel yardımcı</a><a href="/entegrasyonlar" class="network-link" id="integration-link" hidden>Notion ve Beyin</a><a href="/video" class="network-link" id="video-link" hidden>Video</a></nav>
+</header>
+<p id="status" class="status" role="status" aria-live="polite">Dosyalar yalnızca seçtiğiniz yerel klasöre kaydedilir. Başlamak için veri klasörünü seçin.</p>
+<button id="recover-reading" hidden>Önceki sağlam okuma kaydını kurtar</button>
+<button id="recover" hidden>Önceki sağlam arşiv kaydını kurtar</button>
+<button id="recover-comparisons" hidden>Önceki sağlam karşılaştırma kaydını kurtar</button>
+<button id="recover-profiles" hidden>Önceki sağlam profil kaydını kurtar</button>
+<main class="layout" id="reports-pane">
+  <aside class="sidebar" id="dropzone" aria-label="Rapor arşivi">
+    <label class="search-label" for="search">Başlıkta ve rapor metninde ara</label>
+    <input id="search" type="search" placeholder="Kelime ara…" disabled autocomplete="off" spellcheck="false">
+    <div class="list-heading"><h2 id="listTitle">Raporlar</h2><span id="count">0</span></div>
+    <div id="list"><p class="empty">Arşivi açmak için veri klasörünüzü seçin.</p></div>
+    <p class="drop-hint">Yalnızca .md dosyaları.<br>Dosyaları bu pencereye sürükleyip bırakabilirsiniz.</p>
+  </aside>
+  <section class="reading" id="reading" aria-label="Rapor okuyucu">
+    <div id="welcome">
+      <h2>Düşüncelere yeniden<br>yer açın.</h2>
+      <p>Töre, Markdown raporlarınızı bilgisayarınızdaki bir klasörde saklar. Başlamak için boş bir veri klasörü oluşturup seçin; mevcut bir arşiviniz varsa onun klasörünü açın.</p>
+      <ol><li><strong>Veri klasörünü seçin.</strong> Chrome’un düzenleme iznini verin.</li><li><strong>Rapor yükleyin.</strong> .md dosyasının özgün kopyası arşive eklenir.</li><li><strong>Bulun ve okuyun.</strong> Başlıkta ve içerikte arama yapın.</li></ol>
+      <p class="note">Her açılışta klasörü yeniden seçmeniz gerekir. Bu, raporları yeniden yüklemek değildir. Töre.html ile veri klasörü birbirinden bağımsızdır. Profilim ve Düşünürler alanlarında kaynaklı görüşlerinizi düzenleyebilirsiniz. Yapay zekâ sohbetinizden rapor üretmek için teori yeteneğini ayrıca kullanabilirsiniz.</p>
+    </div>
+    <header id="readerHeader" hidden>
+      <h2 id="reportTitle"></h2><p id="reportMeta"></p>
+      <div class="reader-actions"><button id="download" disabled>MD indir</button><button id="rename" disabled>Başlığı değiştir</button><button id="remove" disabled>Kaldır</button></div>
+    </header>
+    <nav id="toc" aria-label="İçindekiler" hidden></nav>
+    <article id="article"></article>
+  </section>
+</main>
+<main id="profiles-pane" class="profiles-workspace" hidden>
+  <aside class="profiles-sidebar">
+    <h2 id="profiles-title">Profilim</h2>
+    <p id="profiles-description" class="muted"></p>
+    <button id="profile-create-self" class="primary">Profilimi oluştur</button>
+    <button id="profile-create-thinker" class="primary" hidden>Düşünür ekle</button>
+    <div id="profile-list" class="profile-list"></div>
+    <section id="template-section" hidden><h3>Başlangıç koleksiyonu</h3><p class="muted small">Kaynaklı, düzenlenebilir derlemeler. Yalnızca seçtiğiniz profil arşivinize eklenir.</p><div id="templates"></div></section>
+  </aside>
+  <section class="profile-detail">
+    <div id="profile-empty" class="empty">Profilinizi açmak için önce veri klasörünüzü seçin.</div>
+    <section id="profile-current" hidden>
+      <header class="profile-heading"><div><p id="profile-type" class="eyebrow"></p><h2 id="profile-display-name"></h2><p id="profile-display-bio" class="multiline"></p><p id="profile-attribution" class="muted small"></p></div><div class="profile-actions"><button id="profile-edit">Profili düzenle</button><button id="view-add" class="primary">Görüş ekle</button></div></header>
+      <details id="profile-source-details"><summary>Profilin kaynakları</summary><div id="profile-display-sources"></div></details>
+      <p class="profile-guide">Geçmiş, düşünsel miras hakkındaki değerlendirmenizdir. Önceki görüş sürümleri kartlardaki <strong>Değişim kaydı</strong> altında saklanır. Her alanı doldurmanız gerekmez.</p>
+      <div id="profile-columns" class="profile-columns"></div>
+    </section>
+  </section>
+</main>
+<main id="comparisons-pane" class="profiles-workspace" hidden>
+<header class="profile-heading"><h2>Özel karşılaştırmalar</h2><p>Profilinizin ve düşünürlerin güncel ya da geçmiş görüş sürümlerini seçin. Ortak soruyu, alıntıları ve değerlendirmenizi siz yazarsınız; sistem ortak zemin veya çelişki üretmez. Kayıtlar yalnız seçili veri klasöründedir.</p><p class="note">Davetli ağ üstteki Ağ bağlantısındadır. Burada kaydetmek, profil veya karşılaştırma yayımlamak değildir; okuyucu internetsiz çalışır.</p></header>
+<form id="comparison-form" class="comparison-form"><input id="cmp-id" type="hidden"><div class="comparison-sides">
+<section><label>Sol görüşün sabit sürümü<select id="cmp-left" required></select></label><div id="cmp-left-preview"></div><button id="cmp-left-capture" type="button">Seçili sol metni alıntıya al</button><label>Sol metinden birebir alıntı<textarea id="cmp-left-evidence" required rows="3"></textarea></label></section>
+<section><label>Sağ görüşün sabit sürümü<select id="cmp-right" required></select></label><div id="cmp-right-preview"></div><button id="cmp-right-capture" type="button">Seçili sağ metni alıntıya al</button><label>Sağ metinden birebir alıntı<textarea id="cmp-right-evidence" required rows="3"></textarea></label></section></div>
+<label>Karşılaştırdığınız ortak soru<input id="cmp-question" required maxlength="1000"></label><label>Sizin sınıflandırdığınız ayrışma türü<select id="cmp-category" required></select></label><label>Ortak zemin — belirlediyseniz<textarea id="cmp-shared" rows="3"></textarea></label><label>Ayrışma — belirlediyseniz<textarea id="cmp-difference" rows="3"></textarea></label><label>Açık sorular — varsa her satıra bir soru<textarea id="cmp-open" rows="3"></textarea></label><label id="cmp-reason-label" hidden>Düzenleme gerekçesi<textarea id="cmp-reason" rows="2"></textarea></label><p id="cmp-form-error" class="error" role="alert"></p><button id="cmp-save" type="submit">Özel karşılaştırmayı kaydet</button><button id="cmp-reset" type="button">Yeni karşılaştırma / düzenlemeden vazgeç</button></form>
+<h2>Kaydedilen değerlendirmeler</h2><div id="comparison-list"></div></main>
+<dialog id="profile-dialog" aria-labelledby="profile-dialog-title">
+  <form id="profile-form">
+    <div class="dialog-heading"><h2 id="profile-dialog-title">Profil oluştur</h2><button id="profile-dialog-close" type="button">Vazgeç</button></div>
+    <input id="profile-id" type="hidden"><input id="profile-kind" type="hidden">
+    <label>Ad<input id="profile-name" required maxlength="180" autocomplete="off"></label>
+    <label>Kısa tanıtım<textarea id="profile-bio" rows="3" maxlength="10000"></textarea></label>
+    <label id="profile-editor-label">Derlemeyi hazırlayan<input id="profile-editor" maxlength="180" autocomplete="off"></label>
+    <p id="profile-editor-note" class="small muted">Düşünür profili, tarihsel kişinin kendi hesabı değildir. Eserlere dayanan bir editör derlemesidir.</p>
+    <fieldset><legend>Kaynaklar</legend><p class="small muted">Kaynağın adını ve bir HTTP/HTTPS bağlantısını veya arşivdeki raporu seçin. Düşünür derlemelerinde kaynak zorunludur.</p><div id="profile-source-rows"></div><button type="button" id="source-add">Kaynak ekle</button></fieldset>
+    <p id="profile-form-error" class="form-error" role="alert"></p><button type="submit" id="profile-save" class="primary">Profili kaydet</button>
+  </form>
+</dialog>
+<dialog id="view-dialog" aria-labelledby="view-dialog-title">
+  <form id="view-form">
+    <div class="dialog-heading"><h2 id="view-dialog-title">Görüş ekle</h2><button id="view-dialog-close" type="button">Vazgeç</button></div>
+    <input id="view-profile" type="hidden"><input id="view-id" type="hidden">
+    <label>Konu<input id="view-topic" required maxlength="240" autocomplete="off"></label>
+    <div class="form-grid"><label>Profil alanı<select id="view-area"><option value="past">Geçmiş — Düşünsel miras</option><option value="present">Şimdi — Güncel yaklaşım</option><option value="future">Gelecek — İdeal düzen</option></select></label><label>İfadenin türü<select id="view-kind"><option value="position">Görüş / savunulan ideal</option><option value="prediction">Tahmin — olacağını düşündüğüm</option><option value="question">Açık soru — henüz karar vermedim</option></select></label></div>
+    <label>Görüş, tahmin veya soru<textarea id="view-text" rows="6" required maxlength="50000"></textarea></label>
+    <label>Bugünkü yaklaşım ile ideal arasındaki bağlantı <span class="muted small">(isteğe bağlı)</span><textarea id="view-bridge" rows="3" maxlength="20000" placeholder="Bu yaklaşım, istediğim geleceğe nasıl katkıda bulunabilir?"></textarea></label>
+    <fieldset><legend>Dayandığı profil kaynakları</legend><div id="view-sources" class="check-list"></div></fieldset>
+    <fieldset><legend>İlgili raporlar <span class="muted small">(özgün içerikleri değişmez)</span></legend><div id="view-reports" class="check-list"></div></fieldset>
+    <section id="view-change-fields" hidden><label>Değişiklik türü<select id="view-change-type"><option value="opinion">Görüş değişikliği</option><option value="correction">Temsil / metin hatası düzeltmesi</option></select></label><label>Ne değişti, neden?<textarea id="view-reason" rows="3" maxlength="10000"></textarea></label><p class="small muted">Eski sürüm korunur. Hata düzeltmesi, görüşünüzü değiştirdiğiniz anlamına gelmez.</p></section>
+    <p id="view-form-error" class="form-error" role="alert"></p><button type="submit" id="view-save" class="primary">Görüşü kaydet</button>
+  </form>
+</dialog>
+<dialog id="history-dialog" aria-labelledby="history-title"><div class="dialog-heading"><h2 id="history-title">Değişim kaydı</h2><button type="button" id="history-close">Kapat</button></div><div id="history-content"></div></dialog>
+<dialog id="share-dialog" class="share-dialog"><div class="dialog-heading"><h2 id="share-title">Paylaşma taslağı</h2><button id="share-close" type="button">Kapat</button></div><p id="share-attribution" class="note"></p><p>Yalnız seçtiğiniz metin ve kaynak adları paylaşma dosyasına alınır. Bu dosyayı Ağ ekranında ayrıca seçip incelemeniz ve yayımlamanız gerekir. İndirmek, yayımlamak değildir.</p><pre id="share-preview" class="multiline"></pre><button id="share-download" type="button">JSON paylaşma taslağını indir</button></dialog>
+<input id="files" type="file" accept=".md" multiple hidden>
+<input id="backupFile" type="file" accept=".json,application/json" hidden>
+<pre id="third-party-licenses" hidden>{{LICENSES}}</pre>
+{{SCRIPTS}}
+</body>
+</html>

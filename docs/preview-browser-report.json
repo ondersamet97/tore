@@ -1,0 +1,38 @@
+{
+  "version": "0.11.0-rc.1",
+  "syntheticDataOnly": true,
+  "realBrowser": "Chromium via Playwright CLI",
+  "desktopViewport": [
+    1440,
+    1050
+  ],
+  "mobileViewport": [
+    390,
+    844
+  ],
+  "externalRequestsObserved": 0,
+  "localModelCalls": 0,
+  "paidCalls": 0,
+  "steps": [
+    "create_custom_topic",
+    "import_synthetic_tore_json",
+    "source_link_to_decision_candidate",
+    "review_correct_adopt_and_keep_original_quote",
+    "selected_context_and_copy_consent",
+    "unselected_ai_text_absent_from_clipboard",
+    "retain_malformed_json_reply",
+    "paste_ai_commentary_and_create_unadopted_candidate",
+    "create_and_review_open_question",
+    "create_local_backup",
+    "restart_server_and_verify_record_store_hash",
+    "prepare_gemini_and_xai_manual_context",
+    "mobile_no_horizontal_overflow"
+  ],
+  "passed": true,
+  "limitations": [
+    "Screenshots use synthetic data only.",
+    "No live AI response or OAuth account was exercised.",
+    "The clipboard was tested with synthetic context.",
+    "A full-page screenshot capture repeated viewport tiles; viewport-only captures were retained after DOM confirmed one header."
+  ]
+}

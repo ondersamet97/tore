@@ -1,0 +1,62 @@
+{
+  "version": "0.11.0-rc.4",
+  "syntheticDataOnly": true,
+  "modelCalls": 0,
+  "paidCalls": 0,
+  "steps": [
+    {
+      "name": "embedded_home_and_private_authorization",
+      "passed": true
+    },
+    {
+      "name": "source_quote_review_correction_and_independent_states",
+      "passed": true
+    },
+    {
+      "name": "selected_context_consent_old_decision_exclusion_and_ai_opt_in",
+      "passed": true
+    },
+    {
+      "name": "all_manual_destination_contracts_without_external_calls",
+      "passed": true
+    },
+    {
+      "name": "malformed_reply_retention_exact_citations_and_ai_candidate",
+      "passed": true
+    },
+    {
+      "name": "question_closes_only_after_explicit_review",
+      "passed": true
+    },
+    {
+      "name": "backup_restore_rehearsal_stale_guard_and_corrupt_backup_rejection",
+      "passed": true
+    },
+    {
+      "name": "legacy_migration_endorsement_provenance_idempotence_and_original_hashes",
+      "passed": true
+    },
+    {
+      "name": "bulk_link_sources_pending_candidates_consent_and_idempotence",
+      "passed": true
+    },
+    {
+      "name": "bulk_backup_restore_and_repeat_preserve_legacy_state",
+      "passed": true
+    },
+    {
+      "name": "organization_preview_consent_stale_guard_source_and_review_preservation",
+      "passed": true
+    },
+    {
+      "name": "organization_backup_restore_and_idempotent_retry",
+      "passed": true
+    },
+    {
+      "name": "restart_preserves_records_revisions_malformed_replies_links_and_legacy",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "networkEnforcement": "macOS sandbox: outbound limited to localhost"
+}

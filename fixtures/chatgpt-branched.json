@@ -1,0 +1,54 @@
+[
+  {
+    "conversation_id": "synthetic-chatgpt-demo",
+    "id": "synthetic-chatgpt-demo",
+    "title": "Sentetik ChatGPT — iki yanıt dalı",
+    "create_time": 1767225600,
+    "update_time": 1767225660,
+    "current_node": "assistant-local",
+    "mapping": {
+      "root": {"id": "root", "parent": null, "message": null},
+      "human-question": {
+        "id": "human-question",
+        "parent": "root",
+        "message": {
+          "id": "human-question-message",
+          "author": {"role": "user"},
+          "create_time": 1767225600,
+          "content": {"content_type": "text", "parts": ["Bu tamamen yapay test konuşmasıdır. Notlarımı yerelde saklamak ve seçtiğim bölümleri paylaşmak istiyorum. Test adresi: demo@example.invalid."]}
+        }
+      },
+      "hidden-reasoning": {
+        "id": "hidden-reasoning",
+        "parent": "human-question",
+        "message": {
+          "id": "hidden-reasoning-message",
+          "author": {"role": "assistant"},
+          "content": {"content_type": "thoughts", "thoughts": [{"text": "SYNTHETIC_HIDDEN_REASONING_MUST_NOT_APPEAR"}]}
+        }
+      },
+      "assistant-local": {
+        "id": "assistant-local",
+        "parent": "hidden-reasoning",
+        "message": {
+          "id": "assistant-local-message",
+          "author": {"role": "assistant"},
+          "create_time": 1767225630,
+          "metadata": {"model_slug": "synthetic-model-alpha"},
+          "content": {"content_type": "text", "parts": ["Sentetik birinci dal: Önce yerel arşivi ve kullanıcı seçimini gösterelim."]}
+        }
+      },
+      "assistant-portable": {
+        "id": "assistant-portable",
+        "parent": "human-question",
+        "message": {
+          "id": "assistant-portable-message",
+          "author": {"role": "assistant"},
+          "create_time": 1767225660,
+          "metadata": {"model_slug": "synthetic-model-beta"},
+          "content": {"content_type": "multimodal_text", "parts": ["Sentetik ikinci dal: Kaynak ve izin manifestiyle taşınabilir bir paket hazırlayalım.", {"content_type": "image_asset_pointer", "asset_pointer": "sediment://synthetic-image-not-included"}]}
+        }
+      }
+    }
+  }
+]

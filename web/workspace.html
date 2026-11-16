@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Töre — Konuşmaların, senin seçimin</title>
+  <link rel="stylesheet" href="/workspace.css">
+  <script type="module" src="/workspace.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#workbench">Çalışma alanına geç</a>
+  <header class="topbar">
+    <a class="brand" href="/calisma" aria-label="Töre çalışma alanı">töre<span class="brand-dot">.</span><span class="version">0.12.0</span></a>
+    <nav aria-label="Ana gezinme"><a href="/konular">Konularım</a><a href="/dusunurler">Düşünürler</a><a href="/gorusler">Görüşlerim</a><a href="/calisma" aria-current="page">Konuşmalarım</a><a href="/ruyalar">Rüyalarım</a><a href="/arsiv">Arşiv</a></nav>
+    <div class="header-actions"><span class="local-indicator"><span aria-hidden="true"></span>Yerel çalışma</span><button id="settings-toggle" class="quiet" aria-controls="settings-panel" aria-expanded="false">Bağlantı ayarları</button></div>
+  </header>
+  <p id="global-status" class="global-status" role="status" aria-live="polite">Yerel çalışma alanı açılıyor…</p>
+  <section id="settings-panel" class="settings-panel" hidden aria-labelledby="settings-heading">
+    <div><p class="eyebrow">İsteğe bağlı bağlantı</p><h2 id="settings-heading">Anahtar senin oturumunda kalır.</h2><p>Anahtar yalnız yerel hizmetin belleğinde tutulur. Tarayıcıya veya diske kaydedilmez. Uygulama kapandığında silinir.</p><p>Töre, OpenRouter hesabındaki isteğe bağlı kayıt veya Broadcast ayarlarını değiştirmez. Canlı kullanımda bu hesap ayarlarını ayrıca gözden geçir.</p></div>
+    <div class="settings-controls"><label for="api-key">OpenRouter API anahtarı</label><input type="password" id="api-key" autocomplete="off" spellcheck="false" placeholder="Anahtarını buraya yapıştır"><div class="button-row"><button id="save-key">Oturumda kullan</button><button id="clear-key" class="quiet">Anahtarı temizle</button></div><p id="key-state" class="hint" role="status"></p><button id="refresh-catalog">Ücretsiz modelleri yenile</button><p class="hint">Bu düğme model kataloğunu internetten alır. Konuşmalarını göndermez. Canlı gönderim yalnız giriş ve çıkış fiyatı sıfır olan modellere açılır.</p><p id="catalog-state" class="hint" role="status"></p></div>
+  </section>
+  <div class="app-shell">
+    <aside class="library" aria-label="Konuşma kitaplığı">
+      <div class="library-heading"><div><p class="eyebrow">Kaynakların</p><h2>Konuşmalar <span id="conversation-count" class="count">0</span></h2></div><button id="import-toggle" class="icon-button" aria-label="Konuşma içe aktar" aria-controls="import-panel" aria-expanded="false">+</button></div>
+      <label class="search-label" for="conversation-search">Konuşmalarda ara<input id="conversation-search" type="search" placeholder="Başlığa veya kaynağa göre ara"></label>
+      <div id="conversation-list" class="conversation-list"></div>
+      <div class="library-note"><span class="tiny-mark" aria-hidden="true">↳</span><p>Asıl konuşma korunur.<br>Yalnız seçtiğin kopyayla çalışırsın.</p></div>
+      <a class="archive-link" href="/arsiv">Düşünce ve rapor arşivi <span aria-hidden="true">↗</span></a>
+    </aside>
+    <main id="workbench">
+      <section id="import-panel" class="import-panel panel" hidden aria-labelledby="import-heading">
+        <div class="section-heading"><div><p class="eyebrow">01 / Kaynak ekle</p><h2 id="import-heading">Konuşmanı buraya taşı.</h2></div><button id="import-close" class="quiet">Kapat</button></div>
+        <p class="muted">Dosyan bu Mac’te okunur. Önce içeriği görür, ardından eklemek istediğin konuşmaları seçersin.</p>
+        <div class="field-grid"><label>Kaynak biçimi<select id="import-provider"><option value="chatgpt">ChatGPT dışa aktarımı</option><option value="claude">Claude dışa aktarımı</option><option value="codex">Codex konuşması</option><option value="generic">Başka bir uygulamadan metin</option></select></label><label id="import-developer-field" hidden>Model geliştiricisi<select id="import-developer"></select></label></div>
+        <label id="import-generic-format-field" hidden>Kaynak türü<select id="import-generic-format"><option value="text">Yapıştırılmış metin</option><option value="file">Töre konuşma dosyası</option></select></label>
+        <label id="import-file-field" class="file-drop">Dışa aktarım dosyası<input id="import-file" type="file" accept=".json,.jsonl,.jsonl.zst,.zst,.zip,application/json,application/zip"><span id="import-file-hint" class="hint">ChatGPT / Claude: JSON veya ZIP · Codex: JSONL veya JSONL.ZST</span></label>
+        <div id="import-text-fields" hidden><label>Konuşma başlığı<input id="import-title" maxlength="240" placeholder="Örneğin: Ürün fikrim üzerine"></label><label>Konuşma metni<textarea id="import-text" rows="7" placeholder="İçe aktarmak istediğin metni yapıştır. Konuşmacı etiketlerini önizlemede kontrol et."></textarea></label><p class="hint">Düz metinden kimin konuştuğu tahmin edilmez. Konuşmacısı belirsiz metin daha sonra senin incelemene sunulur.</p></div>
+        <div class="button-row"><button id="preview-import" class="primary">İçe aktarmayı önizle <span aria-hidden="true">→</span></button><span id="import-status" class="hint" role="status"></span></div>
+        <div id="import-preview" hidden><h3>Eklemek istediklerini seç</h3><div id="import-preview-list"></div><button id="commit-import" class="primary" disabled>Seçilen konuşmaları ekle</button></div>
+      </section>
+
+      <section id="welcome" class="welcome">
+        <div class="welcome-symbol" aria-hidden="true"><span>“</span><i></i><span>”</span></div>
+        <p class="eyebrow">Bağlamın sende kalsın</p>
+        <h1>Bir konuşmadan<br>sonrakine, <em>senin seçiminle.</em></h1>
+        <p>Farklı AI uygulamalarındaki konuşmalarını bir araya getir. Kaynağı ayır, özel bilgileri maskele ve yalnız seçtiğin bağlamla devam et.</p>
+        <button id="welcome-import" class="primary">İlk konuşmanı ekle <span aria-hidden="true">↗</span></button>
+        <ol class="welcome-steps"><li><span>01</span>Konuşmanı içe aktar</li><li><span>02</span>Seç ve gözden geçir</li><li><span>03</span>Devam et veya paketle</li></ol>
+        <p class="fine-print">Teknik demo · İçe aktarma paylaşım izni vermez. Bir veri paketi oluşturmak veri satışı veya hak doğrulaması anlamına gelmez.</p>
+      </section>
+
+      <section id="conversation-workspace" hidden aria-labelledby="conversation-title">
+        <div class="section-heading conversation-heading"><div><p id="conversation-source" class="eyebrow"></p><h1 id="conversation-title"></h1><p id="conversation-meta" class="muted"></p></div><span class="source-badge">Asıl kaynak korunuyor</span></div>
+        <div id="conversation-warnings" class="notice" hidden></div>
+        <div class="branch-bar"><label>Konuşma dalı<select id="branch-leaf"></select></label><p id="branch-hint" class="hint"></p></div>
+        <div class="work-grid">
+          <section class="message-work" aria-labelledby="messages-heading">
+            <div class="section-heading compact"><div><p class="eyebrow">02 / Seç ve gözden geçir</p><h2 id="messages-heading">Göndereceğin bağlam</h2></div><span id="selection-count" class="count">0 seçili</span></div>
+            <div class="selection-toolbar"><button id="select-human" class="quiet small-button">Kullanıcı mesajlarını seç</button><button id="clear-selection" class="quiet small-button">Seçimi temizle</button></div>
+            <p class="hint">Konuşmacı etiketi, yazarlık veya hak kanıtı değildir. Her seçili metni kontrol et; değişikliklerin yalnız bu kopyaya uygulanır.</p>
+            <div id="message-list" class="message-list"></div>
+
+            <section class="privacy-panel panel" aria-labelledby="privacy-heading">
+              <div class="section-heading compact"><div><p class="eyebrow">Yerel inceleme</p><h3 id="privacy-heading">Özel bilgileri gözden geçir</h3></div><span class="small-label">Cihazında</span></div>
+              <p class="hint">Basit örüntülerle aday bilgileri bulur. Tam anonimlik garantisi vermez; son metni kendin kontrol et.</p>
+              <div class="mask-options"><label class="check"><input type="checkbox" id="mask-email" checked>E-posta</label><label class="check"><input type="checkbox" id="mask-phone" checked>Telefon</label><label class="check"><input type="checkbox" id="mask-key" checked>Anahtar</label><label class="check"><input type="checkbox" id="mask-path" checked>Dosya yolu</label></div>
+              <label>Başka neleri maskeleyelim? <span class="optional">İsteğe bağlı</span><textarea id="literal-masks" rows="2" placeholder="İsim, adres veya başka bir ifade; her satıra bir tane"></textarea></label>
+              <div class="button-row"><button id="scan-pii">Seçili metinleri tara</button><button id="apply-masks" class="quiet">Seçili türleri maskele</button></div>
+              <div id="pii-review" hidden><div class="scan-totals"><p>Kaynak metinde<strong id="pii-before-count">0</strong></p><span aria-hidden="true">→</span><p>İncelenen kopyada<strong id="pii-after-count">0</strong></p></div><div id="pii-findings"></div><p id="question-pii" class="hint"></p></div>
+            </section>
+          </section>
+
+          <aside class="destination-panel panel" aria-labelledby="destination-heading">
+            <p class="eyebrow">03 / Bir sonraki adım</p><h2 id="destination-heading">Bağlamına yön ver.</h2>
+            <div class="intent-tabs" role="group" aria-label="Çalışmanın amacı"><button id="intent-continue" aria-pressed="true">Konuşmaya devam</button><button id="intent-dataset" aria-pressed="false">Veri paketi</button></div>
+            <p id="intent-description" class="hint">Seçtiğin bağlamı ve yeni sorunu başka bir modele taşı. Yanıt ayrı bir dal olarak saklanır.</p>
+            <label id="mode-field">Çalışma biçimi<select id="run-mode"><option value="live">Canlı · ücretsiz model</option><option value="simulation">Simülasyon · örnek yanıt</option><option value="manual">Elle aktar · kopyala / indir</option></select></label>
+            <p id="mode-status" class="mode-status" role="status"></p>
+            <label id="target-label">Hedef geliştirici<select id="target-developer"></select></label>
+            <label id="model-field">Model<select id="target-model"><option value="">Önce kataloğu yenile</option></select></label>
+            <p id="model-hint" class="hint"></p>
+            <div id="dataset-fields" hidden><label>Paketin kullanım amacı<select id="dataset-purpose"><option value="research">Araştırma</option><option value="training">Model eğitimi</option></select></label><p class="hint">Eğitim paketine AI çıktısı veya üçüncü kişi metni alınmaz. Her öğenin yazarlığı incelenmeli ve hak beyanı verilmelidir.</p></div>
+            <label id="question-label">Yeni sorun<textarea id="target-question" rows="4" maxlength="4000" placeholder="Bu bağlamla neyi tartışmak istersin?"></textarea></label>
+            <button id="prepare-draft" class="primary wide" disabled>Önizlemeyi hazırla <span aria-hidden="true">→</span></button><p id="prepare-hint" class="hint"></p><p id="action-error" class="inline-error" role="alert" hidden></p>
+            <div class="boundary-note"><span aria-hidden="true">◇</span><p>Önizleme oluşturmak gönderim yapmaz. Sonraki adımda metni, hedefi ve amacı ayrı onaylarsın.</p></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="draft-panel" class="draft-panel panel" hidden aria-labelledby="draft-heading">
+        <div class="section-heading"><div><p class="eyebrow">Son kontrol / Onayın bekleniyor</p><h2 id="draft-heading">Çıkacak metin tam olarak bu.</h2></div><span id="draft-mode" class="source-badge"></span></div>
+        <dl class="draft-facts"><div><dt>Amaç</dt><dd id="draft-purpose"></dd></div><div><dt>Hedef</dt><dd id="draft-target"></dd></div><div><dt>Taslak özeti</dt><dd><code id="draft-hash"></code></dd></div></dl>
+        <div class="draft-question"><h3>Soru / paket notu</h3><p id="draft-question"></p></div>
+        <pre id="draft-context" class="context-preview" tabindex="0"></pre>
+        <div id="draft-warnings" class="notice" hidden></div>
+        <label id="send-consent-label" class="check consent"><input type="checkbox" id="send-consent"><span id="send-consent-text"></span></label>
+        <label id="export-consent-label" class="check consent" hidden><input type="checkbox" id="export-consent"><span>Bu önizlemedeki metinleri, seçili amaç ve hedef için paketlemeyi onaylıyorum. Hak beyanlarım bana ait; bu paket bir lisans sözleşmesi veya hak doğrulaması değildir.</span></label>
+        <div class="button-row"><button id="execute-draft" class="primary" disabled>Onayla ve devam et</button><button id="revoke-draft" class="quiet">Bu taslağın iznini geri çek</button></div><p id="draft-status" class="hint" role="status"></p>
+      </section>
+
+      <section id="result-panel" class="result-panel panel" hidden aria-labelledby="result-heading"><p class="eyebrow">Çalışmanın çıktısı</p><h2 id="result-heading"></h2><p id="result-description" class="muted"></p><pre id="result-text" class="context-preview" hidden></pre><div id="result-actions" class="button-row"></div><p id="result-status" class="hint" role="status"></p></section>
+
+      <details class="history-panel"><summary>Onay ve işlem geçmişi <span id="history-count" class="count">0</span></summary><p class="hint">İzni geri çekmek sonraki kullanımı engeller. Önceden gönderilmiş metinleri veya indirilmiş dosyaları karşı taraftan silmez.</p><div id="draft-history"></div></details>
+      <footer class="workspace-footer"><span>töre.</span><p>Kaynağını koru. Seçimini görünür kıl.</p><span>Yerel teknik demo</span></footer>
+    </main>
+  </div>
+  <noscript><p>Töre çalışma alanını kullanmak için JavaScript açık olmalıdır.</p></noscript>
+</body>
+</html>

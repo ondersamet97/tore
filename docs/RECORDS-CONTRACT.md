@@ -1,0 +1,135 @@
+# Töre 0.11 yerel konu sözleşmesi
+
+Bütün işlemler mevcut token/Host/Origin korumalı `POST /api/private/tore/<işlem>` yolunda JSON alır. Ağ çağrısı ve yerel model çalıştırma yoktur. Veriler `records-v1.json`, kilit `records.lock`, geri alma görüntüleri `records-backups/<UUID>.json` içinde tutulur. Eski `opinions-v1.json` değişmez.
+
+| İşlem | İstek | Yanıt |
+|---|---|---|
+| `records-list` | `{}` | `{schemaVersion,topics,records,packets,replies,backups,stateHash}` |
+| `records-topic-create` | `{requestId?,title,goal?}` | `{topic}` |
+| `records-topic` | `{topicId}` | `{topic,records,currentDecisions,openQuestions,changes,packets,replies}` |
+| `records-create` | `{requestId?,topicId,kind,text,reason?,source?,answersQuestionId?}` | `{record}` |
+| `records-review` | aşağıdaki örnek | `{record}` |
+| `records-prepare` | aşağıdaki örnek | `{packet,findings}` |
+| `records-reply` | `{requestId?,packetId,rawText,format:"text" veya "json",confirmedByUser:true}` | `{reply}`; geçersiz yanıt da kalıcıdır |
+| `records-backup` | `{}` | `{backupId,stateHash,createdAt}` |
+| `records-restore` | `{backupId,expectedStateHash,confirmedByUser:true}` | `{restored,restoredBackupId,backupId,stateHash}`; `backupId` geri almadan önceki durumun yeni yedeğidir |
+| `records-migration-preview` | `{}` | `{previewHash,count,candidates,alreadyImported,notice}` |
+| `records-migration-apply` | `{previewHash,confirmedByUser:true}` | `{imported,skipped,backupId,stateHash}` |
+
+Yeni kayıtlar `pending` inceleme, `unknown` güncellik, `unspecified` öncelikle başlar. Görüş ve kararlar `unknown` benimseme durumunda; sorular `not_applicable` benimseme ve `open` soru durumundadır. Kaynak hiçbir zaman otomatik benimseme oluşturmaz.
+
+`source` ya `{conversationId,messageId,excerpt}` ya `{replyId,excerpt}` olur. Alıntı görünür kaynak metninin birebir kesiti olmalıdır. Kaynak belirtilmediğinde yazılan metin yeni kullanıcı notudur. Kullanıcı mesajından farklı yazılan ifade `user_interpretation`, birebir aynı ifade `user_statement`; asistan kaynağı her zaman `assistant_proposal` olarak kalır. `answersQuestionId` aynı konudaki bir soruya bağlantı kurar; soruyu kapatmaz.
+
+```json
+{
+  "id":"kayıt-kimliği", "expectedRevision":1,
+  "text":"Kaynak veya düzeltilmiş ifade", "reason":"Kararın gerekçesi",
+  "review":"reviewed", "adoption":"adopted", "currency":"current",
+  "priority":"active", "questionState":"not_applicable",
+  "changeReason":"Bu kararı inceleyip benimsedim.", "confirmedByUser":true
+}
+```
+
+Durum sözlüğü:
+
+- `kind`: `opinion`, `decision`, `question`.
+- `review`: `pending`, `reviewed`, `rejected`.
+- `adoption`: `unknown`, `adopted`, `hypothesis`, `uncertain`, `not_adopted`; yalnız soru için `not_applicable`.
+- `currency`: `unknown`, `current`, `superseded`.
+- `priority`: `unspecified`, `active`, `paused`, `not_priority`.
+- `questionState`: soruda `open` / `closed`; diğer kayıtta `not_applicable`.
+
+Her inceleme eski metin, gerekçe, bütün durumlar, kaynak atfı ve revizyon numarasını `history` içine ekler; `changedAt`, `changeReason`, `nextRevision` bağlantısı kaydedilir. Kaynak alıntısı ve konuşmacısı değişmez. Soru kapatmak açık kullanıcı onayı ve açıklamasıyla `questionState:"closed"` göndermeyi gerektirir.
+
+Konu görünümündeki `changes` her değişiklik için `previous` ve ona doğrudan bağlı yeni revizyonun `currentRevision` / `currentText` değerlerini verir. Daha sonraki metin geçmiş değişikliğin yeni sonucuymuş gibi sunulmaz. `latestRecordRevision` kaydın bugün ulaştığı revizyondur.
+
+```json
+{
+  "topicId":"konu-kimliği", "recordIds":["benimsenmiş-kayıt","açık-soru"],
+  "proposalIds":[], "target":"chatgpt", "model":null,
+  "question":"Buradan nasıl devam edelim?", "confirmedByUser":true
+}
+```
+
+`target`: `chatgpt`, `claude`, `gemini`, `meta`, `deepseek`, `kimi`, `glm`, `qwen`, `mistral`, `nvidia`, `openrouter`, `other`. Model kullanıcı tarafından biliniyorsa isteğe bağlı metindir. Bilinmeyen model uydurulmaz. Ana bağlam yalnız açıkça seçilmiş `reviewed` + `current` benimsenmiş görüş/kararları ve açık soruları kapsar. Benimsenmemiş AI önerileri aynı durum koşuluyla yalnız `proposalIds` üzerinden, ayrı büyük etiketle eklenir. Öncelik bilgisi metinde korunur; duraklatılmış bir kayıt aktif çalışma diye sunulmaz. Tüm arşiv, başka konular, eski revizyonlar ve legacy içerikleri metne kendiliğinden eklenmez.
+
+Paket `{id,topicId,target,model,text,createdAt,recordIds,proposalIds,sourceIds,sources,hash}` içerir. `sources` yalnız seçilen kaydın özgün kaynak alıntısını ve `{sourceId,recordId,revision,quote,role}` kanıtını tutar. `findings` yerel özel bilgi taramasının olası eşleşmeleridir, anonimlik garantisi değildir. Kopyalama ağ gönderimi yapmaz; kişi seçtiği hizmete elle gönderir.
+
+Manuel JSON biçimi:
+
+```json
+{"commentary":"AI yorumu", "citations":[{"sourceId":"paketteki tam kaynak kimliği", "quote":"paketteki alıntının birebir kesiti"}]}
+```
+
+Bozuk JSON, yinelenen/bilinmeyen alanlar, bilinmeyen kaynak veya eşleşmeyen alıntı `validationStatus:"invalid"` olarak kaydedilir. `rawText` korunur ve `validationError` gösterilir. Bu kaynaktan aday çıkarılamaz. Düz metin `unverified`, şeması ve alıntıları doğrulanan JSON `valid` olur; `valid` yorumun doğru veya kişi tarafından benimsenmiş olduğu anlamına gelmez. Yorum ancak ayrı `records-create` çağrısında birebir kesit seçilerek yeni `pending` AI önerisi adayı oluşturur.
+
+Yedekler yalnız kasanın kendi yerel dizininden UUID ile alınır. Geri alma güncel `stateHash`, açık onay, şema/boyut/checksum ve mevcut konuşma kasasına karşı özgün alıntı/rol doğrulaması gerektirir. Eksik kaynakta geri alma yazmadan durur. Geri almadan önce mevcut durum ayrıca yedeklenir. Yedekleri indirme/yükleme API'si yoktur.
+
+`backups` listesi büyük yedeklerin tümünü okumadan yalnız dosya bilgilerini listeler: `valid:null,validationStatus:"not_checked"`. Bu, doğrulanmış geri alma sözü değildir; içerik geri alma sırasında doğrulanır. `valid:false` güvenli olmayan dosya türü/boyutunu belirtir. Liste `createdAt` bilgisi dosyanın değiştirilme zamanıdır; yedeğin içindeki özgün oluşturulma zamanı geri alırken ayrıca okunur.
+
+Eski kart aktarımı önizleme karması değişmediyse bütün yeni adayları kopyalar; aynı eski kart kimliği ikinci kez eklenmez. `confirmed` inceleme ve benimseme olarak korunur. `uncertain`, `draft`, `rejected` anlamlarını kaybetmez. Güncellik ve öncelik çıkarılmaz. Özgün kart ve geçmişi `legacy` alanında korunur; eski dosyaya yazılmaz. Yeni incelemeler ayrı revizyon dizisinde başlar.
+
+Kaynağı kullanıcı sözü olan eski bir AI yorumu `source.role:"user"` ve `attribution:"assistant_proposal"` olarak korunur; konuşmacı ile yorumun yazarı birbirine karıştırılmaz. Yeni aktarılacak kart yoksa dosyaya yazılmaz, yeni yedek üretilmez ve `backupId:null` döner.
+
+Sınırlar: 200 konu, 3000 kayıt, kayıt başına 999 değişiklik, 1000 devam paketi, 2000 manuel yanıt, 100 yerel yedek, kasa/yedek başına 32 MiB. Sınırda veriler sessizce silinmez. `requestId` isteyen oluşturma işlemlerinde UUID aynı içerikle tekrar gönderildiğinde mevcut sonuç döner; farklı içerikte reddedilir.
+
+## 0.11.0-rc.2 — mevcut konuşmaları yerel konu defterine toplu bağlama
+
+İki ek işlem aynı yerel erişim korumasını kullanır:
+
+| İşlem | İstek | Yanıt |
+|---|---|---|
+| `records-bulk-preview` | `{}` | `{previewHash,stateHash,sourceHash,ruleVersion,conversationCount,linkedCount,candidateCount,alreadyLinked,topics,warnings}` |
+| `records-bulk-apply` | `{previewHash,confirmedByUser:true}` | `{linked,candidatesCreated,topicsCreated,backupId,stateHash,alreadyApplied}` |
+
+`linkedCount` yeni bağlanacak konuşma sayısıdır. `conversationCount` bütün mevcut konuşmaları, `alreadyLinked` daha önce bağlananları sayar. Her `topics` satırı `{id,title,conversationCount,newLinkCount,candidateCount}` taşır. Önizleme diske yazmaz. Önizleme karması, kural sürümü, konu defterinin durumu ve bütün konuşmaların kaynak karmasına bağlıdır; arada değişiklik olursa uygulama reddedilir.
+
+Toplu uygulama bir kez yedek alır ve bütün planı tek atomik kayıt olarak yazar. Kaynak konuşma veya eski görüş dosyası değişmez. İstek yanıtı kaybolursa aynı `previewHash` tekrar gönderildiğinde önceki işlem makbuzu döner; kaydın sonraki kullanıcı incelemesi sıfırlanmaz. Yeni bağlantı kalmadığında yeni yedek veya yazma yapılmaz. Eski görüşlerin aktarımı ayrı mevcut `records-migration-*` işlemlerini kullanır; eski onaylar korunur.
+
+`records-list` ve `records-topic`, ek olarak `conversationLinks` döndürür. Bağlantının alanları: `{id,topicId,conversationId,title,provider,sourceCreatedAt,sourceUpdatedAt,lastUserSource,classificationReason,warning,candidateIds,linkedAt}`. `lastUserSource` varsa mevcut `Source` biçiminde ve özgün görünür kullanıcı mesajının en fazla 1500 karakterlik **birebir** kesitidir. Asıl mesajın kimliği ve zamanı korunur. `sourceCreatedAt` / `sourceUpdatedAt` kaynakta bulunmuyorsa `null` kalır; `linkedAt` bunların yerine geçmez. Kaynak tam konuşma olarak özgün kasada kalır.
+
+Gruplama model çıkarımı değildir: önce başlıktaki proje/konu sözcükleri, başlık belirsiz veya yalnız araç adıysa görünür kullanıcı mesajlarının ilk üçü ve son sekizinden sınırlı kesitler kullanılır. Asistan metni sınıflandırmaya katılmaz. Birden çok belirgin proje veya belirsiz eşleme `Diğer konuşmalar` altında tutulur. Başlığa/metne göre sınıflandırma yanılabilir; gerekçesi her bağlantıda gösterilir. Töre/İzge gibi kısa proje adlarında kelime sınırı gözetilir; `store` veya `restore`, Töre sayılmaz.
+
+Seçili kaynak dalı varsa yalnız o dal izlenir. Dal seçilmemiş tek yapraklı konuşmada tek yol kullanılabilir. Birden çok yaprak varsa son dal tahmin edilmez: bağlantı korunur, aday ve son kullanıcı alıntısı çıkarılmaz, `warning` alanı açıklama taşır. Ortam/AGENTS talimatları ve gizli düşünme evreleri kullanıcı ifadesi olarak alınmaz. Yapılandırılmış kullanıcı soru yanıtlarında yalnız özgün kaynağın birebir alt dizgesi olan cevap kullanılabilir; kaçış dizilerini çözerek yeni bir alıntı üretilmez.
+
+Her konuşmadan en fazla bir görüş, bir karar, bir soru adayı çıkarılır. Büyük yapıştırılmış metinlerden otomatik kişisel beyan çıkarılmaz. Adaylar yalnız görünür kullanıcı sözünün birebir cümlesidir ve daima `review:pending`, `currency:unknown`, `priority:unspecified` durumunda başlar; görüş/kararda `adoption:unknown`, soruda `adoption:not_applicable` olur. Soru işareti görmek, o sorunun hâlâ açık olduğuna karar vermek değildir. Aday gerekçesi bu sınırı açıkça belirtir; kullanıcı incelemesi gerekir. Yeni konular veya bağlantılar onaylı güncel bir görüş oluşturmaz.
+
+Depoya `conversationLinks` ve `bulkReceipts` eklenmiştir. Boş ek alanlar serileştirilmez ve okurken varsayılan boş değer alır; böylece rc.1 yedeklerinin kanonik karması korunur. Eski alanı içermeyen yedeğe dönme ve tekrar toplu aktarma sınanmıştır. Geri yükleme bağlantıdaki konuşma kimliği, başlık, sağlayıcı, kaynak zamanları, kullanıcı mesajı ve birebir alıntıyı mevcut konuşma kasasıyla doğrular. Bağlantının adayları aynı konu ve kaynak konuşmaya ait olmalıdır. Toplu işlemin sınırı 5000 konuşmadır; mevcut 200 konu / 3000 kayıt / 32 MiB kasa sınırları aşılırsa kısmi aktarım yapılmaz.
+
+
+Yerel gruplama kural sürümü `local-topics-v2` oldu. Sağlık/yaşam, dil/çeviri, öğrenme/okuma, tarih/kültür ve günlük planlama için ek sözcükler yalnız açık konuşma başlıklarında kullanılır; kullanıcı mesajındaki geçici bir değinme bu geniş gruplara atama yapmaz. Felsefe/etik, trading/kripto ve meslek/iş görüşmesi gibi ek sözcükler de yalnız başlıkta aranır. Tek başına “iş”, “strateji”, “stock”, “tarih” veya “history” eklenmemiştir; örneğin başvuru tarihi tarih/kültür sayılmaz. Birden çok belirgin konuya eşleşen başlık kullanıcı metniyle zorla tek konuya indirilmez. Sözlük değişikliği kural sürümünü ve dolayısıyla önizleme karmasını değiştirdiği için önceki sözlükle hazırlanmış önizleme yeni planı onaylayamaz.
+
+## 0.11.0-rc.3 — Diğer konuşmaları tema ve altbaşlıklarla düzenleme
+
+| İşlem | İstek | Yanıt |
+|---|---|---|
+| `records-organize-preview` | `{}` | `{previewHash,stateHash,sourceHash,ruleVersion,conversationCount,moveCount,subtopicCount,recordMoveCount,retainedDependencyCount,topics,changes,warnings}` |
+| `records-organize-apply` | `{previewHash,confirmedByUser:true}` | `{moved,subtopicsUpdated,recordsMoved,topicsCreated,retainedDependencyCount,backupId,stateHash,alreadyApplied}` |
+
+Kapsam, `topicId:bulk-topic-other` ve henüz `subtopicTitle` alanı bulunmayan bağlantılardır. `conversationCount` yalnız bu kapsamı sayar. `topics` her hedef konu için `{id,title,conversationCount}` içerir. `changes` satırları `{conversationId,fromTopicId,toTopicId,subtopicTitle,reason,recordIds,retainedReason}` biçimindedir. `recordIds`, aynı kaynak konuşmaya bağlı ve aynı eski konuda bulunan bütün kayıtları içerir; yalnız ilk toplu aktarımın adaylarıyla sınırlı değildir. Önizleme yazma yapmaz.
+
+`local-organization-v2` yerel gezinme kuralları başlığı güçlü, seçili daldaki görünür kullanıcı sözlerinin ilk dört ve son sekizinden sınırlı kesitleri düşük ağırlıkla kullanır. Asistan sözleri veya gizli düşünme kullanılmaz. Türkçe/İngilizce sabit temalar yazılım/AI, ürün, kariyer, fon, görüş/toplum, bilim, piyasalar, film, tasarım, anime, oyun, sağlık, kişisel deneyim, dil, iletişim, öğrenme, tarih, seyahat, resmî işlemler, günlük planlama, arşiv ve günlük yaşamı kapsar. `tarih` gibi tek başına belirsiz sözcükler tarih teması oluşturmaz. Tek kullanıcı sözcük işaretiyle yapılan atama gerekçede **zayıf öneri** olarak belirtilir; kişinin görüşü veya ilgisinin kesin tespiti değildir.
+
+Sohbet başlığı/başlık önerisi gibi genel başlıklar içerik konusu sayılmaz. İçeriği hiç gelmemiş kaynaklar `İçeriği eksik kaynaklar`, seçili görünür bağlamı bulunmayan ve başlığı yeterli olmayanlar `Bağlamı sınırlı kaynaklar` durum grubunda görünür. Yakın güçte farklı temalar `Birden çok alan` altında açık gerekçeyle kalır. Başlığı ve görünür kullanıcı sözleri sabit temalara uymayan kaynaklarda, en az iki farklı kaynakta geçen ayırt edici sözcük/ikili öbek için en fazla16 yerel küme önerilir. Talimat ve genel sohbet sözcükleri filtrelenir; kümeler anlam veya görüş eşitliği iddia etmez. Gruplanamayanlar kaynak başlıklarıyla ayrı altbaşlık olarak izlenebilir.
+
+Her hedef bağlantı `subtopicTitle` alır: açıklayıcı özgün başlık, başlık genelse görünür kullanıcı sözünün en fazla240 karakterlik birebir kesiti; yeterli kaynak yoksa özgün kısa başlık veya açık eksiklik etiketi. Özgün `title`, kaynak zamanları, son kullanıcı sözü ve uyarılar korunur. **Küme başlıkları ile önizleme `changes` alanı özel kaynak sözcüklerini içerebilir.** Kamuya açık test raporlarına veya işlem günlüklerine yazılmaz; genel tanı çıktısında yalnız sabit konu kimlikleri, sayılar ve küme adedi kullanılmalıdır.
+
+Taşınan kayıtlarda yalnız `topicId` değişir. Metin, gerekçe, kaynak, atıf, onay/benimseme/güncellik/öncelik/soru durumu, eski kart bilgisi, tarihler, `revision` ve `history` aynen kalır. Bir kayıt önceki devam paketinde kullanılıyorsa, mevcut yanıta bağlıysa veya başka kayıt grubuyla soru–yanıt ilişkisi taşıyorsa grup eski üst konuda kalır; altbaşlık yine eklenir ve `retainedReason` nedenini gösterir. Eski konu, paket veya yanıt silinmez/değiştirilmez. `retainedDependencyCount` bu şekilde korunan bağlantıları sayar.
+
+Yer değişiminin denetim kaydı ayrı `organizationReceipts` alanındadır; `records-list` bunu okunabilir dizi olarak döndürür. Her makbuz `previewHash,ruleVersion,createdAt,sourceHash,backupId,moved,subtopicsUpdated,recordsMoved,topicsCreated,retainedDependencyCount,changes` taşır. `changes` eski/yeni konu ve kayıt kimliklerini saklar; içerik inceleme geçmişiyle karıştırılmaz. Yeni alanlar `default` ve boşken serileştirmeme kuralını kullanır; rc.1/rc.2 yedek karmaları korunur.
+
+Uygulama önizlemeyi bütün kaynak karması ve mevcut konu defteri karmasına bağlar; değişiklikte yeniden önizleme gerekir. Bütün plan için **tek yedek ve tek atomik kayıt** kullanılır. Aynı onay isteğinin tekrarı önceki makbuzu döndürür ve daha sonraki kullanıcı incelemesini geri almaz. Yeni hedef kalmamışsa yeni yedek veya yazma yapılmaz. 200 konu/3000 kayıt/32 MiB sınırları korunur; kısmi ilk-N aktarımı yapılmaz.
+
+`records-review`, geriye uyumlu isteğe bağlı `expectedTopicId` alanını kabul eder. Ekranın açıldığı konu ile kaydın güncel konusu farklıysa inceleme reddedilir: `Kaydın konusu değişmiş; incelemeden önce yeniden yükleyin`. Böylece konu düzenleme içerik revizyonunu değiştirmese de yeni arayüz eski konu bağlamıyla inceleme yapmaz. Önceki istemcilerin yalnız `expectedRevision` göndermesi desteklenir.
+
+## Düşünürler — kayıt ile düşünür bağlantıları
+
+| İşlem | İstek | Yanıt |
+|---|---|---|
+| `thinkers` | `{}` | `{catalog,links:[{link,record}],stateHash}` |
+| `thinkers-link` | `{requestId?,thinkerId,recordId,note?,confirmedByUser:true}` | `{link}` |
+| `thinkers-unlink` | `{linkId,confirmedByUser:true}` | `{removed}` |
+
+Katalog sürümlü ve editoryaldir; sekiz düşünür için yalnız kamuya açık genel bilgi (eserler, ana fikirler, eleştiriler, sınırlar) taşır. Bağlantıyı yalnız kişi kurar; onaysız istek reddedilir. Aynı kayıt aynı düşünüre ikinci kez bağlanamaz. `requestId` aynı içerikle tekrarlanırsa mevcut bağlantı döner, farklı içerikte reddedilir. Not en fazla 2000 bayttır. Bağlantı kaldırmak kaydı silmez.
+
+Bağlantılar konu deposunda `thinkerLinks` alanında tutulur ve deponun kilit, atomik yazma, yedek ve geri alma doğrulamasını paylaşır. Boş alan serileştirilmez; önceki depo ve yedek karmaları değişmez. Doğrulama, bilinmeyen düşünürü, eksik kaydı ve yinelenen çifti reddeder. Sınır 3000 bağlantıdır. Yakınlık puanı, sıralama veya siyasi kimlik çıkarımı yoktur; bir bağlantı düşünürün bütün görüşlerinin benimsendiği anlamına gelmez.
