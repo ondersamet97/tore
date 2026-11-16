@@ -1,5 +1,12 @@
 # Change log
 
+## 0.12.1 — Open-source licence and a narrower scope (2026-11-16)
+
+- **Licence.** The original code is offered under the GNU Affero General Public License v3 (AGPL-3.0-only) from this version. A separate commercial licence is available from the owner for uses that cannot meet the AGPL terms. 0.11.0-rc.4 and 0.12.0 were offered under PolyForm Noncommercial 1.0.0; rights granted for those versions are not withdrawn.
+- **Dream notebook removed.** The experimental `/ruyalar` page, its storage, its rules and the training-dataset export are no longer part of töre. Existing `dreams-v1.json` files are left untouched on disk and are no longer read.
+- Add `ABOUT.md`, `COMMERCIAL-LICENSE.md` and `CONTRIBUTING.md`.
+- The README describes candidate proposal consistently: töre proposes source-linked candidates and the person confirms each one.
+
 ## 0.12.0 — Thinkers, dream notebook and first public source (2026-11-16)
 
 - First version published as a public repository. The public repository receives one commit per release, built from an allowlist (`scripts/export-public.py`); private Git history, personal stores and internal verification records are not part of it.

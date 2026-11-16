@@ -1,6 +1,6 @@
 {
   "name": "tore-local-reader",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Töre — yerel rapor arşivi ve kaynaklı düşünce profilleri",
   "scripts": {
     "build": "node build.cjs",

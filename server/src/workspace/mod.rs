@@ -1,6 +1,5 @@
 //! Isolated conversation workspace; synthesis reads only the explicitly supplied report archive.
 mod chatgpt;
-mod dreams;
 mod ideology;
 mod importers;
 mod opinions;
@@ -32,7 +31,6 @@ struct Workspace {
     disk: Mutex<store::Disk>,
     opinions: Mutex<opinions::Disk>,
     records: Mutex<records::Disk>,
-    dreams: Mutex<dreams::Disk>,
     ideology: Arc<ideology::Service>,
     chatgpt: Arc<chatgpt::Service>,
     previews: Mutex<BTreeMap<String, Vec<Conversation>>>,
@@ -81,7 +79,6 @@ pub fn router_with_archive(
         origin,
         disk: Mutex::new(store::Disk::open(root.clone())?),
         opinions: Mutex::new(opinions::Disk::open(root.clone())?),
-        dreams: Mutex::new(dreams::Disk::open(root.clone())?),
         records: Mutex::new(records::Disk::open(root)?),
         ideology,
         chatgpt,
@@ -144,10 +141,6 @@ async fn handle(
 }
 async fn dispatch(s: Arc<Workspace>, op: &str, r: Value) -> Result<Value, String> {
     match op {
-        "dreams-list" => lock(&s.dreams)?.list(),
-        "dreams-save" => lock(&s.dreams)?.save(r),
-        "dreams-delete" => lock(&s.dreams)?.delete(r),
-        "dreams-export" => lock(&s.dreams)?.export(),
         "records-list" => lock(&s.records)?.list(),
         "records-topic-create" => lock(&s.records)?.topic_create(r),
         "records-topic" => lock(&s.records)?.topic_view(r),

@@ -10,7 +10,7 @@ async function start(archive,data){
  return {...ready,close:async()=>{if(child.exitCode===null&&child.signalCode===null)await new Promise(r=>{child.once('exit',r);child.kill('SIGTERM');});}};
 }
 async function browser(server){
- const infoResponse=await fetch(server.url+'/api/info');assert.equal(infoResponse.status,200);assert.equal((await infoResponse.json()).version,'0.12.0','Native HTTP sürümü 0.12.0 olmalı');const htmlResponse=await fetch(server.url+'/arsiv');assert.equal(htmlResponse.status,200);const html=await htmlResponse.text();assert.match(html,/0\.12\.0/);assert.equal(html,await fs.readFile(path.join(root,'local-reader/Hosted.html'),'utf8'),'Sunulan hazır HTML son build olmalı');const requests=[],downloads=[],blobs=new Map(),errors=[];
+ const infoResponse=await fetch(server.url+'/api/info');assert.equal(infoResponse.status,200);assert.equal((await infoResponse.json()).version,'0.12.1','Native HTTP sürümü 0.12.1 olmalı');const htmlResponse=await fetch(server.url+'/arsiv');assert.equal(htmlResponse.status,200);const html=await htmlResponse.text();assert.match(html,/0\.12\.1/);assert.equal(html,await fs.readFile(path.join(root,'local-reader/Hosted.html'),'utf8'),'Sunulan hazır HTML son build olmalı');const requests=[],downloads=[],blobs=new Map(),errors=[];
  class NoRemote extends ResourceLoader{fetch(url){throw Error('Beklenmeyen otomatik kaynak: '+url);}}
  const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
  const dom=new JSDOM(html,{url:server.url+'/arsiv#local='+server.localToken+'&davet='+encodeURIComponent(server.invite),runScripts:'dangerously',resources:new NoRemote(),virtualConsole:vc,beforeParse(w){

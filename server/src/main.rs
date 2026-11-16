@@ -32,7 +32,7 @@ async fn run() -> Result<(), String> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args == ["--help"] {
         println!(
-            "Töre 0.12.0 — Konuya Geri Dön: --archive MUTLAK_KLASÖR --data MUTLAK_KLASÖR [--listen 127.0.0.1:0] [--open]"
+            "Töre 0.12.1 — Konuya Geri Dön: --archive MUTLAK_KLASÖR --data MUTLAK_KLASÖR [--listen 127.0.0.1:0] [--open]"
         );
         return Ok(());
     }

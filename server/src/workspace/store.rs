@@ -35,7 +35,7 @@ pub struct Disk {
     #[cfg(test)]
     fail_after_rename: bool,
 }
-pub(super) fn no_symlinks(path: &Path) -> Result<(), String> {
+fn no_symlinks(path: &Path) -> Result<(), String> {
     for p in path.ancestors() {
         if fs::symlink_metadata(p).is_ok_and(|m| m.file_type().is_symlink()) {
             return Err("Depo yolu sembolik bağ içeremez".into());
@@ -43,7 +43,7 @@ pub(super) fn no_symlinks(path: &Path) -> Result<(), String> {
     }
     Ok(())
 }
-pub(super) fn private_options() -> OpenOptions {
+fn private_options() -> OpenOptions {
     let mut o = OpenOptions::new();
     o.write(true).read(true);
     #[cfg(unix)]

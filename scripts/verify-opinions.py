@@ -15,7 +15,7 @@ import urllib.error
 import urllib.request
 
 ROOT = Path(__file__).resolve().parent.parent
-REPORT = {"version": "0.12.0", "syntheticDataOnly": True,
+REPORT = {"version": "0.12.1", "syntheticDataOnly": True,
           "externalModelCalls": 0, "steps": [], "passed": False}
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
@@ -63,7 +63,7 @@ def run():
                 if ready.exists():
                     runtime = json.loads(ready.read_text())
                     if runtime["pid"] == process.pid:
-                        assert call("status")["version"] == "0.12.0"
+                        assert call("status")["version"] == "0.12.1"
                         return
                 time.sleep(0.05)
             raise AssertionError("Server readiness timed out")

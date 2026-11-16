@@ -2,6 +2,8 @@
 
 **15 Kasım 2026 · Karar verildi: A yolu, PolyForm Noncommercial 1.0.0.**
 
+> **Güncelleme (16 Kasım 2026, 0.12.1).** Özgün kod yeniden AGPL-3.0-only ile sunuluyor; ayrıca ticari lisans alınabilir (bkz. `COMMERCIAL-LICENSE.md`). Aşağıdaki metin önceki kararın tarihsel kaydıdır.
+
 > **Karar (15 Kasım 2026, 0.11.0-rc.4).** A yolunu seçtin. 0.11.0-rc.4 sürümünden itibaren özgün kod, resmî metni değiştirilmeden PolyForm Noncommercial 1.0.0 ile sunulur; `LICENSE`, `NOTICE.md`, paket üstverisi ve README buna göre eşitlendi. Standart metnin verdiği izinler olduğu gibi geçerlidir; aşağıda A için anlatılan kurum izinleri ve ayrı dağıtım izni buna dahildir. Lisansın izin vermediği kullanımlar, özellikle ticari kullanım, ayrı yazılı iznine bağlıdır; başvuru yolu henüz belirlenmedi. 0.11.0-rc.3 ve önceki sürümler AGPL-3.0-only olarak hazırlanmıştı; o sürümler için verilmiş haklar geriye dönük kaldırılmaz. Kamuya yayın yapılmadı; yayın ayrı karardır.
 >
 > Aşağıdaki metin karardan önce yazılmış seçenek notudur ve o günkü durumu anlatır.

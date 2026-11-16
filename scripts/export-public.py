@@ -16,11 +16,11 @@ preview = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(preview)
 
 # Reviewed additions on top of the audited preview allowlist.
-EXTRA = ['scripts/export-public.py', 'ABOUT.md']
+EXTRA = ['scripts/export-public.py', 'ABOUT.md', 'COMMERCIAL-LICENSE.md', 'CONTRIBUTING.md']
 EXTRA_PATTERNS = [r'docs/RELEASE-0\.(?:1[2-9]|[2-9]\d)\.\d+\.md']
 # Screenshots are binary and cannot be pattern-scanned: each one is listed by name
 # after a person has looked at it and confirmed it shows synthetic data only.
-REVIEWED_IMAGES = ['docs/images/topic.png', 'docs/images/record.png', 'docs/images/thinkers.png', 'docs/images/dreams.png']
+REVIEWED_IMAGES = ['docs/images/topic.png', 'docs/images/record.png', 'docs/images/thinkers.png']
 
 
 def tracked():

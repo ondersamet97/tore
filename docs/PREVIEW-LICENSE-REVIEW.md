@@ -2,6 +2,8 @@
 
 Date: 2026-11-15. Audit baseline: private commit `e4610bfa6fda7e6ad35696346b6e4f3a4ab6de3d` (Töre 0.10.0), with notice additions prepared for 0.11.
 
+> **Update 2026-11-16, 0.12.1.** The owner returned to AGPL-3.0-only for the original code and offers a separate commercial licence (see `COMMERCIAL-LICENSE.md`). The analysis below is kept as a historical record of the earlier decision.
+
 > **Update 2026-11-15, 0.11.0-rc.4.** The owner chose approach A. From 0.11.0-rc.4 the original code is offered under the unmodified PolyForm Noncommercial License 1.0.0, and `LICENSE`, `NOTICE.md`, package metadata and README were synchronized (release gate 1). Third-party terms are unchanged. The audit below was written before that decision at the stated baseline and describes the AGPL status at that time; it is kept as the record of the review. Publication remains blocked pending the remaining release gates and the owner's separate authorization.
 
 **Publication status: blocked pending the owner's license choice and final artifact checks.** This is a decision report, not a new license or legal opinion. The existing `LICENSE` remains AGPL-3.0-only. None of the options below is adopted by this document. Preparing a local preview does not authorize a public repository, upload, deployment, or application submission.

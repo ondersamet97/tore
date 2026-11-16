@@ -17,9 +17,9 @@
 </p>
 
 <p align="center">
-  <img alt="Version 0.12.0" src="https://img.shields.io/badge/version-0.12.0-2b4eff">
+  <img alt="Version 0.12.1" src="https://img.shields.io/badge/version-0.12.1-2b4eff">
   <img alt="Status: preview" src="https://img.shields.io/badge/status-preview-0f1115">
-  <img alt="Licence: PolyForm Noncommercial 1.0.0" src="https://img.shields.io/badge/licence-PolyForm%20Noncommercial%201.0.0-0f1115">
+  <img alt="Licence: AGPL-3.0" src="https://img.shields.io/badge/licence-AGPL--3.0-0f1115">
   <img alt="Platform: macOS" src="https://img.shields.io/badge/platform-macOS-0f1115">
   <img alt="Runs locally" src="https://img.shields.io/badge/runs-locally-0f1115">
 </p>
@@ -48,7 +48,7 @@ töre is built around one question: **where did I leave off?**
   <img src="docs/images/record.png" alt="A decision opened next to the original quote it came from, with separate review, adoption and currency states" width="760">
 </p>
 
-## What is in 0.12.0
+## What is in 0.12.1
 
 ### Topics: return to unfinished thinking
 
@@ -67,21 +67,11 @@ töre does not score your affinity, rank you or infer an identity. Linking and u
   <img src="docs/images/thinkers.png" alt="The thinkers page with one thinker opened and a notebook record linked to it by the user" width="760">
 </p>
 
-### Dreams: write down a dream in under three minutes *(experimental)*
-
-Record a morning dream in your own words. Offline rules suggest codes for characters, emotions, settings and themes; you confirm them, and your original account stays unchanged. A timer shows how long the entry took.
-
-You can consent, dream by dream, to include one in a dataset file for AI training. You create that file yourself. Only consented, confirmed dreams with no remaining known personal-data patterns go in, with month-level dates. Nothing is sold or sent, and anonymity is not guaranteed.
-
-<p align="center">
-  <img src="docs/images/dreams.png" alt="The dream notebook with one saved synthetic dream, its confirmed codes and its consent state" width="760">
-</p>
-
 ## Principles
 
 - **Three voices stay distinct.** The original quote, your own words and the AI's interpretation are kept apart and labelled.
 - **Nothing becomes your view silently.** Silence is not consent. An AI suggestion starts unadopted and stays labelled as AI material.
-- **Local by default.** The server binds to loopback on your own computer. Organising topics, linking thinkers and coding dreams call no language model and no paid service.
+- **Local by default.** The server binds to loopback on your own computer. Organising topics and linking thinkers call no language model and no paid service.
 - **It does not compete for your attention.** No notifications, no streaks, no infinite feed.
 
 ## Quick start
@@ -115,12 +105,11 @@ node --test local-reader/tests/*.test.cjs
 - Private operations are protected by a session token and Host/Origin checks.
 - Copying context to the clipboard is a separate, deliberate action. The destination service receives the text only if you paste and send it there; clipboard history and the destination's retention are outside töre's control.
 - Optional connections to AI services exist but are experimental and are not needed for anything described above.
-- Dream dictation uses macOS's own dictation; töre does not record or upload audio.
 - This repository contains source code and synthetic fixtures only. It contains no personal notebook, conversation or credential.
 
 ## Limitations
 
-töre is a single-user preview. There is no multi-user isolation, cloud sync, hosted service or availability guarantee. Records are statements you reviewed, not verified truths. Rule-based dream codes are suggestions, not analysis. See [known limitations](docs/PREVIEW-LIMITATIONS.md).
+töre is a single-user preview. There is no multi-user isolation, cloud sync, hosted service or availability guarantee. Records are statements you reviewed, not verified truths. See [known limitations](docs/PREVIEW-LIMITATIONS.md).
 
 ## Documentation
 
@@ -130,7 +119,7 @@ töre is a single-user preview. There is no multi-user isolation, cloud sync, ho
 | [Record and API contract](docs/RECORDS-CONTRACT.md) | Record states, operations and storage rules |
 | [Demo script](docs/PREVIEW-DEMO.md) | A synthetic walk-through in two to three minutes |
 | [Known limitations](docs/PREVIEW-LIMITATIONS.md) | What this preview does not do |
-| [0.12.0 release note](docs/RELEASE-0.12.0.md) | What changed and how it was checked |
+| [0.12.1 release note](docs/RELEASE-0.12.1.md) | What changed and how it was checked |
 | [Third-party notices](docs/THIRD-PARTY-NOTICES.md) | Licences of bundled and linked components |
 
 ## Releases
@@ -139,12 +128,14 @@ This repository is updated release by release, starting with 0.12.0. Day-to-day 
 
 ## Licence
 
-**Source-available, noncommercial.** The original code is offered under the [PolyForm Noncommercial License 1.0.0](LICENSE); the required copyright notice is in [NOTICE.md](NOTICE.md). You may read, run and modify it for noncommercial purposes. Commercial use needs the owner's separate written permission. This is not an open-source licence.
+**Open source, with a commercial option.** töre is free software under the [GNU Affero General Public License v3](LICENSE) (AGPL-3.0-only). You may use, study, modify and share it; if you distribute it or run a modified version as a network service, you must offer your source under the same licence.
 
-Third-party code keeps its own licences in `licenses/`, `vendor/` and `local-reader/vendor/`. Your conversations, notes and exported datasets are yours and are not covered by the software licence.
+If those terms do not work for you, for example because you want to build töre into a closed product, a separate [commercial licence](COMMERCIAL-LICENSE.md) is available from the owner.
+
+Third-party code keeps its own licences in `licenses/`, `vendor/` and `local-reader/vendor/`. Your conversations and notes are yours and are not covered by the software licence. Copyright notice and licence history: [NOTICE.md](NOTICE.md).
 
 ## About me
 
-töre is an independent project by Önder Samet. Who I am, why I am building töre and what I hold to are in **[About me](ABOUT.md)**.
+töre is an independent project by Önder Samet. Before töre I worked on AI training data and evaluation at Yandex, as AI Editor and then AI Lead Editor, and in video production, including part-time at the Human Resources Office of the Presidency of the Republic of Türkiye. Who I am, why I am building töre and what I hold to are in **[About me](ABOUT.md)**.
 
-Questions and commercial-use requests: [töre on LinkedIn](https://www.linkedin.com/company/tore-app/).
+Contact: <onders97@hotmail.com> · [töre on LinkedIn](https://www.linkedin.com/company/tore-app/)

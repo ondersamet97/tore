@@ -41,7 +41,7 @@ async function setup(t, options={}) {
     if(options.failOp===op)return {ok:false,status:400,json:async()=>({error:'SENTETİK işlem hatası'})};
     let result;
     switch(op){
-      case 'status':result={version:'0.12.0',conversationCount:conversations.length,draftCount:drafts.length,keyConfigured:configured,budgetUsd:0,developers};break;
+      case 'status':result={version:'0.12.1',conversationCount:conversations.length,draftCount:drafts.length,keyConfigured:configured,budgetUsd:0,developers};break;
       case 'list':result={conversations};break;
       case 'conversation':result=conversations.find(c=>c.id===body.id);break;
       case 'catalog':result={models,source:body.refresh?'remote-test':'local-test',updatedAt:'2026-11-14T10:00:00Z',warnings:[]};break;

@@ -24,22 +24,6 @@ pub fn asset(path: &str) -> Response {
             "text/javascript; charset=utf-8",
             include_bytes!("../../web/thinkers.js"),
         )),
-        "ruyalar" => Some((
-            "text/html; charset=utf-8",
-            include_bytes!("../../web/dreams.html"),
-        )),
-        "dreams.js" => Some((
-            "text/javascript; charset=utf-8",
-            include_bytes!("../../web/dreams.js"),
-        )),
-        "dream-rules.js" => Some((
-            "text/javascript; charset=utf-8",
-            include_bytes!("../../web/dream-rules.js"),
-        )),
-        "dreams.css" => Some((
-            "text/css; charset=utf-8",
-            include_bytes!("../../web/dreams.css"),
-        )),
         "gorusler" => Some((
             "text/html; charset=utf-8",
             include_bytes!("../../web/opinions.html"),

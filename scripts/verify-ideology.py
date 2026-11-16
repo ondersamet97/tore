@@ -20,7 +20,7 @@ import urllib.request
 import uuid
 
 ROOT = Path(__file__).resolve().parent.parent
-REPORT = {"version": "0.12.0", "syntheticDataOnly": True, "realModelCalls": 0,
+REPORT = {"version": "0.12.1", "syntheticDataOnly": True, "realModelCalls": 0,
           "externalRequests": 0, "externalNetworkBlocked": False,
           "httpRequests": 0, "steps": [], "passed": False,
           "limitations": ["Model quality and live provider access are not tested.",
@@ -118,7 +118,7 @@ def run(binary):
                 if ready.exists():
                     runtime = json.loads(ready.read_text())
                     if runtime["pid"] == process.pid:
-                        assert call("status")["version"] == "0.12.0"
+                        assert call("status")["version"] == "0.12.1"
                         REPORT["externalNetworkBlocked"] = True
                         return
                 time.sleep(.05)

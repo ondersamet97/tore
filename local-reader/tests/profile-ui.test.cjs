@@ -69,7 +69,7 @@ test('hazır Töre HTML: eski rapor → kendi profilim → üç alan/geçmiş �
     click('choose');
     await waitFor(() => !$('choose').disabled && $('list').textContent.includes(fixture.report.title), 'Eski arşiv açılmadı.');
     assert.match(w.document.title, /Töre/);
-    assert.equal(w.document.querySelector('.version').textContent, '0.12.0');
+    assert.equal(w.document.querySelector('.version').textContent, '0.12.1');
     assert.deepEqual(await fs.readFile(path.join(fixture.dirPath, 'arsiv.json')), fixture.rawManifest);
     assert.deepEqual(await fs.readFile(path.join(fixture.dirPath, fixture.report.path)), fixture.bytes);
   });
