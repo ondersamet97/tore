@@ -41,7 +41,7 @@ töre is built around one question: **where did I leave off?**
 | | |
 |---|---|
 | **1. Bring your conversations** | Import conversations you already have from ChatGPT, Claude or Codex into a workspace on your own computer. |
-| **2. Review what matters** | Pick a quote and turn it into a source-linked decision, opinion or open question. You decide what to adopt, what to revise and what stays open. |
+| **2. Review what matters** | töre proposes source-linked candidates from your history: decisions, opinions and open questions. Nothing counts until you confirm it; you decide what to adopt, what to revise and what stays open. You can also pick a quote yourself. |
 | **3. Continue with context** | When you return to a topic, choose the reviewed context to carry forward and paste it into the AI tool of your choice. Nothing goes anywhere unless you send it. |
 
 <p align="center">
