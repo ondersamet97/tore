@@ -4,6 +4,7 @@ mod ideology;
 mod importers;
 mod opinions;
 mod policy;
+mod claude_code;
 mod records;
 mod store;
 pub mod transport;
@@ -16,7 +17,7 @@ use axum::{
     routing::post,
 };
 use base64::Engine;
-pub use records::{SharedContext, shared_contexts};
+pub use records::{EXPORT_CSS, SharedContext, ToolTopic, shared_contexts, tool_propose, tool_topic_text, tool_topics};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
@@ -152,6 +153,10 @@ async fn dispatch(s: Arc<Workspace>, op: &str, r: Value) -> Result<Value, String
         "records-review" => lock(&s.records)?.review(r),
         "records-prepare" => lock(&s.records)?.prepare(r),
         "records-share" => lock(&s.records)?.share(r),
+        "records-tool-access" => lock(&s.records)?.tool_access_set(r),
+        "inbox" => lock(&s.records)?.inbox_view(),
+        "inbox-accept" => lock(&s.records)?.inbox_accept(r),
+        "inbox-dismiss" => lock(&s.records)?.inbox_dismiss(r),
         "records-reply" => lock(&s.records)?.reply_save(r),
         "records-backup" => lock(&s.records)?.backup(),
         "records-restore" => {
@@ -340,6 +345,55 @@ async fn dispatch(s: Arc<Workspace>, op: &str, r: Value) -> Result<Value, String
                 .map(|v| serde_json::to_vec(v).map(|b| b.len()).unwrap_or(usize::MAX))
                 .sum();
             if previews.len() >= 8 || size.saturating_add(existing) > 256 * 1024 * 1024 {
+                return Err("Önizleme belleği dolu; mevcut önizlemeyi kaydedin veya uygulamayı yeniden açın".into());
+            }
+            previews.insert(preview_id.clone(), conversations.clone());
+            Ok(json!({"previewId":preview_id,"conversations":conversations}))
+        }
+        "claude-code-sessions" => {
+            let projects = claude_code::projects_dir().ok_or("Ev klasörü bulunamadı")?;
+            let known: BTreeSet<String> = lock(&s.disk)?
+                .data
+                .conversations
+                .values()
+                .map(|c| c.source_conversation_id.clone())
+                .collect();
+            let sessions: Vec<Value> = claude_code::sessions(&projects)
+                .into_iter()
+                .map(|mut v| {
+                    let seen = v["sourceConversationId"]
+                        .as_str()
+                        .is_some_and(|id| known.contains(id));
+                    v["imported"] = json!(seen);
+                    v
+                })
+                .collect();
+            Ok(json!({"sessions":sessions}))
+        }
+        "claude-code-preview" => {
+            let ids = r["sessionIds"].as_array().ok_or("Oturum seçin")?;
+            if ids.is_empty() || ids.len() > 50 {
+                return Err("Bir seferde 1 ile 50 arasında oturum seçin".into());
+            }
+            let projects = claude_code::projects_dir().ok_or("Ev klasörü bulunamadı")?;
+            let ids: Vec<String> = ids
+                .iter()
+                .map(|v| v.as_str().map(str::to_owned).ok_or("Oturum kimliği geçersiz"))
+                .collect::<Result<_, _>>()?;
+            let conversations = tokio::task::spawn_blocking(move || {
+                let docs: Vec<Value> = ids
+                    .iter()
+                    .map(|id| claude_code::document(&projects, id))
+                    .collect::<Result<_, _>>()?;
+                let bytes = serde_json::to_vec(&json!({"conversations":docs}))
+                    .map_err(|_| "Oturum kodlanamadı".to_string())?;
+                importers::parse("generic", "conversations.json", &bytes)
+            })
+            .await
+            .map_err(|_| "Oturum inceleme işlemi tamamlanamadı")??;
+            let preview_id = policy::id();
+            let mut previews = lock(&s.previews)?;
+            if previews.len() >= 8 {
                 return Err("Önizleme belleği dolu; mevcut önizlemeyi kaydedin veya uygulamayı yeniden açın".into());
             }
             previews.insert(preview_id.clone(), conversations.clone());

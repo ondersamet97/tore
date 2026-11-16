@@ -168,7 +168,7 @@ if(['nav-reports','nav-self','nav-thinkers','nav-comparisons'].includes(event.ta
   if(!supported)message('Bu ortamda güvenli File System Access API kullanılamıyor. Töre.html dosyasını Mac’te masaüstü Chrome ile açın. Disk izni olmadan kalıcı kayıt yapılmaz.',true);
   if(hosted){
     $('native-stop').hidden=false;$('native-stop').onclick=()=>task(async()=>{if(!allowNoteLeave())return;try{await readingUI?.flush();}catch(e){if(!confirm('Son okuma işlemi tamamlanamadı: '+e.message+' Son konum/not kaydedilmemiş olabilir. Yerel hizmet yine de kapatılsın mı?'))throw e;}message(await ToreRemote.stop());});
-    message('Yerel arşiv açılıyor; veri klasörü seçmeniz gerekmiyor.');$('choose').textContent='Arşivi yeniden aç';$('folder').textContent='Yerel arşive bağlanılıyor…';$('network-link').hidden=false;$('sources-link').hidden=false;/* Legacy integration services are deliberately absent from this isolated demo. */
+    $('app-topbar').hidden=false;$('back-to-topics').hidden=false;message('Yerel arşiv açılıyor; veri klasörü seçmeniz gerekmiyor.');$('choose').textContent='Arşivi yeniden aç';$('folder').textContent='Yerel arşive bağlanılıyor…';$('network-link').hidden=false;$('sources-link').hidden=false;/* Legacy integration services are deliberately absent from this isolated demo. */
     $('welcome').replaceChildren();const title=document.createElement('h2');title.textContent='Özel arşiviniz hazır.';const info=document.createElement('p');info.textContent='Raporlar bilgisayarınızdaki Töre Verileri klasöründen otomatik açılır. Profilim ve Düşünürler alanında görüşleri siz kaydedersiniz. Ağ paylaşımı ayrı ve isteğe bağlıdır.';$('welcome').append(title,info);
     task(async()=>attach(await ToreRemote.getRoot()));
   }

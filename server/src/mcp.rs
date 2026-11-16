@@ -1,11 +1,15 @@
-//! Read-only Model Context Protocol adapter over stdio.
+//! Model Context Protocol adapter over stdio.
 //!
 //! One JSON-RPC 2.0 message per line on stdin and stdout. stdout carries only
 //! protocol messages; short diagnostics without personal content go to stderr.
 //! The adapter exposes nothing but packets the person explicitly opened to a
-//! connected AI tool, reads the notebook fresh for every tool call, never takes
-//! the notebook lock and never writes to disk.
-use crate::workspace::{SharedContext, shared_contexts};
+//! connected AI tool and topics they opened, reads the notebook fresh for every
+//! tool call and never takes the notebook lock. It never writes to the notebook:
+//! with separate consent per topic a tool may append a proposal to an inbox
+//! file, which becomes a record only when the person accepts it in töre.
+use crate::workspace::{
+    SharedContext, ToolTopic, shared_contexts, tool_propose, tool_topic_text, tool_topics,
+};
 use serde_json::{Map, Value, json};
 use std::{
     io::{BufRead, Write},
@@ -16,6 +20,47 @@ pub const SUPPORTED_VERSIONS: [&str; 3] = ["2025-06-18", "2025-03-26", "2024-11-
 const LIST_TOOL: &str = "tore_list_shared_contexts";
 const GET_TOOL: &str = "tore_get_shared_context";
 const PREAMBLE: &str = "This context comes from töre, a local notebook, and the person explicitly shared exactly this text with you. Respect its labels: an adopted decision or opinion (KULLANICININ BENİMSEDİĞİ KARAR / GÖRÜŞ), an open question (AÇIK SORU — GÖRÜŞ DEĞİL) and an unadopted AI suggestion (BENİMSENMEMİŞ AI ÖNERİSİ) are different things; never treat one as another, and keep quotes attributed to their original speaker.";
+const TOPICS_TOOL: &str = "tore_list_topics";
+const TOPIC_TOOL: &str = "tore_get_topic";
+const PROPOSE_TOOL: &str = "tore_propose";
+const NOT_OPEN: &str = "No töre topic with this id is open to you. It may not exist, or the person has closed it. Call tore_list_topics to see what is open now.";
+
+/// Topic-level access. Every call reads the notebook afresh, so opening or
+/// closing a topic in töre takes effect on the next call.
+pub trait Topics {
+    fn list(&self) -> Result<Vec<ToolTopic>, String>;
+    fn text(&self, id: &str) -> Result<Option<String>, String>;
+    fn propose(
+        &self,
+        topic: &str,
+        kind: &str,
+        text: &str,
+        relates_to: Option<&str>,
+    ) -> Result<String, String>;
+}
+
+struct DiskTopics {
+    data: PathBuf,
+    client: std::cell::RefCell<String>,
+}
+impl Topics for DiskTopics {
+    fn list(&self) -> Result<Vec<ToolTopic>, String> {
+        tool_topics(&self.data)
+    }
+    fn text(&self, id: &str) -> Result<Option<String>, String> {
+        tool_topic_text(&self.data, id)
+    }
+    fn propose(
+        &self,
+        topic: &str,
+        kind: &str,
+        text: &str,
+        relates_to: Option<&str>,
+    ) -> Result<String, String> {
+        tool_propose(&self.data, &self.client.borrow(), topic, kind, text, relates_to)
+    }
+}
+
 const NOT_SHARED: &str = "No shared töre context has this id. It may never have been shared, or the person has closed it. Call tore_list_shared_contexts to see what is shared now.";
 
 pub fn run(args: &[String]) -> Result<(), String> {
@@ -31,7 +76,11 @@ pub fn run(args: &[String]) -> Result<(), String> {
     if !std::fs::symlink_metadata(&data).is_ok_and(|m| m.is_dir()) {
         return Err("--data klasörü bulunamadı; Töre'yi bu klasörle en az bir kez açın".into());
     }
-    eprintln!("tore mcp: ready (read-only; only contexts the person shared are visible)");
+    eprintln!("tore mcp: ready (only what the person opened is visible; proposals wait in the töre inbox)");
+    let topics = DiskTopics {
+        data: data.clone(),
+        client: std::cell::RefCell::new(String::new()),
+    };
     let stdin = std::io::stdin();
     let mut input = stdin.lock();
     let stdout = std::io::stdout();
@@ -47,8 +96,16 @@ pub fn run(args: &[String]) -> Result<(), String> {
         if text.trim().is_empty() {
             continue;
         }
+        // The tool names itself once; the name labels its proposals in töre.
+        if let Ok(v) = serde_json::from_str::<Value>(&text) {
+            if v["method"] == "initialize" {
+                if let Some(name) = v["params"]["clientInfo"]["name"].as_str() {
+                    *topics.client.borrow_mut() = name.to_owned();
+                }
+            }
+        }
         let load = || shared_contexts(&data);
-        if let Some(reply) = handle_line(&text, &load) {
+        if let Some(reply) = handle(&text, &load, Some(&topics)) {
             let mut out = stdout.lock();
             if writeln!(out, "{reply}").and_then(|_| out.flush()).is_err() {
                 return Ok(());
@@ -58,7 +115,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
 }
 
 pub fn help() -> &'static str {
-    "tore-server mcp --data MUTLAK_KLASÖR\nBağlı AI aracı için salt okunur MCP sunucusu (stdio). Yalnız Konularım'da açıkça \"Bağlı AI aracına aç\" dediğin devam metinlerini okutur; hiçbir şey yazmaz."
+    "tore-server mcp --data MUTLAK_KLASÖR\nBağlı AI aracı için MCP sunucusu (stdio). Yalnız Konularım'da açıkça açtığın devam metinlerini ve konuları okutur. Deftere yazmaz; izin verdiğin konularda aracın önerileri ayrı bir gelen kutusunda senin kabulünü bekler."
 }
 
 fn reply(id: &Value, result: Value) -> String {
@@ -73,6 +130,38 @@ fn tool_text(text: String, is_error: bool) -> Value {
         v["isError"] = json!(true);
     }
     v
+}
+
+fn topic_tools() -> Value {
+    let read = |title: &str| json!({"title":title,"readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false});
+    json!([
+        {
+            "name": TOPICS_TOOL,
+            "title": "List topics opened from töre",
+            "description": "Lists the töre topics the person opened to this tool: id, title, goal, number of open tasks and open questions, and whether proposals are allowed. Nothing else from töre is visible.",
+            "inputSchema": {"type":"object","properties":{},"additionalProperties":false},
+            "annotations": read("List topics opened from töre")
+        },
+        {
+            "name": TOPIC_TOOL,
+            "title": "Read one opened töre topic",
+            "description": "Returns the working context of one opened topic: the person's adopted decisions and opinions, open tasks and open questions, each with its record id. Respect the labels; an open task or question is not a decision.",
+            "inputSchema": {"type":"object","properties":{"topicId":{"type":"string","description":"Topic id from tore_list_topics"}},"required":["topicId"],"additionalProperties":false},
+            "annotations": read("Read one opened töre topic")
+        },
+        {
+            "name": PROPOSE_TOOL,
+            "title": "Leave a proposal in the töre inbox",
+            "description": "Leaves one proposal for the person in töre's inbox for a topic that allows proposals. Use it to report the result of a task, or to suggest a decision, a question, a new task, a note or an objection to one of the person's positions. It does not change the notebook: the person decides whether to accept it, and an accepted proposal stays an unreviewed AI proposal. Write in the person's language, one self-contained proposal per call. Never claim that a task is closed; only the person closes a task.",
+            "inputSchema": {"type":"object","properties":{
+                "topicId":{"type":"string","description":"Topic id from tore_list_topics"},
+                "kind":{"type":"string","enum":["note","decision","question","task","objection"]},
+                "text":{"type":"string","description":"The proposal, at most 8000 bytes"},
+                "relatesTo":{"type":"string","description":"Optional record id from tore_get_topic, e.g. the task this result belongs to. Required for an objection."}
+            },"required":["topicId","kind","text"],"additionalProperties":false},
+            "annotations": {"title":"Leave a proposal in the töre inbox","readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false}
+        }
+    ])
 }
 
 fn tools() -> Value {
@@ -115,6 +204,7 @@ fn summary(c: &SharedContext) -> Value {
 fn call_tool(
     params: &Map<String, Value>,
     load: &dyn Fn() -> Result<Vec<SharedContext>, String>,
+    topics: Option<&dyn Topics>,
 ) -> Result<Value, (i64, &'static str)> {
     let name = params
         .get("name")
@@ -165,15 +255,66 @@ fn call_tool(
                 None => tool_text(NOT_SHARED.into(), true),
             })
         }
+        TOPICS_TOOL | TOPIC_TOOL | PROPOSE_TOOL if topics.is_some() => {
+            let topics = topics.ok_or((-32602, "Unknown tool"))?;
+            let unreadable = || tool_text("The töre notebook could not be read right now.".into(), true);
+            let text_arg = |key: &'static str| args.get(key).and_then(Value::as_str);
+            Ok(match name {
+                TOPICS_TOOL => match topics.list() {
+                    Err(_) => unreadable(),
+                    Ok(list) => {
+                        let message = if list.is_empty() {
+                            "No töre topic is open to you right now. The person can open one on the Konularım page."
+                        } else {
+                            "These topics were explicitly opened by the person. Read one with tore_get_topic."
+                        };
+                        let body = json!({"message":message,"topics":list.iter().map(|t| json!({
+                            "id":t.id,"title":t.title,"goal":t.goal,"proposalsAllowed":t.can_write,
+                            "openTasks":t.open_tasks,"openQuestions":t.open_questions})).collect::<Vec<_>>()});
+                        let mut result = tool_text(body.to_string(), false);
+                        result["structuredContent"] = body;
+                        result
+                    }
+                },
+                TOPIC_TOOL => {
+                    let id = text_arg("topicId").ok_or((-32602, "Argument topicId (string) is required"))?;
+                    match topics.text(id) {
+                        Err(_) => unreadable(),
+                        Ok(Some(text)) => tool_text(format!("{PREAMBLE}\n{text}"), false),
+                        Ok(None) => tool_text(NOT_OPEN.into(), true),
+                    }
+                }
+                _ => {
+                    let topic = text_arg("topicId").ok_or((-32602, "Argument topicId (string) is required"))?;
+                    let kind = text_arg("kind").ok_or((-32602, "Argument kind (string) is required"))?;
+                    let text = text_arg("text").ok_or((-32602, "Argument text (string) is required"))?;
+                    match topics.propose(topic, kind, text, text_arg("relatesTo")) {
+                        Ok(id) => tool_text(format!("Left in the töre inbox as {id}. It is not part of the notebook until the person accepts it."), false),
+                        Err(e) if e.is_ascii() => tool_text(e, true),
+                        Err(_) => unreadable(),
+                    }
+                }
+            })
+        }
         _ => Err((-32602, "Unknown tool")),
     }
 }
 
-/// Pure request handler: one input line in, at most one output line out.
-/// `load` returns only shared contexts and is called afresh for every tool call.
+/// Context-only handler: the two read-only tools, nothing about topics.
+#[cfg_attr(not(test), allow(dead_code))]
 pub fn handle_line(
     line: &str,
     load: &dyn Fn() -> Result<Vec<SharedContext>, String>,
+) -> Option<String> {
+    handle(line, load, None)
+}
+
+/// Pure request handler: one input line in, at most one output line out.
+/// `load` and `topics` are called afresh for every tool call.
+pub fn handle(
+    line: &str,
+    load: &dyn Fn() -> Result<Vec<SharedContext>, String>,
+    topics: Option<&dyn Topics>,
 ) -> Option<String> {
     let message: Value = match serde_json::from_str(line) {
         Ok(v) => v,
@@ -214,13 +355,23 @@ pub fn handle_line(
                     "protocolVersion": version,
                     "capabilities": {"tools": {}},
                     "serverInfo": {"name": "tore", "title": "töre", "version": env!("CARGO_PKG_VERSION")},
-                    "instructions": "Read-only. Only contexts the person explicitly shared from töre are visible. Respect the labels in each context. Your reply does not flow back into töre; the person brings it back themselves."
+                    "instructions": if topics.is_some() {
+                        "Only contexts and topics the person explicitly opened in töre are visible. Respect the labels: adopted decision, open task, open question and unadopted AI suggestion are different things. You cannot change the notebook. Where the person allowed it, tore_propose leaves a proposal in an inbox that they review; nothing you write is adopted or closes a task by itself."
+                    } else {
+                        "Read-only. Only contexts the person explicitly shared from töre are visible. Respect the labels in each context. Your reply does not flow back into töre; the person brings it back themselves."
+                    }
                 }),
             )
         }
         "ping" => reply(&id, json!({})),
-        "tools/list" => reply(&id, json!({"tools": tools()})),
-        "tools/call" => match call_tool(&params, load) {
+        "tools/list" => {
+            let mut all = tools();
+            if let (Some(_), Some(list), Value::Array(more)) = (topics, all.as_array_mut(), topic_tools()) {
+                list.extend(more);
+            }
+            reply(&id, json!({"tools": all}))
+        }
+        "tools/call" => match call_tool(&params, load, topics) {
             Ok(result) => reply(&id, result),
             Err((code, message)) => error(&id, code, message),
         },

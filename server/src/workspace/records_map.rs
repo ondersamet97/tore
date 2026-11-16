@@ -107,6 +107,29 @@ struct ExportInput {
     confirmed_by_user: bool,
 }
 
+impl MapEntry {
+    /// An accepted tool objection is placed under the position it answers, as
+    /// a suggested placement the person has not confirmed.
+    pub(super) fn suggested_objection(record_id: &str, parent: &MapEntry, time: &str) -> Self {
+        Self {
+            id: id(),
+            record_id: record_id.into(),
+            section: parent.section.clone(),
+            role: "objection".into(),
+            parent_id: Some(parent.id.clone()),
+            counterpart: String::new(),
+            label: String::new(),
+            note: String::new(),
+            order: 0,
+            placement: "suggested".into(),
+            translation_en: None,
+            created_at: time.into(),
+            updated_at: time.into(),
+            creation_request_hash: digest(record_id.as_bytes()),
+        }
+    }
+}
+
 const MAX_ENTRIES: usize = 3000;
 const ROLES: [&str; 8] = [
     "premise",
@@ -186,6 +209,9 @@ fn check_entry(s: &Store, e: &MapEntry) -> Result<(), String> {
         || !valid_translation(&e.translation_en)
     {
         return Err("Harita girdisi geçersiz".into());
+    }
+    if record.kind == "task" {
+        return Err("İşler haritaya konmaz; harita görüş, karar ve sorular içindir".into());
     }
     if (e.role == "open_question") != (record.kind == "question") {
         return Err("Açık soru rolü yalnız soru kaydıyla kullanılır".into());
@@ -298,7 +324,7 @@ impl Words {
     }
 }
 
-const EXPORT_CSS: &str = "body{font:17px/1.6 Georgia,serif;color:#0f1115;background:#f6f6f3;max-width:46rem;margin:0 auto;padding:2rem 1.2rem 4rem}h1{font-size:2.1rem;margin:0 0 .3rem}h2{margin:3rem 0 .2rem;border-top:2px solid #0f1115;padding-top:1rem}h3{font-size:1.05rem;margin:0 0 .3rem}.q{color:#555;margin:0 0 1.2rem}.e{margin:1.2rem 0;padding:.2rem 0 .2rem 1rem;border-left:3px solid #2b4eff}.e .e{border-left-color:#b9bcc6;margin:.8rem 0}.role{font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#2b4eff}.meta,.note,.tr{font:.82rem/1.5 system-ui,sans-serif;color:#555;margin:.3rem 0}.text{margin:.2rem 0;white-space:pre-wrap}.orig{color:#555;font-size:.92rem;white-space:pre-wrap}.notice{font:.85rem/1.5 system-ui,sans-serif;background:#fff;border:1px solid #d9dbe2;padding:.8rem 1rem;margin:1rem 0}.sug{color:#8a5a00}";
+pub const EXPORT_CSS: &str = "body{font:17px/1.6 Georgia,serif;color:#0f1115;background:#f6f6f3;max-width:46rem;margin:0 auto;padding:2rem 1.2rem 4rem;overflow-wrap:anywhere}h1{font-size:2.1rem;margin:0 0 .3rem}h2{margin:3rem 0 .2rem;border-top:2px solid #0f1115;padding-top:1rem}h3{font-size:1.05rem;margin:0 0 .3rem}.q{color:#555;margin:0 0 1.2rem}.e{margin:1.2rem 0;padding:.2rem 0 .2rem 1rem;border-left:3px solid #2b4eff}.e .e{border-left-color:#b9bcc6;margin:.8rem 0}.role{font:600 .8rem/1.2 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#2b4eff}.meta,.note,.tr{font:.82rem/1.5 system-ui,sans-serif;color:#555;margin:.3rem 0}.text{margin:.2rem 0;white-space:pre-wrap}.orig{color:#555;font-size:.92rem;white-space:pre-wrap}.text,.orig,.q,.meta,.note,.tr{max-width:70ch}.notice{font:.85rem/1.5 system-ui,sans-serif;background:#fff;border:1px solid #d9dbe2;padding:.8rem 1rem;margin:1rem 0}.sug{color:#8a5a00}@media print{@page{margin:18mm}body{background:#fff;color:#000;max-width:none;margin:0;padding:0;font-size:11pt}.e{break-inside:avoid}h2{break-after:avoid}.notice{border-color:#999}}";
 
 impl Disk {
     fn map_item(&self, e: &MapEntry) -> Value {

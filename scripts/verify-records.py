@@ -4,7 +4,7 @@ import argparse, base64, hashlib, json, os, subprocess, tempfile, time
 from pathlib import Path
 import urllib.request, urllib.error
 ROOT=Path(__file__).resolve().parent.parent
-REPORT={'version':'0.13.0','syntheticDataOnly':True,'modelCalls':0,'paidCalls':0,'steps':[],'passed':False}
+REPORT={'version':'0.14.0','syntheticDataOnly':True,'modelCalls':0,'paidCalls':0,'steps':[],'passed':False}
 OPENER=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 def step(name):

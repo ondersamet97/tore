@@ -23,10 +23,15 @@ mod thinkers;
 use thinkers::ThinkerLink;
 #[path = "records_map.rs"]
 mod map;
+pub use map::EXPORT_CSS;
 use map::MapEntry;
 #[path = "records_share.rs"]
 mod share;
 pub use share::{SharedContext, shared_contexts};
+#[path = "records_tools.rs"]
+mod tools;
+use tools::{InboxHandled, ToolAccess};
+pub use tools::{ToolTopic, tool_propose, tool_topic_text, tool_topics};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -159,6 +164,10 @@ struct Store {
     thinker_links: BTreeMap<String, ThinkerLink>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     map_entries: BTreeMap<String, MapEntry>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    tool_access: BTreeMap<String, ToolAccess>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    inbox_handled: BTreeMap<String, InboxHandled>,
 }
 impl Default for Store {
     fn default() -> Self {
@@ -174,6 +183,8 @@ impl Default for Store {
             organization_receipts: BTreeMap::new(),
             thinker_links: BTreeMap::new(),
             map_entries: BTreeMap::new(),
+            tool_access: BTreeMap::new(),
+            inbox_handled: BTreeMap::new(),
         }
     }
 }
@@ -198,8 +209,12 @@ fn request_id(input: Option<&str>) -> Result<String, String> {
         })
         .unwrap_or_else(|| Ok(id()))
 }
+/// Questions and tasks are open or closed; they are never adopted beliefs.
+fn stateful(kind: &str) -> bool {
+    kind == "question" || kind == "task"
+}
 fn validate_record(r: &Record) -> Result<(), String> {
-    if !["opinion", "decision", "question"].contains(&r.kind.as_str())
+    if !["opinion", "decision", "question", "task"].contains(&r.kind.as_str())
         || !bounded(&r.text, 12000, true)
         || !bounded(&r.reason, 12000, false)
         || !["pending", "reviewed", "rejected"].contains(&r.review.as_str())
@@ -227,7 +242,7 @@ fn validate_record(r: &Record) -> Result<(), String> {
     {
         return Err("Kayıt içeriği veya durumları geçersiz".into());
     }
-    if r.kind == "question" {
+    if stateful(&r.kind) {
         if r.adoption != "not_applicable"
             || !["open", "closed"].contains(&r.question_state.as_str())
         {
@@ -263,6 +278,15 @@ fn validate_record(r: &Record) -> Result<(), String> {
                 }
                 _ => false,
             },
+            "tool" => {
+                s.conversation_id.is_none()
+                    && s.message_id.is_none()
+                    && s.reply_id.is_none()
+                    && s.id.starts_with("tool:")
+                    && s.role == "assistant"
+                    && s.provider == "mcp"
+                    && r.text == s.excerpt
+            }
             _ => false,
         };
         if !valid_reference
@@ -285,10 +309,10 @@ fn validate_record(r: &Record) -> Result<(), String> {
             || !["pending", "reviewed", "rejected"].contains(&h.review.as_str())
             || !["unknown", "current", "superseded"].contains(&h.currency.as_str())
             || !["unspecified", "active", "paused", "not_priority"].contains(&h.priority.as_str())
-            || (r.kind == "question"
+            || (stateful(&r.kind)
                 && (h.adoption != "not_applicable"
                     || !["open", "closed"].contains(&h.question_state.as_str())))
-            || (r.kind != "question"
+            || (!stateful(&r.kind)
                 && (h.question_state != "not_applicable"
                     || ![
                         "unknown",
@@ -382,6 +406,7 @@ fn validate_store(s: &Store) -> Result<(), String> {
         }
     }
     map::validate_entries(s)?;
+    tools::validate_tools(s)?;
     for (id, p) in &s.packets {
         if id != &p.id
             || !s.topics.contains_key(&p.topic_id)
@@ -648,6 +673,15 @@ impl Disk {
                     && x.currency != "superseded"
             })
             .collect();
+        let tasks: Vec<_> = records
+            .iter()
+            .filter(|x| {
+                x.kind == "task"
+                    && x.question_state == "open"
+                    && x.review != "rejected"
+                    && x.currency != "superseded"
+            })
+            .collect();
         let mut changes: Vec<Value> = records.iter().flat_map(|r| r.history.iter().map(|h| {
             let next_text = if h.next_revision == r.revision { &r.text } else { &r.history[h.next_revision as usize - 1].text };
             json!({"recordId":r.id,"kind":r.kind,"previous":h,"currentRevision":h.next_revision,"currentText":next_text,"latestRecordRevision":r.revision})
@@ -658,7 +692,8 @@ impl Disk {
                 .cmp(&a["previous"]["changedAt"].as_str())
         });
         Ok(
-            json!({"topic":topic,"records":records,"currentDecisions":decisions,"openQuestions":questions,"changes":changes,
+            json!({"topic":topic,"records":records,"currentDecisions":decisions,"openQuestions":questions,"openTasks":tasks,"changes":changes,
+            "toolAccess":self.data.tool_access.get(&r.topic_id),
             "packets":self.data.packets.values().filter(|x|x.topic_id==r.topic_id).collect::<Vec<_>>(),
             "conversationLinks":self.data.conversation_links.values().filter(|x|x.topic_id==r.topic_id).collect::<Vec<_>>(),
             "replies":self.data.replies.values().filter(|x|x.topic_id==r.topic_id).collect::<Vec<_>>() }),
@@ -693,7 +728,7 @@ impl Disk {
             None => "user_authored",
         }
         .to_owned();
-        let question = r.kind == "question";
+        let question = stateful(&r.kind);
         let time = now();
         let record = Record {
             id,
@@ -911,19 +946,21 @@ impl Disk {
                 if proposal {
                     if c.attribution != "assistant_proposal"
                         || c.adoption == "adopted"
-                        || c.kind == "question"
+                        || stateful(&c.kind)
                     {
                         return Err(
                             "Ek öneriler ayrı seçilmiş, benimsenmemiş AI önerileri olmalı".into(),
                         );
                     }
-                } else if (c.kind == "question" && c.question_state != "open")
-                    || (c.kind != "question" && c.adoption != "adopted")
+                } else if (stateful(&c.kind) && c.question_state != "open")
+                    || (!stateful(&c.kind) && c.adoption != "adopted")
                 {
                     return Err("Ana bağlamda benimsenmiş görüş/karar veya açık soru seçin".into());
                 }
                 let label = if proposal {
                     "BENİMSENMEMİŞ AI ÖNERİSİ"
+                } else if c.kind == "task" {
+                    "AÇIK İŞ — KARAR DEĞİL"
                 } else if c.kind == "question" {
                     "AÇIK SORU — GÖRÜŞ DEĞİL"
                 } else if c.kind == "decision" {

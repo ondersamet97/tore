@@ -26,7 +26,8 @@ function showView(view) {
   $('view-cards').setAttribute('aria-pressed', String(view === 'cards')); $('view-map').setAttribute('aria-pressed', String(view === 'map'));
   if (view === 'map') renderMap();
 }
-function scrollToNotebook() { $('notebook').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+const calm = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function scrollToNotebook() { $('notebook').scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'start' }); }
 function selectTopic(id) {
   if (state.busy || !canLeave()) return;
   state.topic = id; $('topic-filter').value = id; state.currentId = null; state.creating = false; markClean();
@@ -81,7 +82,7 @@ function renderEditor(card) {
     ? 'Bu cümle, kaynaktan hazırlanmış bir AI yorum önerisi. Söylediğini doğru yansıtıp yansıtmadığına sen karar verirsin.'
     : card.attribution === 'user_statement'
       ? 'Kaynakta kullanıcı mesajı olarak kayıtlı. Bir soru, alıntı veya düşünce deneyi de olabilir; benimsenmiş bir görüş olduğu varsayılmaz.'
-      : 'Bu görüşü Töre’de kendin yazdın. Onayladığında seçtiğin bağlantılarla kişisel haritana eklenir.';
+      : 'Bu görüşü töre’de kendin yazdın. Onayladığında seçtiğin bağlantılarla kişisel haritana eklenir.';
   $('attribution-note').textContent = attribution + (card.status === 'confirmed' ? ' Bu sürümü sen onayladın; kaynak atfı korunuyor.' : '');
   $('source-panel').hidden = !card.source;
   $('source-context').hidden = true; $('source-context').replaceChildren(); $('load-context').disabled = false; $('load-context').textContent = 'Kaynak mesajı ve bağlamını gör';

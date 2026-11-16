@@ -63,7 +63,7 @@
     }
     function refresh() {
       const ready=!!getProfiles(),isSelf=mode==='self';
-      $('profiles-title').textContent=isSelf?'Profilim':'Düşünürler';
+      $('profiles-title').textContent=isSelf?'Profilim':'Düşünür profilleri';
       $('profiles-description').textContent=isSelf?'Yalnızca sizin kaydettiğiniz görüşler. Rapor okumak veya bir kaynak eklemek, o görüşü benimsediğiniz anlamına gelmez.':'Kaynaklara dayanan, hazırlayanı belli düşünce derlemeleri.';
       $('profile-create-self').hidden=!isSelf||profiles().some(p=>p.kind==='self');
       $('profile-create-thinker').hidden=isSelf;$('template-section').hidden=isSelf;

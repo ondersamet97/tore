@@ -1,6 +1,6 @@
 # Connected AI tool (MCP)
 
-Status: released in 0.13.0. Read-only.
+Status: contexts since 0.13.0 (read-only); topics and the proposal inbox since 0.14.0. The notebook itself is never written by a tool.
 
 töre can let an AI tool on the same computer read a prepared continuation context directly, through the [Model Context Protocol](https://modelcontextprotocol.io), instead of you copying and pasting it. The first targets are Claude Desktop and Claude Code.
 
@@ -77,3 +77,14 @@ Then ask, for example, "List my shared töre contexts and continue from the late
 - The page is in Turkish; the tool descriptions and the preamble line are in English, the context text itself is in the language you wrote it in.
 - Verified on macOS only. Only stdio is supported; there is no HTTP transport.
 - One notebook per configured server entry; the `--data` path is fixed in the tool configuration.
+
+## Topics and the proposal inbox (0.14.0)
+
+Besides single prepared contexts, you can open a whole topic to the connected tool on **Konularım**.
+
+- **Okumaya aç** lets the tool call `tore_list_topics` and `tore_get_topic`. It sees the topic's title and goal, your adopted and current decisions and opinions, your open tasks and your open questions, each with its record id. It does not see unreviewed AI proposals, rejected or superseded records, sources, conversations or any other topic.
+- **Öneri bırakmasına izin ver** is a second, separate checkbox. With it the tool may call `tore_propose` with a kind (`note`, `decision`, `question`, `task`, `objection`), a text of at most 8000 bytes and optionally `relatesTo`, the id of a record in that topic (required for an objection).
+- A proposal is appended to `conversations/tool-inbox.jsonl`. The MCP process still does not take the notebook lock and does not write `records-v1.json`.
+- In töre the proposal appears in **Gelen kutusu** with the tool's name. **Deftere al** turns it into a pending record marked as an AI proposal; it is not reviewed and not adopted until you review it like any other record. **Kaldır** discards it. Nothing a tool writes can adopt a view, close a task or close a question.
+- Closing a topic takes effect on the tool's next call. Restoring a backup closes every topic.
+- A tool can be wrong, and text it read elsewhere can try to steer it. That is why proposals wait in a separate inbox, carry the tool's name and never become your view by themselves.

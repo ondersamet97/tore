@@ -1,5 +1,37 @@
 # Change log
 
+## 0.14.0 — Working from töre: tasks, two-way MCP and a simpler interface (2026-11-16)
+
+### Tasks
+
+- Add a fourth record kind, **iş** (`task`). A task is open or closed, like a question; it is never an adopted belief, and only the person closes it, with a reason. "Kaldığım yer" lists open tasks (`openTasks`), and continuation contexts label them `AÇIK İŞ — KARAR DEĞİL`. Tasks cannot be placed on the map.
+
+### Connected AI tool, both ways
+
+- **Read a topic.** With consent per topic (`records-tool-access`), a connected tool can list the opened topics (`tore_list_topics`) and read one topic's working context (`tore_get_topic`): adopted, current decisions and opinions, open tasks and open questions. Unreviewed AI proposals, rejected or superseded records, sources and every other topic stay out.
+- **Leave a proposal.** With a second, separate consent the tool may call `tore_propose` (note, decision, question, task or objection). The proposal is appended to an inbox file; the notebook is not opened for writing and no lock is taken.
+- **Inbox.** `inbox`, `inbox-accept` and `inbox-dismiss`. Accepting creates a record attributed to the tool (`assistant_proposal`, source kind `tool`) that is still pending and not adopted. An accepted objection to a record on the map is placed under it as a suggested placement. Limits: 8000 bytes per proposal, 200 pending proposals, 2 MiB.
+- Restoring a backup closes every topic's tool access, as it already did for shared contexts.
+- The earlier context tools (`tore_list_shared_contexts`, `tore_get_shared_context`) are unchanged.
+
+### Claude Code sessions
+
+- `claude-code-sessions` lists the session files on this computer (file facts only) and `claude-code-preview` turns chosen sessions into an ordinary import preview. Only typed and visibly answered turns are kept; tool calls, tool output, thinking and subagent turns are left out. Nothing is watched in the background.
+
+### Interface
+
+Based on two code-level analyses (navigation and language; layout and accessibility) and a fixed set of decisions:
+
+- One menu on every notebook page (Konularım · Haritam · Düşünürler · Konuşmalarım · Arşiv); the brand always leads to Konularım; the version moved to the page footer. The old opinions page is reached from Konularım's maintenance section and says it is the old notebook.
+- One vocabulary across pages (record kinds, review, adoption, source and currency labels); the product name is always lower-case "töre"; internal ids and hashes are no longer shown.
+- Every empty page says what it is for and offers one first step.
+- One-click review (Benimsedim / Hipotez / Benimsemedim / Açık kalsın) with an optional reason, "Kaydet ve sıradaki" in the review queue and "Kaydet ve benimse" for your own note.
+- Errors appear next to the button that caused them and are reworded to say what to do; only the pressed button is locked while an action runs; focus and scroll position are kept after an action.
+- Confirmation checkboxes stay on adoption, AI proposals, tool access, export, restore and closing; reversible actions (removing a link or a map placement, saving a placement, closing access, dismissing a proposal) take one click. Closing the application asks once more.
+- Konuşmalarım uses the same light theme; after an import the first action is "Bu konuşmadan kayıt çıkar"; the copy-or-download mode is the default for continuing elsewhere; step-by-step help for getting an export file; select all; a multi-version conversation opens on its latest version.
+- Haritam: searchable record picker, link back to the record, "Yalnız benimsediklerimi göster", hypotheses marked as such, and an export preview in a sandboxed frame before download (the page's policy allows exactly the export stylesheet by hash).
+- Accessibility: text contrast at least 4.5:1, borders and focus rings at least 3:1, 13 px minimum text and 16 px inputs, menus wrap at 375 px, reduced-motion respected, no skipped heading levels, long strings wrap.
+
 ## 0.13.0 — Map of my thinking, view testing and the MCP adapter (2026-11-16)
 
 ### Map of my thinking

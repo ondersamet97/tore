@@ -41,7 +41,7 @@ async function setup(t, options={}) {
     if(options.failOp===op)return {ok:false,status:400,json:async()=>({error:'SENTETİK işlem hatası'})};
     let result;
     switch(op){
-      case 'status':result={version:'0.13.0',conversationCount:conversations.length,draftCount:drafts.length,keyConfigured:configured,budgetUsd:0,developers};break;
+      case 'status':result={version:'0.14.0',conversationCount:conversations.length,draftCount:drafts.length,keyConfigured:configured,budgetUsd:0,developers};break;
       case 'list':result={conversations};break;
       case 'conversation':result=conversations.find(c=>c.id===body.id);break;
       case 'catalog':result={models,source:body.refresh?'remote-test':'local-test',updatedAt:'2026-11-14T10:00:00Z',warnings:[]};break;
@@ -61,6 +61,11 @@ async function setup(t, options={}) {
         const c=d.mode==='manual'?null:conversation({id:'new-branch-'+sequence,title:'SENTETİK simülasyon dalı',selectedLeafId:'new-answer',messages:[message('new-answer','assistant','SİMÜLASYON — sentetik yanıt')],sourceApp:'tore'});
         if(c)conversations.push(c);const receipt={draftId:d.id,status:d.mode,mode:d.mode,developer:d.developer};receipts.push(receipt);result={conversation:c,receipt,contextText:d.contextText};break;
       }
+      case 'claude-code-sessions':result={sessions:copy(options.sessions||[])};break;
+      case 'claude-code-preview':{
+        const made=body.sessionIds.map(id=>conversation({id:'cc-'+id,provider:'anthropic',sourceApp:'Claude Code',sourceConversationId:'claude-code-'+id,title:'SENTETİK oturum '+id,messages:[message('cc-m-'+id,'user','SENTETİK Claude Code sözüm')]})), previewId='preview-'+(++sequence);
+        previews.set(previewId,made);result={previewId,conversations:made};break;
+      }
       case 'revoke':drafts.find(d=>d.id===body.draftId).status='revoked';result={revoked:true};break;
       default:throw Error('Beklenmeyen test isteği: '+op);
     }
@@ -74,9 +79,10 @@ async function setup(t, options={}) {
   const change=(target,value)=>{const e=typeof target==='string'?$(target):target;e.value=value;e.dispatchEvent(new w.Event(e.tagName==='TEXTAREA'||e.tagName==='INPUT'?'input':'change',{bubbles:true}));};
   const check=async (target,value=true)=>{const e=typeof target==='string'?$(target):target;if(e.checked!==value)e.click();await flush();};
   const open=async()=>{await click(w.document.querySelector('[data-conversation-id]'));};
+  const transfer=async()=>{await click('continue-toggle');};
   const card=id=>w.document.querySelector('[data-message-id="'+id+'"]');
   const field=(id,name)=>card(id).querySelector('[data-field="'+name+'"]');
-  return {w,$,click,change,check,open,card,field,requests,blobs,downloads,drafts,receipts};
+  return {w,$,click,change,check,open,transfer,card,field,requests,blobs,downloads,drafts,receipts};
 }
 
 test('kaynak metin HTML olarak çalışmaz; yerel yetki URL’den temizlenir, ilk açılış ağ kataloğunu yenilemez',async t=>{
@@ -86,26 +92,27 @@ test('kaynak metin HTML olarak çalışmaz; yerel yetki URL’den temizlenir, il
   assert.equal(h.w.document.querySelector('img,[onerror]'),null);assert.equal(h.w.compromised,undefined);
   assert.ok(h.$('conversation-title').textContent.includes('<img'));assert.ok(h.card('m2').textContent.includes('<script>'));
   assert.deepEqual(h.requests.filter(r=>r.op==='catalog').map(r=>r.body),[{refresh:false}]);
-  assert.equal(h.$('run-mode').value,'live');assert.equal(h.$('prepare-draft').disabled,true);
+  assert.equal(h.$('run-mode').value,'manual');assert.equal(h.$('prepare-draft').disabled,true);
+  assert.equal(h.requests.some(r=>r.op.startsWith('claude-code')),false);
 });
 
 test('seçim ve maskeleme yalnız incelenen kopyayı etkiler; elle aktarım açık taslak onayını bekler',async t=>{
-  const h=await setup(t);await h.open();await h.check(h.card('m1').querySelector('[data-action="select-message"]'));
-  h.change('literal-masks','Özel Ad');await h.click('scan-pii');assert.match(h.$('pii-before-count').textContent,/5 aday/);
+  const h=await setup(t);await h.open();await h.transfer();await h.check(h.card('m1').querySelector('[data-action="select-message"]'));
+  h.change('literal-masks','Özel Ad');await h.click('scan-pii');assert.match(h.$('pii-before-count').textContent,/5 bulgu/);
   await h.click('apply-masks');const edited=h.field('m1','text').value;
   for(const token of ['[E-POSTA]','[TELEFON]','[ANAHTAR]','[DOSYA YOLU]','[ÖZEL İFADE]'])assert.ok(edited.includes(token),token);
-  assert.match(h.card('m1').querySelector('details pre').textContent,/demo@example.test/);assert.match(h.$('pii-after-count').textContent,/0 aday/);
+  assert.match(h.card('m1').querySelector('details pre').textContent,/demo@example.test/);assert.match(h.$('pii-after-count').textContent,/0 bulgu/);
   h.change('run-mode','manual');h.change('target-question','Bu düşünceyi nasıl geliştirebilirim?');assert.equal(h.$('prepare-draft').disabled,false);
   await h.click('prepare-draft');const prepared=h.requests.find(r=>r.op==='prepare').body;
   assert.deepEqual(prepared.items.map(item=>item.messageId),['m1']);assert.equal(prepared.items[0].text,edited);assert.equal(prepared.modelId,'');assert.equal(prepared.mode,'manual');
   assert.equal(h.$('draft-panel').hidden,false);assert.equal(h.$('draft-hash').textContent.length,64);assert.equal(h.$('execute-draft').disabled,true);
   assert.equal(h.requests.some(r=>r.op==='send'),false);
   await h.check('send-consent');await h.click('execute-draft');assert.equal(h.requests.filter(r=>r.op==='send').length,1);
-  assert.match(h.$('result-heading').textContent,/elle aktarmaya hazır/);await h.click(h.$('result-actions').querySelector('button'));assert.equal(h.w.copiedText,h.$('result-text').textContent);
+  assert.match(h.$('result-heading').textContent,/Devam metnin hazır/);await h.click(h.$('result-actions').querySelector('button'));assert.equal(h.w.copiedText,h.$('result-text').textContent);
 });
 
 test('metin değişikliği eski onayı iptal eder; çalışma alanı yalnız konuşmaya devam taslağı hazırlar',async t=>{
-  const h=await setup(t,{conversation:{messages:[message('m1','user','SENTETİK temiz katkım')]}});await h.open();await h.check(h.card('m1').querySelector('input[type=checkbox]'));
+  const h=await setup(t,{conversation:{messages:[message('m1','user','SENTETİK temiz katkım')]}});await h.open();await h.transfer();await h.check(h.card('m1').querySelector('input[type=checkbox]'));
   for(const id of ['intent-continue','intent-dataset','dataset-fields','dataset-purpose','export-consent','export-consent-label'])assert.equal(h.$(id),null,id);
   assert.doesNotMatch(h.w.document.body.textContent,/[Vv]eri paketi|paketle|[Mm]odel eğitimi/);
   h.change('run-mode','manual');h.change('target-question','Bu fikri aç.');await h.click('prepare-draft');await h.check('send-consent');assert.equal(h.$('execute-draft').disabled,false);
@@ -115,17 +122,18 @@ test('metin değişikliği eski onayı iptal eder; çalışma alanı yalnız kon
   assert.equal(h.$('draft-purpose').textContent,'Konuşmaya devam');assert.equal(h.$('execute-draft').disabled,true);
   await h.check('send-consent');await h.click('execute-draft');assert.equal(h.requests.filter(r=>r.op==='send').length,1);assert.equal(h.requests.some(r=>r.op==='export'),false);
   const actions=[...h.$('result-actions').querySelectorAll('button')];assert.equal(actions.length,2);await h.click(actions[1]);
-  assert.deepEqual(h.downloads.map(d=>d.name),['tore-devam-baglami.txt']);assert.match(await h.blobs[0].text(),/düzeltilmiş/);
+  assert.deepEqual(h.downloads.map(d=>d.name),['tore-devam-metni.txt']);assert.match(await h.blobs[0].text(),/düzeltilmiş/);
   const draftId=h.drafts.at(-1).id;await h.click('revoke-'+draftId);assert.equal(h.requests.at(-2).op,'revoke');assert.equal(h.$('result-actions').children.length,0);assert.match(h.$('result-status').textContent,/geri çağrılamaz/);
 });
 
-test('dallanmış kaynakta açık dal seçilir; diğer dala ait mesaj hazırlığa sızmaz',async t=>{
+test('dallanmış kaynak boş açılmaz, en son sürüm görünür; diğer sürüme ait mesaj hazırlığa sızmaz',async t=>{
   const h=await setup(t,{conversation:{messages:[message('root','user','SENTETİK ortak başlangıç'),message('left','assistant','SENTETİK A dalı','root'),message('right','assistant','SENTETİK B dalı','root')]}});await h.open();
-  assert.equal(h.$('branch-leaf').value,'');assert.equal(h.w.document.querySelectorAll('[data-message-id]').length,0);
-  h.change('branch-leaf','left');assert.deepEqual([...h.w.document.querySelectorAll('[data-message-id]')].map(e=>e.dataset.messageId),['root','left']);
-  await h.click('select-human');h.change('run-mode','simulation');h.change('target-question','Sonraki adım?');await h.click('prepare-draft');
+  const shown=()=>[...h.w.document.querySelectorAll('[data-message-id]')].map(e=>e.dataset.messageId);
+  assert.equal(h.$('branch-bar').hidden,false);assert.equal(h.$('branch-leaf').value,'right');assert.deepEqual(shown(),['root','right']);
+  h.change('branch-leaf','left');assert.deepEqual(shown(),['root','left']);
+  await h.transfer();await h.click('select-human');h.change('run-mode','simulation');h.change('target-question','Sonraki adım?');await h.click('prepare-draft');
   const prepared=h.requests.find(r=>r.op==='prepare').body;assert.equal(prepared.leafId,'left');assert.deepEqual(prepared.items.map(i=>i.messageId),['root']);
-  await h.check('send-consent');await h.click('execute-draft');assert.match(h.$('result-heading').textContent,/Sentetik/);assert.match(h.$('result-text').textContent,/SİMÜLASYON/);assert.equal(h.$('conversation-title').textContent,'SENTETİK simülasyon dalı');
+  await h.check('send-consent');await h.click('execute-draft');assert.match(h.$('result-heading').textContent,/Örnek yanıt/);assert.match(h.$('result-text').textContent,/SİMÜLASYON/);assert.equal(h.$('conversation-title').textContent,'SENTETİK simülasyon dalı');
 });
 
 test('üç yerel dışa aktarım türü dosya önizlemesi ve açık seçimle içe alınır',async t=>{
@@ -144,7 +152,7 @@ test('üç yerel dışa aktarım türü dosya önizlemesi ve açık seçimle iç
 test('genel metnin konuşmacısı uydurulmaz; kullanıcı seçimi yalnız hazırlanan kopyaya girer',async t=>{
   const h=await setup(t,{empty:true});await h.click('welcome-import');h.change('import-provider','generic');h.change('import-developer','google');h.change('import-title','SENTETİK yapıştırma');h.change('import-text','SENTETİK kaynağı belirsiz metin');
   await h.click('preview-import');await h.check(h.$('import-preview-list').querySelector('input'));await h.click('commit-import');
-  await h.check(h.card('generic-1').querySelector('input[type=checkbox]'));h.change('run-mode','manual');h.change('target-question','Bunu tartış.');assert.equal(h.$('prepare-draft').disabled,true);
+  await h.transfer();await h.check(h.card('generic-1').querySelector('input[type=checkbox]'));h.change('target-question','Bunu tartış.');assert.equal(h.$('prepare-draft').disabled,true);
   assert.equal(h.field('generic-1','role').value,'');h.change(h.field('generic-1','role'),'user');await h.click('prepare-draft');assert.equal(h.requests.find(r=>r.op==='prepare').body.items[0].role,'user');
   assert.equal(h.card('generic-1').querySelector('.message-role').textContent,'Konuşmacı belirsiz');
 });
@@ -168,7 +176,8 @@ test('anahtar yalnız oturum hizmetine gider; canlı modelde yenileme ve sıfır
     {id:'openai/paid',name:'Ücretli',developer:'openai',free:false,pricing:{prompt:'1',completion:'1'}},
     {id:'openai/underflow',name:'Sıfıra yuvarlanabilecek ücret',developer:'openai',free:true,pricing:{prompt:'1e-999',completion:'0'}},
     {id:'openai/missing',name:'Eksik fiyat',developer:'openai',free:true,pricing:{completion:'0'}}
-  ]});await h.open();await h.click('select-human');h.change('target-question','Fikrimi incele.');
+  ]});await h.open();await h.transfer();await h.click('select-human');h.change('target-question','Fikrimi incele.');
+  assert.equal(h.$('settings-toggle').hidden,true);h.change('run-mode','live');assert.equal(h.$('settings-toggle').hidden,false);assert.equal(h.$('prepare-draft').disabled,true);
   h.change('api-key','sk-SYNTHETIC-KEY-ONLY');await h.click('save-key');assert.equal(h.$('api-key').value,'');
   assert.equal(h.w.localStorage.length,0);assert.equal(h.w.sessionStorage.length,1);assert.equal(h.w.sessionStorage.getItem('tore-local-session'),token);
   assert.deepEqual(h.requests.find(r=>r.op==='key').body,{key:'sk-SYNTHETIC-KEY-ONLY'});assert.equal(h.$('prepare-draft').disabled,true);
@@ -179,17 +188,98 @@ test('anahtar yalnız oturum hizmetine gider; canlı modelde yenileme ve sıfır
 });
 
 test('sunucu özel bilgi bulduğunda onay işaretlense bile gönderim kapalıdır',async t=>{
-  const h=await setup(t,{serverFindings:[{messageId:'m1',kind:'Telefon',value:'SENTETİK'}]});await h.open();await h.click('select-human');h.change('run-mode','manual');h.change('target-question','Kontrol et.');await h.click('prepare-draft');await h.check('send-consent');
+  const h=await setup(t,{serverFindings:[{messageId:'m1',kind:'Telefon',value:'SENTETİK'}]});await h.open();await h.transfer();await h.click('select-human');h.change('target-question','Kontrol et.');await h.click('prepare-draft');await h.check('send-consent');
   assert.equal(h.$('execute-draft').disabled,true);assert.match(h.$('draft-warnings').textContent,/çıkışı kapalıdır/);assert.equal(h.requests.some(r=>r.op==='send'),false);
 });
 
 test('sistem ve araç kayıtları aktarılmaz; AI yanıtının insan beyanı seçeneği kapalıdır',async t=>{
-  const h=await setup(t,{conversation:{messages:[message('sys','system','SENTETİK talimat'),message('m1','user','SENTETİK kullanıcı','sys'),message('m2','assistant','SENTETİK AI','m1')]}});await h.open();
+  const h=await setup(t,{conversation:{messages:[message('sys','system','SENTETİK talimat'),message('m1','user','SENTETİK kullanıcı','sys'),message('m2','assistant','SENTETİK AI','m1')]}});await h.open();await h.transfer();
   assert.equal(h.card('sys').querySelector('input[type=checkbox]').disabled,true);await h.check(h.card('m2').querySelector('input[type=checkbox]'));
   assert.equal(h.field('m2','authorship').querySelector('[value=human_original]').disabled,true);
 });
 
 test('hizmet hataları inline görünür; başarısız işlem başarı ekranı üretmez',async t=>{
-  const h=await setup(t,{failOp:'prepare'});await h.open();await h.click('select-human');h.change('run-mode','manual');h.change('target-question','İncele.');await h.click('prepare-draft');
+  const h=await setup(t,{failOp:'prepare'});await h.open();await h.transfer();await h.click('select-human');h.change('target-question','İncele.');await h.click('prepare-draft');
   assert.equal(h.$('action-error').hidden,false);assert.match(h.$('action-error').textContent,/SENTETİK işlem hatası/);assert.equal(h.$('draft-panel').hidden,true);assert.equal(h.$('result-panel').hidden,true);
+  assert.equal(h.$('action-error').getAttribute('role'),'alert');assert.equal(h.$('global-status').classList.contains('error'),false);
+});
+
+const session=(n,imported=false)=>({id:'00000000-0000-4000-8000-'+String(n).padStart(12,'0'),project:'-Users-demo-Desktop-sentetik-proje',modifiedAt:'2026-11-'+String(10+(n%10)).padStart(2,'0')+'T10:00:00+00:00',bytes:2048*n,sourceConversationId:'claude-code-'+n,imported});
+
+test('üst menü ortak sıradadır; sürüm, eski marka hedefi ve teknik ibareler ekranda yoktur',async t=>{
+  const h=await setup(t,{empty:true}),d=h.w.document;
+  assert.equal(d.title,'töre — Konuşmalarım');assert.equal(d.querySelector('.version'),null);
+  assert.equal(d.querySelector('header.topbar a.brand').getAttribute('href'),'/konular');
+  assert.deepEqual([...d.querySelectorAll('nav[aria-label="Ana gezinme"] a')].map(a=>[a.textContent,a.getAttribute('href')]),[['Konularım','/konular'],['Haritam','/harita'],['Düşünürler','/dusunurler'],['Konuşmalarım','/calisma'],['Arşiv','/arsiv']]);
+  assert.equal(d.querySelector('nav [aria-current="page"]').textContent,'Konuşmalarım');assert.match(d.querySelector('.private-mark').textContent,/Bu bilgisayarda/);
+  assert.deepEqual([...d.querySelectorAll('h1')].map(e=>e.textContent),['Konuşmalarım.']);assert.equal(d.querySelector('h1,h2,h3').tagName,'H1');
+  assert.doesNotMatch(d.body.textContent,/0\.1\d\.\d|[Tt]eknik demo|Töre|kullanıcı|Kullanıcı/);
+  assert.equal(h.$('welcome').hidden,false);assert.match(h.$('welcome-text').textContent,/Önce bir konuşma içe al/);assert.equal(h.$('welcome').querySelectorAll('button.primary').length,1);
+  await h.click('welcome-import');assert.equal(h.$('import-panel').hidden,false);assert.match(h.$('import-help-steps').textContent,/Verileri dışa aktar/);
+  h.change('import-provider','claude');assert.match(h.$('import-help-steps').textContent,/Claude/);
+});
+
+test('Claude Code oturumları yalnız düğmeyle listelenir; içe alınmışlar seçilemez, en fazla 50 seçilir',async t=>{
+  const sessions=[session(1,true),...Array.from({length:53},(_,i)=>session(i+2))];
+  const h=await setup(t,{empty:true,sessions});const asked=()=>h.requests.filter(r=>r.op==='claude-code-sessions');
+  await h.click('welcome-import');h.change('import-provider','claude-code');await flush();
+  assert.equal(asked().length,0);assert.equal(h.$('cc-panel').hidden,false);assert.equal(h.$('file-import').hidden,true);assert.equal(h.$('cc-chooser').hidden,true);
+  assert.match(h.$('cc-panel').textContent,/Araç çağrıları, araç çıktıları ve düşünme alınmaz/);assert.match(h.$('cc-panel').textContent,/arka planda hiçbir şey izlemez/);
+  await h.click('cc-list');assert.deepEqual(asked().map(r=>r.body),[{}]);assert.equal(h.$('cc-chooser').hidden,false);
+  const rows=[...h.$('cc-sessions').querySelectorAll('.import-choice')];assert.equal(rows.length,54);
+  assert.match(rows[0].textContent,/Desktop-sentetik-proje/);assert.doesNotMatch(rows[0].textContent,/Users-demo|00000000-/);assert.match(rows[0].textContent,/2 KB/);assert.match(rows[0].textContent,/içe alındı/);
+  const first=rows[0].querySelector('input');assert.equal(first.disabled,true);first.click();await flush();assert.equal(first.checked,false);assert.equal(h.$('cc-preview').disabled,true);
+  await h.click('cc-select-all');const checked=()=>[...h.$('cc-sessions').querySelectorAll('input:checked')];
+  assert.equal(checked().length,50);assert.equal(checked().some(c=>c.value===sessions[0].id),false);assert.match(h.$('cc-status').textContent,/en fazla 50/);
+  const extra=[...h.$('cc-sessions').querySelectorAll('input:not(:checked):not(:disabled)')][0];extra.click();await flush();assert.equal(extra.checked,false);assert.equal(checked().length,50);
+  assert.equal(h.$('cc-preview').disabled,false);assert.equal(h.requests.some(r=>r.op==='claude-code-preview'),false);
+  await h.click('cc-clear');assert.equal(checked().length,0);assert.equal(h.$('cc-preview').disabled,true);
+});
+
+test('Claude Code önizlemesi mevcut içe alma onayına bağlanır; seçim değişince eski önizleme düşer',async t=>{
+  const sessions=[session(1,true),session(2),session(3)],h=await setup(t,{empty:true,sessions});
+  await h.click('welcome-import');h.change('import-provider','claude-code');await h.click('cc-list');
+  const boxes=[...h.$('cc-sessions').querySelectorAll('input')];await h.check(boxes[1]);await h.check(boxes[2]);await h.click('cc-preview');
+  assert.deepEqual(h.requests.find(r=>r.op==='claude-code-preview').body,{sessionIds:[sessions[1].id,sessions[2].id]});
+  assert.equal(h.requests.some(r=>r.op==='import-preview'),false);assert.equal(h.$('import-preview').hidden,false);assert.equal(h.$('import-preview-list').querySelectorAll('input').length,2);
+  assert.equal(h.requests.some(r=>r.op==='import-commit'),false);
+  await h.check(boxes[2],false);assert.equal(h.$('import-preview').hidden,true);assert.equal(h.$('commit-import').disabled,true);
+  await h.click('cc-preview');await h.click('preview-clear');assert.equal(h.$('commit-import').disabled,true);await h.click('preview-select-all');assert.equal(h.$('commit-import').disabled,false);
+  await h.click('commit-import');const commit=h.requests.filter(r=>r.op==='import-commit');assert.equal(commit.length,1);
+  assert.equal(commit[0].body.previewId,'preview-2');assert.deepEqual(commit[0].body.selectedIds,['cc-'+sessions[1].id]);
+  assert.match(h.$('conversation-title').textContent,/SENTETİK oturum/);assert.equal(h.$('cc-chooser').hidden,true);
+  assert.equal(h.requests.filter(r=>r.op==='claude-code-sessions').length,1);
+});
+
+test('oturum listesi hatası düğmenin yanında görünür ve ne yapılacağını söyler',async t=>{
+  const h=await setup(t,{empty:true,failOp:'claude-code-sessions'});await h.click('welcome-import');h.change('import-provider','claude-code');await h.click('cc-list');
+  const alert=h.$('cc-list').closest('.actions').nextElementSibling;assert.equal(alert.getAttribute('role'),'alert');assert.equal(alert.hidden,false);assert.match(alert.textContent,/SENTETİK işlem hatası/);
+  assert.equal(h.$('cc-chooser').hidden,true);assert.equal(h.$('global-status').classList.contains('error'),false);
+});
+
+test('içe almadan sonra birincil yol kayda geçirmektir; başka modele taşıma ikincildir ve kapalı gelir',async t=>{
+  const h=await setup(t,{empty:true});await h.click('welcome-import');h.change('import-provider','chatgpt');
+  const file=new h.w.File(['SENTETİK export'],'export.json',{type:'application/json'});Object.defineProperty(h.$('import-file'),'files',{configurable:true,value:[file]});
+  await h.click('preview-import');await until(()=>!h.$('import-preview').hidden);assert.equal(h.$('commit-import').disabled,true);
+  await h.click('preview-select-all');assert.equal(h.$('commit-import').disabled,false);await h.click('commit-import');
+  assert.equal(h.$('import-done').hidden,false);assert.match(h.$('import-done').textContent,/1 konuşma içe alındı/);
+  const primary=[...h.$('next-step').querySelectorAll('.primary')];assert.deepEqual(primary.map(e=>e.id),['primary-record']);
+  assert.equal(h.$('primary-record').getAttribute('href'),'/konular?conversationId=imported-chatgpt&messageId=native-1');assert.equal(h.$('to-topics').getAttribute('href'),'/konular');
+  assert.equal(h.card('native-1').querySelector('[data-source-record]').getAttribute('href'),'/konular?conversationId=imported-chatgpt&messageId=native-1');
+  assert.equal(h.$('continue-panel').hidden,true);assert.equal(h.$('continue-toggle').getAttribute('aria-expanded'),'false');assert.equal(h.$('continue-toggle').classList.contains('primary'),false);
+  assert.equal(h.card('native-1').querySelector('[data-action="select-message"]').hidden,true);
+  const detail=h.card('native-1').querySelector('details.detail');assert.equal(detail.open,false);assert.match(detail.textContent,/synthetic-fixture/);
+  assert.doesNotMatch(h.card('native-1').textContent.replace(detail.textContent,''),/synthetic-fixture/);
+  assert.equal(h.requests.some(r=>['prepare','send'].includes(r.op)),false);
+  await h.transfer();assert.equal(h.$('continue-panel').hidden,false);assert.equal(h.card('native-1').querySelector('[data-action="select-message"]').hidden,false);
+});
+
+test('varsayılan kip anahtar ve ağ istemez; yine de açık onay olmadan metin çıkmaz',async t=>{
+  const h=await setup(t,{conversation:{messages:[message('m1','user','SENTETİK katkı')]}});await h.open();await h.transfer();
+  assert.equal(h.$('run-mode').value,'manual');assert.equal(h.$('run-mode').options[0].value,'manual');assert.equal(h.$('model-field').hidden,true);assert.equal(h.$('settings-toggle').hidden,true);
+  await h.click('select-human');h.change('target-question','Devam edelim.');assert.equal(h.$('prepare-draft').disabled,false);
+  await h.click('prepare-draft');const prepared=h.requests.find(r=>r.op==='prepare').body;assert.equal(prepared.mode,'manual');assert.equal(prepared.modelId,'');
+  assert.equal(h.requests.some(r=>r.op==='key'),false);assert.equal(h.requests.some(r=>r.op==='catalog'&&r.body.refresh),false);
+  assert.equal(h.$('execute-draft').disabled,true);h.$('execute-draft').click();await flush();assert.equal(h.requests.some(r=>r.op==='send'),false);
+  assert.match(h.$('draft-heading').textContent,/[Dd]evam metnin/);await h.check('send-consent');await h.click('execute-draft');assert.equal(h.requests.filter(r=>r.op==='send').length,1);
 });

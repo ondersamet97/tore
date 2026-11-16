@@ -42,7 +42,7 @@ test('MCP kipi yalnız açıkça paylaşılan devam metnini okutur; kapatma heme
  assert.equal(init.result.protocolVersion,'2025-06-18');assert.deepEqual(init.result.capabilities,{tools:{}});assert.equal(init.result.serverInfo.name,'tore');
  await client.send({jsonrpc:'2.0',method:'notifications/initialized'},false);
  const tools=await client.send({jsonrpc:'2.0',id:2,method:'tools/list'});assert.equal(client.pending(),0,'bildirim yanıtlanmaz');
- assert.deepEqual(tools.result.tools.map(x=>x.name),['tore_list_shared_contexts','tore_get_shared_context']);assert.ok(tools.result.tools.every(x=>x.annotations.readOnlyHint===true));
+ assert.deepEqual(tools.result.tools.map(x=>x.name),['tore_list_shared_contexts','tore_get_shared_context','tore_list_topics','tore_get_topic','tore_propose']);assert.ok(tools.result.tools.filter(x=>x.name!=='tore_propose').every(x=>x.annotations.readOnlyHint===true));assert.equal(tools.result.tools.find(x=>x.name==='tore_propose').annotations.destructiveHint,false);
  const list=await client.tool(3,'tore_list_shared_contexts',{});
  assert.deepEqual(list.result.structuredContent.contexts.map(c=>c.id),[packet.id]);const item=list.result.structuredContent.contexts[0];
  assert.equal(item.topic,'SENTETİK film konusu');assert.equal(item.recordCount,1);assert.equal(item.question,'SENTETİK devam sorusu?');assert.equal(item.declaredDestination,'claude');

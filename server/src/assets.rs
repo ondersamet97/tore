@@ -2,6 +2,14 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+/// CSP source for the map export's stylesheet, so its preview renders styled.
+pub fn export_style_hash() -> String {
+    use base64::Engine;
+    use sha2::{Digest, Sha256};
+    let hash = Sha256::digest(crate::workspace::EXPORT_CSS.as_bytes());
+    format!("'sha256-{}'", base64::engine::general_purpose::STANDARD.encode(hash))
+}
+
 pub fn asset(path: &str) -> Response {
     let found: Option<(&str, &[u8])> = match path {
         "konular" => Some((
@@ -156,7 +164,15 @@ pub fn asset(path: &str) -> Response {
             let h = r.headers_mut();
             h.insert("content-type", ty.parse().unwrap());
             if path != "private" {
-                h.insert("content-security-policy","default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'none'; font-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'".parse().unwrap());
+                // The map page previews its own script-free export in a sandboxed
+                // srcdoc frame, which inherits this policy; allow exactly the
+                // export's one stylesheet by hash and nothing else inline.
+                let style = if path == "harita" {
+                    format!("'self' {}", export_style_hash())
+                } else {
+                    "'self'".to_owned()
+                };
+                h.insert("content-security-policy",format!("default-src 'none'; script-src 'self'; style-src {style}; connect-src 'self'; img-src 'none'; font-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'").parse().unwrap());
             }
             h.insert("x-content-type-options", "nosniff".parse().unwrap());
             h.insert("referrer-policy", "no-referrer".parse().unwrap());
@@ -164,5 +180,19 @@ pub fn asset(path: &str) -> Response {
             r
         }
         None => StatusCode::NOT_FOUND.into_response(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn only_the_map_page_allows_the_export_stylesheet_by_hash() {
+        let csp = |p: &str| asset(p).headers()["content-security-policy"].to_str().unwrap().to_owned();
+        let map = csp("harita");
+        assert!(map.contains(&export_style_hash()) && !map.contains("unsafe-inline"));
+        assert!(map.contains("script-src 'self';") && map.contains("frame-src 'none'"));
+        assert!(!csp("konular").contains("sha256-"));
     }
 }

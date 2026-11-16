@@ -4,21 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <title>Töre — Düşünce haritam</title>
+  <title>töre — Haritam</title>
   <link rel="stylesheet" href="/return.css">
   <link rel="stylesheet" href="/map.css">
   <script type="module" src="/map.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">İçeriğe geç</a>
-  <header class="topbar"><a href="/konular" class="brand" aria-label="Töre ana sayfa">töre<span>.</span></a><nav aria-label="Ana gezinme"><a href="/konular">Konularım</a><a href="/harita" aria-current="page">Haritam</a><a href="/dusunurler">Düşünürler</a><a href="/gorusler">Görüşlerim</a><a href="/calisma">Konuşmalarım</a><a href="/arsiv">Arşiv</a></nav><span class="private-mark">● Bu bilgisayarda</span></header>
+  <header class="topbar"><a href="/konular" class="brand" aria-label="töre ana sayfa">töre<span>.</span></a><nav aria-label="Ana gezinme"><a href="/konular">Konularım</a><a href="/harita" aria-current="page">Haritam</a><a href="/dusunurler">Düşünürler</a><a href="/calisma">Konuşmalarım</a><a href="/arsiv">Arşiv</a></nav><span class="private-mark">● Bu bilgisayarda</span></header>
   <main id="main">
-    <section class="hero"><div><p class="eyebrow" id="map-eyebrow">Nereden başladım, neyi savunuyorum, nerede ayrılıyorum</p><h1><span id="map-title">Düşünce haritam</span><span>.</span></h1><p class="intro" id="map-method"></p></div><aside class="hero-note"><strong id="entry-count">0</strong><span id="entry-count-label">kayıt haritada</span><p><b id="pending-count">0</b> <span id="pending-count-label">inceleme bekliyor</span></p></aside></section>
+    <section class="hero"><div><p class="eyebrow" id="map-eyebrow">Nereden başladım, neyi savunuyorum, nerede ayrılıyorum</p><h1><span id="map-title">Haritam</span><span>.</span></h1><p class="intro" id="map-method"></p></div><aside class="hero-note"><strong id="entry-count">0</strong><span id="entry-count-label">kayıt haritada</span><p><b id="pending-count">0</b> <span id="pending-count-label">inceleme bekliyor</span></p></aside></section>
     <p id="page-status" class="status" role="status" aria-live="polite">Harita açılıyor…</p><p id="page-error" class="error" role="alert" hidden></p>
     <div class="map-toolbar" role="group" aria-label="Görünüm">
       <span class="map-switch" role="group" aria-label="Dil"><button type="button" id="lang-tr" aria-pressed="true">Türkçe</button><button type="button" id="lang-en" aria-pressed="false">English</button></span>
-      <span class="map-switch" role="group" aria-label="Kip"><button type="button" id="mode-read" aria-pressed="true">Okur görünümü</button><button type="button" id="mode-edit" aria-pressed="false">Düzenle</button></span>
+      <span class="map-switch" role="group" aria-label="Okuma ya da düzenleme"><button type="button" id="mode-read" aria-pressed="true">Okur görünümü</button><button type="button" id="mode-edit" aria-pressed="false">Düzenle</button></span>
       <label class="check"><input type="checkbox" id="show-pending" checked><span id="show-pending-label">İnceleme bekleyenleri göster</span></label>
+      <label class="check"><input type="checkbox" id="show-adopted"><span id="show-adopted-label">Yalnız benimsediklerimi göster</span></label>
       <label class="check"><input type="checkbox" id="show-suggested" checked><span id="show-suggested-label">Yeri AI önerisi olanları göster</span></label>
     </div>
     <nav id="map-contents" class="map-contents" aria-label="Bölümler"></nav>
@@ -26,26 +27,39 @@
       <h2>Haritaya kayıt ekle</h2>
       <p class="small">Yalnız defterindeki bir kaydı yerleştirirsin. Kaydın kaynağı, inceleme ve benimseme durumu değişmez.</p>
       <form id="add-form" class="map-form">
-        <label>Kayıt<select id="add-record"></select></label>
+        <label>Kayıt ara (konu adı ya da kayıt metni)<input type="search" id="add-search" autocomplete="off" spellcheck="false"></label>
+        <p id="add-search-count" class="small" role="status"></p>
+        <div id="add-record" class="record-options" role="radiogroup" aria-label="Yerleştirilecek kayıt"></div>
         <label>Bölüm<select id="add-section"></select></label>
-        <label>Rol<select id="add-role"></select></label>
+        <label>Bu kayıt haritada ne?<select id="add-role"></select></label>
+        <p id="add-role-hint" class="small" hidden>Soru kayıtları haritaya “Açık soru” olarak girer.</p>
         <label>Kısa başlık (isteğe bağlı)<input id="add-label" maxlength="200"></label>
         <label class="check"><input type="checkbox" id="add-consent"><span>Bu kaydı haritaya kendi kararımla yerleştiriyorum.</span></label>
-        <button type="submit" class="secondary" id="add-save" disabled>Haritaya ekle</button>
+        <div class="actions"><button type="submit" class="secondary" id="add-save" disabled>Haritaya ekle</button></div>
+        <p id="add-result" class="small" role="status"></p>
+        <p id="add-error" class="error" role="alert" hidden></p>
       </form>
       <h2>Tek dosya olarak dışa aktar</h2>
-      <p class="small">Betik içermeyen tek bir HTML dosyası hazırlanır ve bu bilgisayara iner. töre hiçbir yere göndermez; dosyayı kime vereceğine sen karar verirsin. Konuşma başlıkları ve kimlikleri dosyaya girmez.</p>
+      <p class="small">Önce dosyaya ne gireceğini burada görürsün, sonra bu bilgisayara indirirsin. Dosya tek bir web sayfasıdır; içinde çalışan kod yoktur. töre hiçbir yere göndermez; dosyayı kime vereceğine sen karar verirsin. Konuşma başlıkları ve kimlikleri dosyaya girmez.</p>
       <form id="export-form" class="map-form">
         <label>Dil<select id="export-language"><option value="tr">Türkçe</option><option value="en">English</option></select></label>
-        <label class="check"><input type="checkbox" id="export-pending"><span>İnceleme bekleyen kayıtları da ekle (onaylamadığın görüşler olarak işaretlenir).</span></label>
+        <label class="check"><input type="checkbox" id="export-pending"><span>İnceleme bekleyen kayıtları da ekle (benimsemediğin görüşler olarak işaretlenir).</span></label>
         <label class="check"><input type="checkbox" id="export-suggested"><span>Yeri AI önerisi olan kayıtları da ekle.</span></label>
-        <label class="check"><input type="checkbox" id="export-consent"><span>Bu dosyanın içeriğini gördüm ve hazırlanmasını istiyorum.</span></label>
-        <button type="submit" class="secondary" id="export-save" disabled>Dosyayı hazırla</button>
+        <div class="actions"><button type="submit" class="secondary" id="export-preview">Önizlemeyi hazırla</button></div>
+        <p id="export-error" class="error" role="alert" hidden></p>
+        <section id="export-preview-panel" class="map-export-preview" aria-labelledby="export-preview-heading" hidden>
+          <h3 id="export-preview-heading" tabindex="-1">Dosya önizlemesi</h3>
+          <p id="export-summary"></p>
+          <p id="export-findings" class="small"></p>
+          <div id="export-preview-body" class="map-preview"></div>
+          <label class="check"><input type="checkbox" id="export-consent"><span>Bu dosyanın içeriğini gördüm; bu bilgisayara insin.</span></label>
+          <div class="actions"><button type="button" class="secondary" id="export-save" disabled>Dosyayı indir</button></div>
+        </section>
         <p id="export-result" class="small" role="status"></p>
       </form>
     </section>
     <div id="map-body"></div>
-    <noscript>Töre'nin yerel arayüzü için JavaScript açık olmalı.</noscript>
+    <noscript>töre'nin arayüzü için JavaScript açık olmalı.</noscript>
   </main>
 </body>
 </html>

@@ -48,7 +48,7 @@ töre is built around one question: **where did I leave off?**
   <img src="docs/images/record.png" alt="A decision opened next to the original quote it came from, with separate review, adoption and currency states" width="760">
 </p>
 
-## What is in 0.13.0
+## What is in 0.14.0
 
 ### Topics: return to unfinished thinking
 
@@ -57,7 +57,7 @@ töre is built around one question: **where did I leave off?**
 - Every revision keeps its previous wording and the reason for the change.
 - A global overview and a review queue across all topics.
 
-### Map of my thinking: let a reader see where you stand *(new)*
+### Map of my thinking: let a reader see where you stand
 
 A reader-facing page (**Haritam**, `/harita`) that arranges records you already have into nine sections, from starting points to how a person and a society should live. Each record takes a role: premise, position, divergence, change of view, objection, answer, what would refute it, or open question.
 
@@ -66,9 +66,12 @@ A reader-facing page (**Haritam**, `/harita`) that arranges records you already 
 - **Turkish and English.** A translation is stored next to the entry and labelled as an AI translation or as your own; the original wording always stays visible.
 - **One file to hand over.** With explicit consent töre writes a single script-free HTML file to your computer. By default it contains only records you reviewed and did not reject; conversation titles and identifiers are left out. töre sends it nowhere.
 
-### Connected AI tool (MCP) *(new)*
+### Work with Claude Code from töre *(new)*
 
-`tore-server mcp --data <folder>` lets Claude Desktop or Claude Code read exactly the continuation contexts you opened, read-only, with no copy and paste. See [docs/MCP.md](docs/MCP.md).
+- **Tasks.** Besides decisions, opinions and questions, a topic now holds tasks. A task is open or closed; only you close it.
+- **Open a topic to a connected AI tool.** `tore-server mcp --data <folder>` lets Claude Code read the topics you opened: your adopted decisions and opinions, open tasks and open questions, nothing else.
+- **Proposals wait for you.** If you allow it for a topic, the tool can leave a proposal: a task result, a decision, a question, a new task or an objection to one of your positions. It waits in **Gelen kutusu**; the tool never writes your notebook, and an accepted proposal stays an unreviewed AI proposal until you review it. See [docs/MCP.md](docs/MCP.md).
+- **Import Claude Code sessions** kept on this computer, only when you ask, through the usual preview.
 
 ### Thinkers: place your notes next to the thinkers you read
 
@@ -138,7 +141,7 @@ töre is a single-user preview. There is no multi-user isolation, cloud sync, ho
 | [Connected AI tool (MCP)](docs/MCP.md) | Opening one prepared context to Claude Desktop or Claude Code, read-only |
 | [Demo script](docs/PREVIEW-DEMO.md) | A synthetic walk-through in two to three minutes |
 | [Known limitations](docs/PREVIEW-LIMITATIONS.md) | What this preview does not do |
-| [0.13.0 release note](docs/RELEASE-0.13.0.md) | What changed and how it was checked |
+| [0.14.0 release note](docs/RELEASE-0.14.0.md) | What changed and how it was checked |
 | [Third-party notices](docs/THIRD-PARTY-NOTICES.md) | Licences of bundled and linked components |
 
 ## Releases

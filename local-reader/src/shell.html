@@ -5,12 +5,13 @@
 <meta http-equiv="Content-Security-Policy" content="{{CSP}}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<title>Töre 0.13.0 — Raporlar ve düşünce profilleri</title>
+<title>töre — Arşiv</title>
 <style>{{STYLE}}</style>
 </head>
 <body>
+<div class="app-topbar" id="app-topbar" hidden><a href="/konular" class="app-brand" aria-label="töre ana sayfa">töre.</a><nav aria-label="Ana gezinme"><a href="/konular">Konularım</a><a href="/harita">Haritam</a><a href="/dusunurler">Düşünürler</a><a href="/calisma">Konuşmalarım</a><a href="/arsiv" aria-current="page">Arşiv</a></nav><span class="private-mark"><span aria-hidden="true">●</span> Bu bilgisayarda</span></div>
 <header class="top">
-  <div class="brand"><h1>Töre</h1><span class="version">0.13.0</span></div>
+  <div class="brand"><h1>Arşiv</h1><a href="/konular" class="back-to-topics" id="back-to-topics" hidden>← Konularım'a dön</a></div>
   <p class="tagline">Raporlarınız, kaynaklarınız ve düşünceleriniz.</p>
   <div class="toolbar">
     <button id="choose">Veri klasörünü seç</button>
@@ -22,7 +23,7 @@
       <button id="restore" disabled>Yedekten geri yükle</button>
     </div></details>
   </div>
-  <nav class="main-nav" aria-label="Ana gezinme"><a href="/calisma">AI çalışma alanı</a><button id="nav-reports" aria-current="page">Raporlar</button><button id="nav-self">Profilim</button><button id="nav-thinkers">Düşünürler</button><button id="nav-comparisons">Özel karşılaştırmalar</button><button id="native-stop" hidden>Uygulamayı kapat</button><a href="/ag" class="network-link" id="network-link" hidden>Ağ</a><a href="/kaynaklar" class="network-link" id="sources-link" hidden>Kaynaklar</a><a href="/yardimci" class="network-link" id="assistant-link" hidden>Yerel yardımcı</a><a href="/entegrasyonlar" class="network-link" id="integration-link" hidden>Notion ve Beyin</a><a href="/video" class="network-link" id="video-link" hidden>Video</a></nav>
+  <nav class="main-nav" aria-label="Arşiv bölümleri"><button id="nav-reports" aria-current="page">Raporlar</button><button id="nav-self">Profilim</button><button id="nav-thinkers">Düşünür profilleri</button><button id="nav-comparisons">Özel karşılaştırmalar</button><button id="native-stop" hidden>Uygulamayı kapat</button><a href="/ag" class="network-link" id="network-link" hidden>Ağ</a><a href="/kaynaklar" class="network-link" id="sources-link" hidden>Kaynaklar</a><a href="/yardimci" class="network-link" id="assistant-link" hidden>Yerel yardımcı</a><a href="/entegrasyonlar" class="network-link" id="integration-link" hidden>Notion ve Beyin</a><a href="/video" class="network-link" id="video-link" hidden>Video</a></nav>
 </header>
 <p id="status" class="status" role="status" aria-live="polite">Dosyalar yalnızca seçtiğiniz yerel klasöre kaydedilir. Başlamak için veri klasörünü seçin.</p>
 <button id="recover-reading" hidden>Önceki sağlam okuma kaydını kurtar</button>
@@ -108,6 +109,7 @@
 <dialog id="share-dialog" class="share-dialog"><div class="dialog-heading"><h2 id="share-title">Paylaşma taslağı</h2><button id="share-close" type="button">Kapat</button></div><p id="share-attribution" class="note"></p><p>Yalnız seçtiğiniz metin ve kaynak adları paylaşma dosyasına alınır. Bu dosyayı Ağ ekranında ayrıca seçip incelemeniz ve yayımlamanız gerekir. İndirmek, yayımlamak değildir.</p><pre id="share-preview" class="multiline"></pre><button id="share-download" type="button">JSON paylaşma taslağını indir</button></dialog>
 <input id="files" type="file" accept=".md" multiple hidden>
 <input id="backupFile" type="file" accept=".json,application/json" hidden>
+<p class="archive-version">töre <span class="version">0.14.0</span></p>
 <pre id="third-party-licenses" hidden>{{LICENSES}}</pre>
 {{SCRIPTS}}
 </body>

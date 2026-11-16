@@ -88,3 +88,33 @@ test('create yanıtı kaybolursa sabit istek kimliğiyle tekrar tek kayıt üret
   await h.click('create-card');assert.equal(h.cards.length,1);assert.equal(h.$('editor-error').hidden,true);assert.equal(h.$('reconcile-card').hidden,true);assert.equal(h.$('cards-count').textContent,'1');
   const requests=h.requests.filter(r=>r.op==='opinion-create');assert.equal(requests.length,2);assert.equal(requests[0].body.requestId,requests[1].body.requestId);
 });
+
+test('eski görüş defteri ortak menüyü taşır, kendini eski defter olarak tanıtır ve Konularım\'a yönlendirir',async t=>{
+  const {w,$}=await setup(t);const d=w.document;
+  assert.equal(d.title,'töre — Eski görüş defteri');
+  assert.deepEqual([...d.querySelectorAll('.topbar nav a')].map(a=>[a.textContent,a.getAttribute('href')]),[['Konularım','/konular'],['Haritam','/harita'],['Düşünürler','/dusunurler'],['Konuşmalarım','/calisma'],['Arşiv','/arsiv']]);
+  assert.equal(d.querySelectorAll('.topbar nav button').length,0,'üst menüde yalnız beş bağlantı');
+  assert.equal(d.querySelector('.topbar').textContent.includes('Görüşlerim'),false);
+  assert.doesNotMatch(d.querySelector('.topbar').textContent,/\d+\.\d+\.\d+/,'üst menüde sürüm yok');
+  assert.equal(d.querySelector('.topbar .brand').getAttribute('href'),'/konular');
+  assert.match(d.querySelector('.topbar .private-mark').textContent,/Bu bilgisayarda/);
+  const note=d.querySelector('main .legacy-note');assert.ok(note);
+  assert.match(note.textContent,/Bu, eski görüş defterin\. Yeni kayıtlar Konularım'da tutulur\./);
+  assert.equal(note.querySelector('a[href="/konular"]').textContent,'Konularım\'a dön');
+  assert.ok(note.contains($('ideology-nav')),'İdeolojim paneli sayfa içinden açılır');
+  assert.doesNotMatch(d.body.textContent,/Töre/,'ürün adı küçük harfle');
+});
+
+test('eski görüş defteri biçemi okunur ikincil metin, görünür sınır, sarılan menü ve hareket azaltma taşır',()=>{
+  const css=fs.readFileSync(path.join(web,'opinions.css'),'utf8');
+  for(const m of css.matchAll(/font(?:-size)?:(?:\d{3} )?(\d+(?:\.\d+)?)px/g))assert.ok(Number(m[1])>=13,'en küçük yazı 13 px: '+m[0]);
+  assert.match(css,/--muted:#5c665c/);
+  assert.match(css,/::placeholder\{color:#6a7367/);
+  assert.match(css,/\.topic-index\{[^}]*color:var\(--muted\)/);
+  assert.match(css,/input,textarea,select\{border:1px solid #7d8c7a/);
+  assert.doesNotMatch(css,/#7eaa61/,'odak halkası yeşil, 3:1 üstü');
+  assert.match(css,/\.topbar nav\{flex-wrap:wrap/);
+  assert.match(css,/input:not\(\[type=checkbox\]\):not\(\[type=radio\]\),textarea,select\{font-size:16px!important\}/);
+  assert.match(css,/button:disabled[^{]*\{opacity:1;[^}]*color:#5d685d/);
+  assert.match(css,/prefers-reduced-motion:reduce\)\{\*,\*::before,\*::after\{animation:none!important/);
+});

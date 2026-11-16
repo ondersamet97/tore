@@ -123,6 +123,21 @@ Uygulama önizlemeyi bütün kaynak karması ve mevcut konu defteri karmasına b
 
 `records-review`, geriye uyumlu isteğe bağlı `expectedTopicId` alanını kabul eder. Ekranın açıldığı konu ile kaydın güncel konusu farklıysa inceleme reddedilir: `Kaydın konusu değişmiş; incelemeden önce yeniden yükleyin`. Böylece konu düzenleme içerik revizyonunu değiştirmese de yeni arayüz eski konu bağlamıyla inceleme yapmaz. Önceki istemcilerin yalnız `expectedRevision` göndermesi desteklenir.
 
+## İşler, bağlı araç izinleri ve gelen kutusu (0.14.0)
+
+`kind` artık dört değer alır: `opinion`, `decision`, `question`, `task`. İş (`task`) soru gibi durumludur: `adoption` her zaman `not_applicable`, `questionState` `open` ya da `closed`. İşi yalnız kişi, açık onay ve gerekçeyle kapatır. `records-topic` yanıtına `openTasks` ve `toolAccess` eklenmiştir. İşler haritaya konmaz.
+
+| İşlem | İstek | Yanıt |
+|---|---|---|
+| `records-tool-access` | `{topicId,read,write,confirmedByUser:true}` | `{topicId,read,write}` |
+| `inbox` | `{}` | `{items:[{item,topicTitle,related}],toolAccess}` |
+| `inbox-accept` | `{itemId,confirmedByUser:true}` | `{record,mapEntryId}` |
+| `inbox-dismiss` | `{itemId,confirmedByUser:true}` | `{dismissed}` |
+| `claude-code-sessions` | `{}` | `{sessions:[{id,project,modifiedAt,bytes,sourceConversationId,imported}]}` |
+| `claude-code-preview` | `{sessionIds:[…]}` (1–50) | `{previewId,conversations}`; ardından `import-commit` |
+
+`write` izni `read` olmadan verilemez; `read:false` izni kaldırır. İzinler konu deposunda `toolAccess`, işlenen öneriler `inboxHandled` alanındadır; boşken serileştirilmez. Araç önerileri deftere değil `tool-inbox.jsonl` dosyasına eklenir; bozuk ya da tanınmayan satırlar yok sayılır. Kabul edilen öneri `attribution:"assistant_proposal"`, `review:"pending"` ve `source:{kind:"tool",id:"tool:<öneri kimliği>",provider:"mcp",role:"assistant",title:<aracın adı>}` taşıyan yeni bir kayıt olur. `objection` türü yalnız aynı konudaki bir görüş ya da karara bağlanır; o kayıt haritadaysa itiraz altına `placement:"suggested"` olarak yerleşir. Geri yükleme bütün `toolAccess` izinlerini kapatır. Sınırlar: öneri başına 8000 bayt, 200 bekleyen öneri, 2 MiB dosya.
+
 ## Düşünce haritası — kayıtların okur için yerleşimi (0.13.0)
 
 | İşlem | İstek | Yanıt |

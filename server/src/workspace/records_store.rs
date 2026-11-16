@@ -125,6 +125,9 @@ impl Disk {
             healthy: true,
         })
     }
+    pub(super) fn root(&self) -> &Path {
+        &self.root
+    }
     pub(super) fn check(&self) -> Result<(), String> {
         if !self.healthy {
             return Err("Konu deposu yazma hatasından sonra kilitlendi; yeniden açın".into());
@@ -297,6 +300,8 @@ impl Disk {
         for packet in data.packets.values_mut() {
             closed += usize::from(std::mem::take(&mut packet.shared_with_tools));
         }
+        closed += data.tool_access.len();
+        data.tool_access.clear();
         let previous = self.backup()?;
         self.commit(data)?;
         Ok(
@@ -387,6 +392,12 @@ pub(super) fn validate_sources(
                         || !r.commentary.contains(&source.excerpt)
                     {
                         return Err("Yedek AI yorum alıntısı uyuşmuyor".into());
+                    }
+                }
+                // A tool proposal has no vault message; the record carries its own text.
+                "tool" => {
+                    if source.role != "assistant" || record.attribution != "assistant_proposal" {
+                        return Err("Yedek araç önerisi kaynağı uyuşmuyor".into());
                     }
                 }
                 _ => return Err("Yedek kaynak türü desteklenmiyor".into()),
