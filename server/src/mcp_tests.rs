@@ -220,3 +220,47 @@ fn protocol_errors() {
         None
     );
 }
+
+struct FailingTopics {
+    stale: bool,
+}
+impl Topics for FailingTopics {
+    fn list(&self) -> Result<Vec<crate::workspace::ToolTopic>, String> {
+        Err("Konu deposu bozuk; okunmadı (Data error) SENTETİK-AYRINTI".into())
+    }
+    fn text(&self, _: &str) -> Result<Option<String>, String> {
+        self.list().map(|_| None)
+    }
+    fn propose(&self, _: &str, _: &str, _: &str, _: Option<&str>) -> Result<String, String> {
+        self.list().map(|_| String::new())
+    }
+    fn stale(&self) -> bool {
+        self.stale
+    }
+}
+
+#[test]
+fn an_unreadable_notebook_tells_the_person_how_to_reconnect_without_the_reason() {
+    let broken = || Err("Konu deposu bozuk; okunmadı SENTETİK-AYRINTI".to_string());
+    for stale in [false, true] {
+        let topics = FailingTopics { stale };
+        for call in [
+            r#"{"name":"tore_list_shared_contexts"}"#,
+            r#"{"name":"tore_get_shared_context","arguments":{"id":"x"}}"#,
+            r#"{"name":"tore_list_topics"}"#,
+            r#"{"name":"tore_get_topic","arguments":{"topicId":"x"}}"#,
+            r#"{"name":"tore_propose","arguments":{"topicId":"x","kind":"note","text":"SENTETİK"}}"#,
+        ] {
+            let line = format!(r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{call}}}"#);
+            let out = handle(&line, &broken, Some(&topics)).unwrap();
+            let r: Value = serde_json::from_str(&out).unwrap();
+            assert_eq!(r["result"]["isError"], true, "{call}");
+            let text = r["result"]["content"][0]["text"].as_str().unwrap();
+            assert!(text.contains("could not be read by this connector"), "{call}");
+            assert!(text.contains("run /mcp, choose tore, then Reconnect"), "{call}");
+            assert!(text.contains(env!("CARGO_PKG_VERSION")));
+            assert_eq!(text.contains("töre was updated after this connector started, so"), stale);
+            assert!(!out.contains("SENTETİK-AYRINTI") && !out.contains("bozuk"));
+        }
+    }
+}

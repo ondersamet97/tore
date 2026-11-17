@@ -1432,3 +1432,10 @@ impl Disk {
 #[cfg(test)]
 #[path = "records_organize_tests.rs"]
 mod tests;
+
+/// Whether a topic organization receipt names this record; such records stay.
+pub(super) fn receipts_mention(s: &Store, record_id: &str) -> bool {
+    s.organization_receipts
+        .values()
+        .any(|r| r.changes.iter().any(|c| c.record_ids.iter().any(|x| x == record_id)))
+}

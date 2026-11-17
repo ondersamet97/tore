@@ -130,6 +130,7 @@ Uygulama önizlemeyi bütün kaynak karması ve mevcut konu defteri karmasına b
 | İşlem | İstek | Yanıt |
 |---|---|---|
 | `records-tool-access` | `{topicId,read,write,confirmedByUser:true}` | `{topicId,read,write}` |
+| `records-tool-access-all` | `{read,write,confirmedByUser:true}` | `{topics,read,write,toolAccess}`; şu an var olan bütün konuları tek kayıtta açar ya da (`read:false`) bütün izinleri kaldırır. Sonradan açılan konular kapalı başlar. |
 | `inbox` | `{}` | `{items:[{item,topicTitle,related}],toolAccess}` |
 | `inbox-accept` | `{itemId,confirmedByUser:true}` | `{record,mapEntryId}` |
 | `inbox-dismiss` | `{itemId,confirmedByUser:true}` | `{dismissed}` |
@@ -169,3 +170,26 @@ Girdiler konu deposunda `mapEntries` alanında tutulur; kilit, atomik yazma, yed
 Katalog sürümlü ve editoryaldir; sekiz düşünür için yalnız kamuya açık genel bilgi (eserler, ana fikirler, eleştiriler, sınırlar) taşır. Bağlantıyı yalnız kişi kurar; onaysız istek reddedilir. Aynı kayıt aynı düşünüre ikinci kez bağlanamaz. `requestId` aynı içerikle tekrarlanırsa mevcut bağlantı döner, farklı içerikte reddedilir. Not en fazla 2000 bayttır. Bağlantı kaldırmak kaydı silmez.
 
 Bağlantılar konu deposunda `thinkerLinks` alanında tutulur ve deponun kilit, atomik yazma, yedek ve geri alma doğrulamasını paylaşır. Boş alan serileştirilmez; önceki depo ve yedek karmaları değişmez. Doğrulama, bilinmeyen düşünürü, eksik kaydı ve yinelenen çifti reddeder. Sınır 3000 bağlantıdır. Yakınlık puanı, sıralama veya siyasi kimlik çıkarımı yoktur; bir bağlantı düşünürün bütün görüşlerinin benimsendiği anlamına gelmez.
+
+## Çöp kutusu
+
+| İşlem | İstek | Yanıt |
+|---|---|---|
+| `records-trash` | `{id,expectedRevision?,confirmedByUser:true}` | `{record,changed}`; kayda `trashedAt` konur. |
+| `records-untrash` | `{id,confirmedByUser:true}` | `{record,changed}`; `trashedAt` kalkar. |
+| `records-purge` | `{id,confirmedByUser:true}` | `{purged,backupId}`; yalnız çöp kutusundaki kayıt, önce otomatik yedekle. |
+
+Çöpteki kayıt `records-list` yanıtında `records` yerine `trash` dizisinde döner. `records-topic`, harita, düşünür bağları, gelen kutusu ve bağlı AI aracı (MCP) onu görmez. Çöpteki kayıt incelenemez, devam metnine, haritaya ya da düşünüre eklenemez ve yanıtlanamaz. `trashedAt` yalnız doluyken serileştirilir; eski depolar bayt bayt aynı kalır. Kalıcı silme şu kayıtlarda reddedilir: bir devam metninde kullanılmış, bir konu düzenleme makbuzunda geçen, eski görüş defterinden aktarılmış, kendisine bağlı yanıtı olan soru ya da haritada altında başka girdi bulunan kayıt. Kalıcı silmede kaydın harita girdisi ve düşünür bağları kaldırılır; konuşma bağlantılarındaki aday listesinden çıkarılır; gelen kutusu kayıtlarındaki bağlantısı boşaltılır.
+
+## Sürümler arası uyum: bağlı araç okuyucusu
+
+Masaüstü uygulaması (`Disk::open`) katıdır: tanımadığı alan ya da durum içeren depoyu açmaz ve üzerine yazmaz. Böylece eski bir töre, yeni bir alanı (örneğin `trashedAt`) atıp deftere geri yazamaz.
+
+Bağlı AI aracının (MCP) okuyucusu ise ileriye uyumludur. Uzun süre açık kalan eski bir bağlayıcı, yeni bir töre'nin yazdığı defteri okurken:
+
+- konuları, kayıtları, devam paketlerini, araç izinlerini ve gelen kutusu kararlarını tek tek okur; okuyamadığı ya da doğrulayamadığı öğeyi atlar. Atlanan kayıt gizlenir, atlanan izin kapalı sayılır, okunamayan kayda dayanan paket ve okunamayan soruya bağlı yanıt da gizlenir;
+- kullanmadığı bölümleri (harita, düşünür bağları, konuşma bağlantıları, makbuzlar, yanıtlar) hiç okumaz; tanımadığı üst düzey alanları yok sayar;
+- `schemaVersion` 1'den büyükse defterin tamamını okumaz;
+- atlama ve okuma hatalarının nedenini stderr'e yalnız hata türü, alan adı ve kimlik olarak yazar; kayıt içeriği yazılmaz. Araç cevabı kişiye bağlayıcıyı yeniden bağlamasını söyler (`/mcp` → tore → Reconnect). Konu metninde gizlenen kayıt sayısı ayrıca belirtilir.
+
+Kural: bağlı araca neyin görüneceğini kısıtlayan yeni bir bilgi ya kaydın (ya da izin, paket öğesinin) içinde tutulur, böylece eski okuyucu o öğeyi atlar; ya da `schemaVersion` artırılır. Böyle bir bilgi yeni bir üst düzey alan olarak eklenmez, çünkü eski okuyucu onu yok sayar. Bilinen bir alana yeni bir değer eklemek (yeni `kind` gibi) eski okuyucuda yalnız o kaydı gizler.

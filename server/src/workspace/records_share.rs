@@ -75,7 +75,7 @@ impl Disk {
 /// Read the notebook under the normal `--data` directory without locking or
 /// writing, and return only the packets the person opened to a connected tool.
 pub fn shared_contexts(data_dir: &Path) -> Result<Vec<SharedContext>, String> {
-    let store = persistence::read_snapshot(&data_dir.join("conversations"))?;
+    let store = persistence::read_snapshot(&data_dir.join("conversations"))?.store;
     let mut out: Vec<SharedContext> = store
         .packets
         .values()

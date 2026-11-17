@@ -122,6 +122,7 @@ impl Disk {
             .data
             .thinker_links
             .values()
+            .filter(|l| self.data.records[&l.record_id].trashed_at.is_none())
             .map(|l| {
                 let r = &self.data.records[&l.record_id];
                 json!({"link":l,"record":{"id":r.id,"topicId":r.topic_id,"kind":r.kind,"text":r.text,
@@ -140,7 +141,12 @@ impl Disk {
         if !known_thinkers().contains(&r.thinker_id) {
             return Err("Düşünür katalogda yok".into());
         }
-        if !self.data.records.contains_key(&r.record_id) {
+        if !self
+            .data
+            .records
+            .get(&r.record_id)
+            .is_some_and(|x| x.trashed_at.is_none())
+        {
             return Err("Kayıt bulunamadı".into());
         }
         if !bounded(&r.note, 2000, false) {

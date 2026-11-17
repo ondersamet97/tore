@@ -37,11 +37,23 @@ pub trait Topics {
         text: &str,
         relates_to: Option<&str>,
     ) -> Result<String, String>;
+    /// True when the töre program on disk changed after this connector
+    /// started, i.e. an older connector may be reading a newer notebook.
+    fn stale(&self) -> bool {
+        false
+    }
 }
 
 struct DiskTopics {
     data: PathBuf,
     client: std::cell::RefCell<String>,
+    program: Option<(std::time::SystemTime, u64)>,
+}
+
+/// Modification time and size of the running program file, if readable.
+fn program_stamp() -> Option<(std::time::SystemTime, u64)> {
+    let meta = std::fs::metadata(std::env::current_exe().ok()?).ok()?;
+    Some((meta.modified().ok()?, meta.len()))
 }
 impl Topics for DiskTopics {
     fn list(&self) -> Result<Vec<ToolTopic>, String> {
@@ -58,6 +70,9 @@ impl Topics for DiskTopics {
         relates_to: Option<&str>,
     ) -> Result<String, String> {
         tool_propose(&self.data, &self.client.borrow(), topic, kind, text, relates_to)
+    }
+    fn stale(&self) -> bool {
+        self.program.is_some() && program_stamp() != self.program
     }
 }
 
@@ -80,6 +95,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
     let topics = DiskTopics {
         data: data.clone(),
         client: std::cell::RefCell::new(String::new()),
+        program: program_stamp(),
     };
     let stdin = std::io::stdin();
     let mut input = stdin.lock();
@@ -130,6 +146,23 @@ fn tool_text(text: String, is_error: bool) -> Value {
         v["isError"] = json!(true);
     }
     v
+}
+
+/// The notebook could not be read. The real reason goes to stderr (kind and
+/// field name only, never notebook content); the tool gets a fixed message
+/// that tells the person how to recover.
+fn unreadable(reason: &str, stale: bool) -> Value {
+    let version = env!("CARGO_PKG_VERSION");
+    eprintln!("tore mcp {version}: notebook read failed: {reason}");
+    let cause = if stale {
+        " töre was updated after this connector started, so this connector is out of date."
+    } else {
+        " If töre was updated after this connector started, this connector may be out of date."
+    };
+    tool_text(
+        format!("The töre notebook could not be read by this connector (töre {version}).{cause} Ask the person to reconnect it: in Claude Code run /mcp, choose tore, then Reconnect. If it still fails, restart töre once and reconnect again."),
+        true,
+    )
 }
 
 fn topic_tools() -> Value {
@@ -215,16 +248,12 @@ fn call_tool(
         Some(Value::Object(m)) => m.clone(),
         Some(_) => return Err((-32602, "Tool arguments must be an object")),
     };
+    let stale = || topics.is_some_and(|t| t.stale());
     match name {
         LIST_TOOL => {
             let contexts = match load() {
                 Ok(c) => c,
-                Err(_) => {
-                    return Ok(tool_text(
-                        "The töre notebook could not be read right now.".into(),
-                        true,
-                    ));
-                }
+                Err(e) => return Ok(unreadable(&e, stale())),
             };
             let message = if contexts.is_empty() {
                 "Nothing is shared from töre right now. The person can open a prepared context to the connected AI tool on the Konularım page."
@@ -243,12 +272,7 @@ fn call_tool(
                 .ok_or((-32602, "Argument id (string) is required"))?;
             let contexts = match load() {
                 Ok(c) => c,
-                Err(_) => {
-                    return Ok(tool_text(
-                        "The töre notebook could not be read right now.".into(),
-                        true,
-                    ));
-                }
+                Err(e) => return Ok(unreadable(&e, stale())),
             };
             Ok(match contexts.into_iter().find(|c| c.id == id) {
                 Some(c) => tool_text(format!("{PREAMBLE}\n{}", c.text), false),
@@ -257,11 +281,10 @@ fn call_tool(
         }
         TOPICS_TOOL | TOPIC_TOOL | PROPOSE_TOOL if topics.is_some() => {
             let topics = topics.ok_or((-32602, "Unknown tool"))?;
-            let unreadable = || tool_text("The töre notebook could not be read right now.".into(), true);
             let text_arg = |key: &'static str| args.get(key).and_then(Value::as_str);
             Ok(match name {
                 TOPICS_TOOL => match topics.list() {
-                    Err(_) => unreadable(),
+                    Err(e) => unreadable(&e, stale()),
                     Ok(list) => {
                         let message = if list.is_empty() {
                             "No töre topic is open to you right now. The person can open one on the Konularım page."
@@ -279,7 +302,7 @@ fn call_tool(
                 TOPIC_TOOL => {
                     let id = text_arg("topicId").ok_or((-32602, "Argument topicId (string) is required"))?;
                     match topics.text(id) {
-                        Err(_) => unreadable(),
+                        Err(e) => unreadable(&e, stale()),
                         Ok(Some(text)) => tool_text(format!("{PREAMBLE}\n{text}"), false),
                         Ok(None) => tool_text(NOT_OPEN.into(), true),
                     }
@@ -291,7 +314,7 @@ fn call_tool(
                     match topics.propose(topic, kind, text, text_arg("relatesTo")) {
                         Ok(id) => tool_text(format!("Left in the töre inbox as {id}. It is not part of the notebook until the person accepts it."), false),
                         Err(e) if e.is_ascii() => tool_text(e, true),
-                        Err(_) => unreadable(),
+                        Err(e) => unreadable(&e, stale()),
                     }
                 }
             })

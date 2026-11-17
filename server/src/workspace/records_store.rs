@@ -71,16 +71,198 @@ fn read(path: &Path) -> Result<Option<Vec<u8>>, String> {
     Ok(Some(bytes))
 }
 
+/// What the connector could read of the notebook, and which records it hid.
+pub(super) struct Snapshot {
+    pub(super) store: Store,
+    /// `(record id, topic id)` of every record this build could not read or
+    /// validate. Ids only, already reduced to safe ASCII; never record text.
+    pub(super) skipped: Vec<(String, String)>,
+}
+
 /// Read-only snapshot for another process (the MCP adapter): no directory
 /// creation, no lock file, no write. The writer replaces the file atomically,
 /// so an open descriptor always sees one complete committed version.
-pub(super) fn read_snapshot(root: &Path) -> Result<Store, String> {
-    let data = match read(&root.join("records-v1.json"))? {
-        Some(bytes) => serde_json::from_slice(&bytes).map_err(|_| "Konu deposu bozuk; okunmadı")?,
-        None => Store::default(),
+///
+/// Forward compatible on purpose, unlike [`Disk::open`]: a newer töre may add a
+/// field or a state this build does not know. Instead of refusing the whole
+/// notebook, each topic, record, packet and permission is read on its own and
+/// one this build cannot read or validate is left out (fail closed: a record
+/// that might be in the trash is hidden, an unreadable permission counts as
+/// closed). Sections the connector never uses are not read at all. Only the
+/// writer stays strict, so an older töre never drops fields it does not know.
+/// The reason for every skip goes to stderr as kind and field name only.
+pub(super) fn read_snapshot(root: &Path) -> Result<Snapshot, String> {
+    let Some(bytes) = read(&root.join("records-v1.json"))? else {
+        return Ok(Snapshot {
+            store: Store::default(),
+            skipped: vec![],
+        });
     };
-    validate_store(&data)?;
-    Ok(data)
+    let raw: Value = serde_json::from_slice(&bytes).map_err(|e| {
+        format!(
+            "Konu deposu bozuk; okunmadı ({:?} at line {}, column {})",
+            e.classify(),
+            e.line(),
+            e.column()
+        )
+    })?;
+    let Value::Object(mut raw) = raw else {
+        return Err("Konu deposu bozuk; okunmadı (not an object)".into());
+    };
+    match raw.get("schemaVersion").and_then(Value::as_u64) {
+        Some(1) => {}
+        Some(v) if v > 1 => {
+            return Err(format!(
+                "Konu deposu daha yeni bir töre sürümüyle yazılmış (schemaVersion {v}); okunmadı"
+            ));
+        }
+        _ => return Err("Konu deposu sürümü tanınmıyor; okunmadı".into()),
+    }
+    let mut store = Store::default();
+    let mut skipped = Vec::new();
+
+    store.topics = lenient(raw.remove("topics"), true, "topics", |_, _| {})?;
+    store.topics.retain(|id, t| {
+        let ok = id == &t.id && bounded(&t.title, 300, true) && bounded(&t.goal, 6000, false);
+        if !ok {
+            skip_note("topic", id, "invalid topic");
+        }
+        ok
+    });
+
+    let mut raw_topic = |id: &str, v: &Value| {
+        let topic = v.get("topicId").and_then(Value::as_str).unwrap_or("");
+        skipped.push((safe_id(id), safe_id(topic)));
+    };
+    let mut records: BTreeMap<String, Record> =
+        lenient(raw.remove("records"), true, "records", &mut raw_topic)?;
+    records.retain(|id, r| {
+        let why = validate_record(r).err().or_else(|| {
+            (id != &r.id || !store.topics.contains_key(&r.topic_id))
+                .then(|| "Kayıt konu bağlantısı geçersiz".to_owned())
+        });
+        if let Some(why) = why {
+            skip_note("record", id, &why);
+            skipped.push((safe_id(id), safe_id(&r.topic_id)));
+            return false;
+        }
+        true
+    });
+    // An answer to a question this build hid is hidden too; repeat until no
+    // answer points at a missing question.
+    loop {
+        let orphans: Vec<String> = records
+            .values()
+            .filter(|r| {
+                r.answers_question_id.as_ref().is_some_and(|q| {
+                    !records
+                        .get(q)
+                        .is_some_and(|x| x.kind == "question" && x.topic_id == r.topic_id)
+                })
+            })
+            .map(|r| r.id.clone())
+            .collect();
+        if orphans.is_empty() {
+            break;
+        }
+        for id in orphans {
+            if let Some(r) = records.remove(&id) {
+                skip_note("record", &id, "Yanıtın soru bağlantısı geçersiz");
+                skipped.push((safe_id(&id), safe_id(&r.topic_id)));
+            }
+        }
+    }
+    store.records = records;
+
+    store.tool_access = lenient(raw.remove("toolAccess"), false, "toolAccess", |_, _| {})?;
+    store.tool_access.retain(|topic, a| {
+        let ok = store.topics.contains_key(topic) && !(a.write && !a.read);
+        if !ok {
+            skip_note("tool permission", topic, "Bağlı araç izni geçersiz");
+        }
+        ok
+    });
+    store.inbox_handled = lenient(raw.remove("inboxHandled"), false, "inboxHandled", |_, _| {})?;
+
+    let packets: BTreeMap<String, Packet> =
+        lenient(raw.remove("packets"), true, "packets", |_, _| {})?;
+    for (id, p) in packets {
+        match validate_packet(&store, &id, &p) {
+            Ok(()) => {
+                store.packets.insert(id, p);
+            }
+            Err(why) => skip_note("packet", &id, &why),
+        }
+    }
+    Ok(Snapshot { store, skipped })
+}
+
+/// Decode one map section entry by entry; an entry this build cannot read is
+/// reported and left out. A missing optional section is empty.
+fn lenient<T: serde::de::DeserializeOwned>(
+    section: Option<Value>,
+    required: bool,
+    name: &str,
+    mut bad: impl FnMut(&str, &Value),
+) -> Result<BTreeMap<String, T>, String> {
+    let entries = match section {
+        Some(Value::Object(m)) => m,
+        None if !required => return Ok(BTreeMap::new()),
+        _ => return Err(format!("Konu deposu bozuk; okunmadı (section {name})")),
+    };
+    let mut out = BTreeMap::new();
+    for (id, value) in entries {
+        match T::deserialize(&value) {
+            Ok(item) => {
+                out.insert(id, item);
+            }
+            Err(e) => {
+                skip_note(name, &id, &item_reason(&e));
+                bad(&id, &value);
+            }
+        }
+    }
+    Ok(out)
+}
+
+/// Kind of a decode error and, for an unknown field, its name. Never the
+/// value: serde's messages for invalid values may quote personal text.
+fn item_reason(e: &serde_json::Error) -> String {
+    let message = e.to_string();
+    let field = message
+        .strip_prefix("unknown field `")
+        .and_then(|rest| rest.split('`').next())
+        .filter(|f| {
+            !f.is_empty()
+                && f.len() <= 64
+                && f.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+        });
+    match field {
+        Some(f) => format!("unknown field `{f}`"),
+        None => format!("{:?} error", e.classify()),
+    }
+}
+
+/// An id as it may appear in a diagnostic: UUID-like ASCII, or a placeholder.
+fn safe_id(id: &str) -> String {
+    if !id.is_empty()
+        && id.len() <= 80
+        && id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | ':'))
+    {
+        id.to_owned()
+    } else {
+        "?".to_owned()
+    }
+}
+
+fn skip_note(what: &str, id: &str, why: &str) {
+    eprintln!(
+        "tore mcp {}: skipped {what} {}: {why}",
+        env!("CARGO_PKG_VERSION"),
+        safe_id(id)
+    );
 }
 
 pub struct Disk {

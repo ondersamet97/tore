@@ -69,7 +69,7 @@ test('hazır Töre HTML: eski rapor → kendi profilim → üç alan/geçmiş �
     click('choose');
     await waitFor(() => !$('choose').disabled && $('list').textContent.includes(fixture.report.title), 'Eski arşiv açılmadı.');
     assert.equal(w.document.title, 'töre — Arşiv');
-    assert.equal(w.document.querySelector('.version').textContent, '0.14.0');
+    assert.equal(w.document.querySelector('.version').textContent, '0.15.0');
     assert.ok(w.document.querySelector('.version').closest('.archive-version'), 'sürüm yalnız sayfa altında');
     assert.equal(w.document.querySelector('header .version'), null, 'üst başlıkta sürüm yok');
     assert.deepEqual(await fs.readFile(path.join(fixture.dirPath, 'arsiv.json')), fixture.rawManifest);

@@ -26,6 +26,8 @@ async function setup(t,options={}){
    case 'conversation':assert.equal(body.id,conversation.id);data=conversation;break;
    case 'records-topic':{assert.deepEqual(Object.keys(body),['topicId']);const t=store.topics.find(t=>t.id===body.topicId);assert.ok(t);const rs=store.records.filter(r=>r.topicId===t.id);data={topic:t,records:rs,openTasks:rs.filter(r=>r.kind==='task'&&r.questionState==='open'&&r.review!=='rejected'&&r.currency!=='superseded'),toolAccess:toolAccess[t.id]||null};break;}
    case 'records-tool-access':{assert.deepEqual(Object.keys(body).sort(),['confirmedByUser','read','topicId','write']);assert.equal(body.confirmedByUser,true);assert.equal(typeof body.read,'boolean');assert.equal(typeof body.write,'boolean');assert.ok(!(body.write&&!body.read),'öneri izni okuma izni olmadan gönderilemez');assert.ok(store.topics.some(t=>t.id===body.topicId));if(body.read)toolAccess[body.topicId]={read:true,write:body.write,updatedAt:stamp};else delete toolAccess[body.topicId];update();data={topicId:body.topicId,read:body.read,write:body.write};break;}
+   case 'records-tool-access-all':{assert.deepEqual(Object.keys(body).sort(),['confirmedByUser','read','write']);assert.equal(body.confirmedByUser,true);assert.ok(!(body.write&&!body.read),'öneri izni okuma izni olmadan gönderilemez');for(const k of Object.keys(toolAccess))delete toolAccess[k];if(body.read)for(const t of store.topics)toolAccess[t.id]={read:true,write:body.write,updatedAt:stamp};update();data={topics:store.topics.length,read:body.read,write:body.write,toolAccess};break;}
+   case 'records-trash':case 'records-untrash':case 'records-purge':{assert.equal(body.confirmedByUser,true);if(!store.trash)store.trash=[];if(op==='records-trash'){const i=store.records.findIndex(r=>r.id===body.id);assert.ok(i>=0);assert.equal(body.expectedRevision,store.records[i].revision);const [r]=store.records.splice(i,1);r.trashedAt=stamp;store.trash.push(r);data={record:r,changed:true};}else{const i=store.trash.findIndex(r=>r.id===body.id);assert.ok(i>=0);const [r]=store.trash.splice(i,1);if(op==='records-untrash'){delete r.trashedAt;store.records.push(r);data={record:r,changed:true};}else data={purged:r.id,backupId:'backup-purge'};}update();break;}
    case 'inbox':assert.deepEqual(body,{});data={items:inbox.map(item=>{const r=item.relatesTo&&store.records.find(r=>r.id===item.relatesTo);return{item,topicTitle:store.topics.find(t=>t.id===item.topicId).title,related:r?{id:r.id,kind:r.kind,text:r.text}:null};}),toolAccess};break;
    case 'inbox-accept':{assert.deepEqual(Object.keys(body).sort(),['confirmedByUser','itemId']);assert.equal(body.confirmedByUser,true);const i=inbox.findIndex(x=>x.id===body.itemId);assert.ok(i>=0,'öneri bekliyor olmalı');const [item]=inbox.splice(i,1),kind=item.kind==='note'||item.kind==='objection'?'opinion':item.kind;const r=record('record-'+(++seq),{topicId:item.topicId,kind,text:item.text,reason:'',attribution:'assistant_proposal',review:'pending',adoption:held(kind)?'not_applicable':'unknown',currency:'unknown',priority:'unspecified',questionState:held(kind)?'open':'not_applicable',source:{kind:'tool',id:'tool:'+item.id,provider:'mcp',role:'assistant',title:item.tool}});store.records.push(r);update();data={record:r,mapEntryId:null};break;}
    case 'inbox-dismiss':{assert.deepEqual(Object.keys(body).sort(),['confirmedByUser','itemId']);assert.equal(body.confirmedByUser,true);const i=inbox.findIndex(x=>x.id===body.itemId);assert.ok(i>=0);inbox.splice(i,1);data={dismissed:true};break;}
@@ -316,6 +318,33 @@ test('iş oluşturulur, Açık işler listesinde Yapılıyor olan üstte durur; 
  await h.check('question-close-consent');await h.click('question-close-apply');assert.match(h.$('record-error').textContent,/İşi kapatma gerekçeni yaz/);assert.equal(h.$('record-error').getAttribute('role'),'alert');assert.equal(h.store.records.find(r=>r.id==='t-old').questionState,'open');
  await h.change('question-close-reason','SENTETİK teslim ettim');await h.click('question-close-apply');const closed=h.store.records.find(r=>r.id==='t-old');assert.equal(closed.questionState,'closed');assert.equal(closed.adoption,'not_applicable');assert.match(closed.history.at(-1).changeReason,/teslim ettim/);
  assert.equal(h.$('open-tasks-list').querySelector('[data-open-task="t-old"]'),null);assert.match(h.$('record-result').textContent,/İş kapatıldı/);assert.equal(h.w.document.activeElement,h.$('topic-title'),'kapanan iş listeden çıkınca odak konu başlığına gelir');
+});
+
+test('kayıt çöp kutusuna taşınır, Silinenler bölümünden geri alınır ve ayrı onayla kalıcı silinir',async t=>{
+ const h=await setup(t,{records:[record(),record('r2',{text:'SENTETİK silinecek karar'})]});
+ await h.edit('r2');assert.equal(h.$('record-trash').hidden,false);await h.click('record-trash');
+ assert.deepEqual(h.sent('records-trash'),[{id:'r2',expectedRevision:h.store.trash[0].revision,confirmedByUser:true}]);
+ assert.equal(h.store.records.some(r=>r.id==='r2'),false);assert.match(h.$('record-result').textContent,/Silinenler/);assert.equal(h.$('record-editor').hidden,true);
+ assert.match(h.$('trash-heading').textContent,/Silinenler · 1/);const item=h.w.document.querySelector('[data-trash-item="r2"]');assert.match(item.textContent,/silinecek karar/);
+ assert.equal(item.querySelector('[data-trash-purge]').disabled,true,'kalıcı silme ayrı onay ister');
+ await h.click(item.querySelector('[data-trash-restore]'));assert.deepEqual(h.sent('records-untrash'),[{id:'r2',confirmedByUser:true}]);assert.ok(h.store.records.some(r=>r.id==='r2'));assert.match(h.$('trash-heading').textContent,/^Silinenler$/);
+ await h.edit('r2');await h.click('record-trash');await h.check('trash-purge-consent');const again=h.w.document.querySelector('[data-trash-purge="r2"]');assert.equal(again.disabled,false);
+ await h.click(again);assert.deepEqual(h.sent('records-purge'),[{id:'r2',confirmedByUser:true}]);assert.equal(h.store.trash.length,0);assert.match(h.$('trash-status').textContent,/yedek alındı/);assert.equal(h.$('trash-purge-consent').checked,false);
+ await h.edit('r1');const failing=await setup(t,{records:[record()],failOp:'records-trash'});await failing.edit('r1');await failing.click('record-trash');assert.equal(failing.$('record-error').hidden,false);assert.equal(failing.store.records.length,1);
+});
+
+test('ana sayfada tek düğmeyle bütün konular bağlı AI aracına açılır ve kapanır',async t=>{
+ const h=await setup(t,{records:[record()]});
+ assert.ok(h.$('all-tool-access').compareDocumentPosition(h.$('inbox-panel'))&4,'panel gelen kutusunun üstünde');
+ assert.match(h.$('all-tool-access').textContent,/Görür:/);assert.match(h.$('all-tool-access').textContent,/kapalı başlar/);
+ assert.equal(h.$('all-tool-access-state').textContent,'Bağlı AI aracına kapalı');assert.equal(h.$('all-tool-access-close').hidden,true);assert.equal(h.$('all-tool-access-write').disabled,true);assert.equal(h.$('all-tool-access-save').disabled,true);
+ await h.check('all-tool-access-read');await h.check('all-tool-access-write');assert.equal(h.sent('records-tool-access-all').length,0,'kutular tek başına izin açmaz');
+ await h.click('all-tool-access-save');assert.deepEqual(h.sent('records-tool-access-all'),[{read:true,write:true,confirmedByUser:true}]);
+ assert.match(h.$('all-tool-access-state').textContent,/Bütün konuların .*okuma ve öneri/);assert.equal(h.$('all-tool-access-close').hidden,false);assert.match(h.$('all-tool-access-status').textContent,/kapalı başlar/);
+ assert.match(h.$('tool-access-state').textContent,/okuma ve öneri/,'konu paneli de güncellenir');
+ await h.click('all-tool-access-close');assert.deepEqual(h.sent('records-tool-access-all').at(-1),{read:false,write:false,confirmedByUser:true});assert.deepEqual(h.toolAccess,{});
+ assert.equal(h.$('all-tool-access-state').textContent,'Bağlı AI aracına kapalı');assert.equal(h.$('all-tool-access-read').checked,false);assert.equal(h.w.document.activeElement.tagName,'SUMMARY');
+ const failing=await setup(t,{records:[record()],failOp:'records-tool-access-all'});await failing.check('all-tool-access-read');await failing.click('all-tool-access-save');assert.equal(failing.$('all-tool-access-error').hidden,false);assert.equal(failing.$('page-error').hidden,true);
 });
 
 test('bağlı AI aracı izni: okuma ve öneri ayrı onaylanır, öneri okumaya bağlıdır, Kapat tek tıktır',async t=>{

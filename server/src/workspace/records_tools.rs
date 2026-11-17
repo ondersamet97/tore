@@ -49,6 +49,14 @@ struct AccessInput {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct AllAccessInput {
+    read: bool,
+    write: bool,
+    confirmed_by_user: bool,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct InboxInput {
     item_id: String,
     confirmed_by_user: bool,
@@ -128,6 +136,7 @@ fn open_of<'a>(s: &'a Store, topic: &str, kind: &str) -> Vec<&'a Record> {
         .values()
         .filter(|r| {
             r.topic_id == topic
+                && r.trashed_at.is_none()
                 && r.kind == kind
                 && r.question_state == "open"
                 && r.review != "rejected"
@@ -141,7 +150,7 @@ fn open_of<'a>(s: &'a Store, topic: &str, kind: &str) -> Vec<&'a Record> {
 
 /// Topics the person opened for reading. No lock, no write.
 pub fn tool_topics(data_dir: &Path) -> Result<Vec<ToolTopic>, String> {
-    let s = persistence::read_snapshot(&data_dir.join("conversations"))?;
+    let s = persistence::read_snapshot(&data_dir.join("conversations"))?.store;
     let mut out: Vec<ToolTopic> = s
         .tool_access
         .iter()
@@ -166,7 +175,9 @@ pub fn tool_topics(data_dir: &Path) -> Result<Vec<ToolTopic>, String> {
 /// open and what is to be done. Unreviewed AI proposals, rejected or superseded
 /// records, sources and every other topic stay out.
 pub fn tool_topic_text(data_dir: &Path, topic_id: &str) -> Result<Option<String>, String> {
-    let s = persistence::read_snapshot(&data_dir.join("conversations"))?;
+    let snapshot = persistence::read_snapshot(&data_dir.join("conversations"))?;
+    let hidden = snapshot.skipped.iter().filter(|(_, t)| t == topic_id).count();
+    let s = snapshot.store;
     let Some(access) = s.tool_access.get(topic_id).filter(|a| a.read) else {
         return Ok(None);
     };
@@ -179,6 +190,7 @@ pub fn tool_topic_text(data_dir: &Path, topic_id: &str) -> Result<Option<String>
         .values()
         .filter(|r| {
             r.topic_id == topic_id
+                && r.trashed_at.is_none()
                 && !stateful(&r.kind)
                 && r.review == "reviewed"
                 && r.adoption == "adopted"
@@ -216,6 +228,12 @@ pub fn tool_topic_text(data_dir: &Path, topic_id: &str) -> Result<Option<String>
     } else {
         "\nBu konu yalnız okumaya açık; öneri bırakamazsın.\n"
     });
+    if hidden > 0 {
+        text.push_str(&format!(
+            "\nNOTE: {hidden} record(s) in this topic could not be read by this connector (töre {}) and are hidden. If töre was updated after this connector started, ask the person to reconnect it: in Claude Code run /mcp, choose tore, then Reconnect.\n",
+            env!("CARGO_PKG_VERSION")
+        ));
+    }
     Ok(Some(text))
 }
 
@@ -230,7 +248,7 @@ pub fn tool_propose(
     relates_to: Option<&str>,
 ) -> Result<String, String> {
     let root = data_dir.join("conversations");
-    let s = persistence::read_snapshot(&root)?;
+    let s = persistence::read_snapshot(&root)?.store;
     if !s.tool_access.get(topic_id).is_some_and(|a| a.read && a.write) {
         return Err("This topic is not open for proposals. The person can allow it on the Konularım page.".into());
     }
@@ -240,7 +258,11 @@ pub fn tool_propose(
     if !bounded(text, PROPOSAL_BYTES, true) {
         return Err("text is required and limited to 8000 bytes".into());
     }
-    let related = relates_to.map(|id| s.records.get(id).filter(|r| r.topic_id == topic_id));
+    let related = relates_to.map(|id| {
+        s.records
+            .get(id)
+            .filter(|r| r.topic_id == topic_id && r.trashed_at.is_none())
+    });
     if matches!(related, Some(None)) {
         return Err("relatesTo must be a record id from this topic".into());
     }
@@ -321,6 +343,38 @@ impl Disk {
         Ok(json!({"topicId":r.topic_id,"read":r.read,"write":r.write}))
     }
 
+    /// Opens or closes every topic that exists now, in one commit. Topics
+    /// created later start closed: consent covers what the person saw.
+    pub fn tool_access_set_all(&mut self, input: Value) -> Result<Value, String> {
+        self.check()?;
+        let r: AllAccessInput = decode(input)?;
+        if !r.confirmed_by_user {
+            return Err("Bağlı AI aracı izni yalnız açık onayla değişir".into());
+        }
+        if r.write && !r.read {
+            return Err("Öneri bırakma izni için önce okuma izni gerekir".into());
+        }
+        let mut next = self.data.clone();
+        if r.read {
+            let time = now();
+            for id in self.data.topics.keys() {
+                next.tool_access.insert(
+                    id.clone(),
+                    ToolAccess {
+                        read: true,
+                        write: r.write,
+                        updated_at: time.clone(),
+                    },
+                );
+            }
+        } else {
+            next.tool_access.clear();
+        }
+        let topics = self.data.topics.len();
+        self.commit(next)?;
+        Ok(json!({"topics":topics,"read":r.read,"write":r.write,"toolAccess":self.tool_access_view()}))
+    }
+
     fn pending_inbox(&self) -> Vec<InboxItem> {
         read_inbox(self.root())
             .into_iter()
@@ -341,6 +395,7 @@ impl Disk {
                     .relates_to
                     .as_ref()
                     .and_then(|id| self.data.records.get(id))
+                    .filter(|r| r.trashed_at.is_none())
                     .map(|r| json!({"id":r.id,"kind":r.kind,"text":r.text}));
                 json!({"item":i,"topicTitle":self.data.topics[&i.topic_id].title,"related":related})
             })
@@ -365,7 +420,7 @@ impl Disk {
             .relates_to
             .as_ref()
             .and_then(|id| self.data.records.get(id))
-            .filter(|x| x.topic_id == item.topic_id)
+            .filter(|x| x.topic_id == item.topic_id && x.trashed_at.is_none())
             .cloned();
         let kind = match item.kind.as_str() {
             "note" | "objection" => "opinion",
@@ -409,6 +464,7 @@ impl Disk {
             history: vec![],
             legacy: None,
             creation_request_hash: hash(&item)?,
+            trashed_at: None,
         };
         validate_record(&record)?;
         let mut next = self.data.clone();

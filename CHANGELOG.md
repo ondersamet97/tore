@@ -1,8 +1,13 @@
 # Change log
 
-## Unreleased
+## 0.15.0 — Claude Code plugin, trash and a clean start (2026-11-17)
 
-- **The demo is gone.** `Preview.command` and the three-minute demo script are removed. `Başlat.command` is the only launcher; on a new checkout it starts with an empty notebook. Server messages no longer call töre a demo.
+- **Claude Code plugin.** A separate repository, [tore-claude-plugin](https://github.com/ondersamet97/tore-claude-plugin), packages the MCP connection with a "continue from a topic" skill and a `/tore:propose` command. It bundles no data and starts `tore-server mcp` from the person's own checkout.
+- **Connector survives updates.** The MCP reader skips records written in a newer format instead of failing, rejects unknown schema versions, and asks the person to reconnect when the notebook cannot be read. Diagnostics name the error kind and field only, never record content.
+- **No personal details in public files.** The maintainer's name, email and work history were removed from the README, notices and test fixtures; contact goes through GitHub issues or the töre LinkedIn page.
+- **The demo is gone.** `Preview.command`, the three-minute demo script and its old screenshot are removed. `Başlat.command` is the only launcher; on a new checkout it starts with an empty notebook. Server messages no longer call töre a demo.
+- **Trash for every record kind.** "Çöp kutusuna taşı" in the record editor hides an opinion, decision, question or task from every view, the map, thinkers, the inbox and the connected AI tool. "Silinenler" under Bakım lists trashed records. From there a record can be restored, or permanently deleted with a separate consent. töre takes a backup automatically before a permanent delete. Records that history depends on stay in the trash and cannot be permanently deleted. That covers records used in a continuation context, named in a topic organization receipt, migrated from the old opinion notebook, a question with linked answers, or a record with children on the map. New operations: `records-trash`, `records-untrash` and `records-purge`.
+- **Open every topic to the connected AI tool at once.** "Konularım" now has a "Bağlı AI aracı" panel at the top: one explicit consent opens all existing topics for reading, optionally with proposals, and "Hepsini kapat" removes every permission. It uses a new `records-tool-access-all` operation that commits all topics in one write. Topics created later start closed. Per-topic permissions still work, and both panels stay in sync.
 
 ## 0.14.0 — Working from töre: tasks, two-way MCP and a simpler interface (2026-11-16)
 

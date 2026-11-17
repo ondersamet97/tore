@@ -494,3 +494,61 @@ fn symlink_store_backup_or_parent_is_never_followed() {
     fs::remove_dir_all(p).unwrap();
     fs::remove_file(outside).unwrap();
 }
+
+#[test]
+fn trash_hides_a_record_everywhere_restores_it_and_purges_only_after_backup() {
+    let p = root();
+    let mut d = Disk::open(p.clone()).unwrap();
+    let t = topic(&mut d);
+    let before_bytes = serde_json::to_vec(&d.data).unwrap();
+    let keep = { let c = create(&mut d, &t, "opinion"); reviewed(&mut d, &c) };
+    let gone = { let c = create(&mut d, &t, "opinion"); reviewed(&mut d, &c) };
+    let id = gone["id"].as_str().unwrap().to_owned();
+    assert!(!serde_json::to_string(&d.data).unwrap().contains("trashedAt"), "eski depolar bayt bayt aynı kalır");
+    assert!(before_bytes.len() > 0);
+    assert!(d.trash(json!({"id":id,"confirmedByUser":false})).is_err());
+    assert!(d.trash(json!({"id":id,"expectedRevision":1,"confirmedByUser":true})).is_err(), "eski revizyon reddedilir");
+    assert!(d.purge(json!({"id":id,"confirmedByUser":true})).is_err(), "çöp kutusunda olmayan kalıcı silinemez");
+    d.trash(json!({"id":id,"expectedRevision":gone["revision"],"confirmedByUser":true})).unwrap();
+    let list = d.list().unwrap();
+    assert!(list["records"].as_array().unwrap().iter().all(|r| r["id"] != id.as_str()));
+    assert_eq!(list["trash"][0]["id"], id.as_str());
+    let view = d.topic_view(json!({"topicId":t})).unwrap();
+    assert!(view["records"].as_array().unwrap().iter().all(|r| r["id"] != id.as_str()));
+    assert!(d.review(review_input(&gone)).is_err(), "çöpteki kayıt incelenemez");
+    assert!(d.prepare(json!({"topicId":t,"recordIds":[id],"proposalIds":[],"target":"chatgpt","question":"","confirmedByUser":true})).is_err());
+    assert!(d.map_add(json!({"recordId":id,"section":"insan","role":"position","confirmedByUser":true})).is_err());
+    assert_eq!(d.trash(json!({"id":id,"confirmedByUser":true})).unwrap()["changed"], false);
+    d.untrash(json!({"id":id,"confirmedByUser":true})).unwrap();
+    assert!(d.list().unwrap()["records"].as_array().unwrap().iter().any(|r| r["id"] == id.as_str()));
+    d.trash(json!({"id":id,"confirmedByUser":true})).unwrap();
+    let backups = d.backups().unwrap().len();
+    let result = d.purge(json!({"id":id,"confirmedByUser":true})).unwrap();
+    assert_eq!(d.backups().unwrap().len(), backups + 1, "kalıcı silmeden önce yedek alınır");
+    assert!(result["backupId"].is_string());
+    assert!(!d.data.records.contains_key(&id));
+    assert!(d.data.records.contains_key(keep["id"].as_str().unwrap()));
+    drop(d);
+    let d = Disk::open(p.clone()).unwrap();
+    assert!(d.list().unwrap()["trash"].as_array().unwrap().is_empty());
+    fs::remove_dir_all(p).unwrap();
+}
+
+#[test]
+fn purge_is_refused_for_records_that_history_depends_on() {
+    let p = root();
+    let mut d = Disk::open(p.clone()).unwrap();
+    let t = topic(&mut d);
+    let used = { let c = create(&mut d, &t, "decision"); reviewed(&mut d, &c) };
+    packet(&mut d, &t, vec![used["id"].clone()]);
+    d.trash(json!({"id":used["id"],"confirmedByUser":true})).unwrap();
+    assert!(d.purge(json!({"id":used["id"],"confirmedByUser":true})).unwrap_err().contains("devam metninde"));
+    let q = create(&mut d, &t, "question");
+    d.record_create(json!({"topicId":t,"kind":"opinion","text":"Yapay yanıt","answersQuestionId":q["id"]}), &BTreeMap::new()).unwrap();
+    d.trash(json!({"id":q["id"],"confirmedByUser":true})).unwrap();
+    assert!(d.purge(json!({"id":q["id"],"confirmedByUser":true})).unwrap_err().contains("yanıtlar"));
+    assert!(d.record_create(json!({"topicId":t,"kind":"opinion","text":"Yeni yanıt","answersQuestionId":q["id"]}), &BTreeMap::new()).is_err());
+    let restored = d.list().unwrap();
+    assert_eq!(restored["trash"].as_array().unwrap().len(), 2, "silinemeyenler çöp kutusunda kalır");
+    fs::remove_dir_all(p).unwrap();
+}

@@ -28,6 +28,8 @@ use map::MapEntry;
 #[path = "records_share.rs"]
 mod share;
 pub use share::{SharedContext, shared_contexts};
+#[path = "records_trash.rs"]
+mod trash;
 #[path = "records_tools.rs"]
 mod tools;
 use tools::{InboxHandled, ToolAccess};
@@ -97,6 +99,10 @@ pub struct Record {
     pub history: Vec<Revision>,
     pub legacy: Option<opinions::Card>,
     pub creation_request_hash: String,
+    /// Set while the record is in the trash: hidden from every view and from
+    /// connected tools, restorable, and absent from older stores' bytes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trashed_at: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -333,6 +339,60 @@ fn validate_record(r: &Record) -> Result<(), String> {
     }
     Ok(())
 }
+/// One continuation packet against the store it lives in. Shared by the full
+/// validation and the connector's lenient read, which hides a failing packet.
+fn validate_packet(s: &Store, id: &str, p: &Packet) -> Result<(), String> {
+    if id != p.id
+        || !s.topics.contains_key(&p.topic_id)
+        || p.text.len() > 200000
+        || p.hash != digest(p.text.as_bytes())
+    {
+        return Err("Devam paketi geçersiz".into());
+    }
+    let selected: Vec<&String> = p.record_ids.iter().chain(&p.proposal_ids).collect();
+    if selected.len() != p.sources.len()
+        || selected.len() > 40
+        || selected.iter().copied().collect::<BTreeSet<_>>().len() != selected.len()
+        || p.source_ids
+            != p.sources
+                .iter()
+                .map(|x| x.source_id.clone())
+                .collect::<Vec<_>>()
+    {
+        return Err("Devam paketi kaynak listesi geçersiz".into());
+    }
+    for (selected_id, source) in selected.into_iter().zip(&p.sources) {
+        let record = s
+            .records
+            .get(selected_id)
+            .ok_or("Devam paketinin kaydı bulunamadı")?;
+        if record.topic_id != p.topic_id
+            || source.record_id != record.id
+            || source.revision == 0
+            || source.revision > record.revision
+        {
+            return Err("Devam paketinin konu veya revizyon bağlantısı geçersiz".into());
+        }
+        let valid_source = if let Some(original) = &record.source {
+            source.source_id == original.id
+                && source.quote == original.excerpt
+                && source.role == original.role
+        } else {
+            let text = if source.revision == record.revision {
+                &record.text
+            } else {
+                &record.history[source.revision as usize - 1].text
+            };
+            source.source_id == format!("record:{}:v{}", record.id, source.revision)
+                && &source.quote == text
+                && source.role == "user"
+        };
+        if !valid_source {
+            return Err("Devam paketinin kaynak kanıtı kayıtla uyuşmuyor".into());
+        }
+    }
+    Ok(())
+}
 fn validate_store(s: &Store) -> Result<(), String> {
     if s.schema_version != 1
         || s.topics.len() > 200
@@ -408,55 +468,7 @@ fn validate_store(s: &Store) -> Result<(), String> {
     map::validate_entries(s)?;
     tools::validate_tools(s)?;
     for (id, p) in &s.packets {
-        if id != &p.id
-            || !s.topics.contains_key(&p.topic_id)
-            || p.text.len() > 200000
-            || p.hash != digest(p.text.as_bytes())
-        {
-            return Err("Devam paketi geçersiz".into());
-        }
-        let selected: Vec<&String> = p.record_ids.iter().chain(&p.proposal_ids).collect();
-        if selected.len() != p.sources.len()
-            || selected.len() > 40
-            || selected.iter().copied().collect::<BTreeSet<_>>().len() != selected.len()
-            || p.source_ids
-                != p.sources
-                    .iter()
-                    .map(|x| x.source_id.clone())
-                    .collect::<Vec<_>>()
-        {
-            return Err("Devam paketi kaynak listesi geçersiz".into());
-        }
-        for (selected_id, source) in selected.into_iter().zip(&p.sources) {
-            let record = s
-                .records
-                .get(selected_id)
-                .ok_or("Devam paketinin kaydı bulunamadı")?;
-            if record.topic_id != p.topic_id
-                || source.record_id != record.id
-                || source.revision == 0
-                || source.revision > record.revision
-            {
-                return Err("Devam paketinin konu veya revizyon bağlantısı geçersiz".into());
-            }
-            let valid_source = if let Some(original) = &record.source {
-                source.source_id == original.id
-                    && source.quote == original.excerpt
-                    && source.role == original.role
-            } else {
-                let text = if source.revision == record.revision {
-                    &record.text
-                } else {
-                    &record.history[source.revision as usize - 1].text
-                };
-                source.source_id == format!("record:{}:v{}", record.id, source.revision)
-                    && &source.quote == text
-                    && source.role == "user"
-            };
-            if !valid_source {
-                return Err("Devam paketinin kaynak kanıtı kayıtla uyuşmuyor".into());
-            }
-        }
+        validate_packet(s, id, p)?;
     }
     for (id, r) in &s.replies {
         if id != &r.id
@@ -609,7 +621,8 @@ impl Disk {
         self.check()?;
         Ok(
             json!({"schemaVersion":1,"topics":self.data.topics.values().collect::<Vec<_>>(),
-            "records":self.data.records.values().collect::<Vec<_>>(),
+            "records":self.data.records.values().filter(|r|r.trashed_at.is_none()).collect::<Vec<_>>(),
+            "trash":self.data.records.values().filter(|r|r.trashed_at.is_some()).collect::<Vec<_>>(),
             "packets":self.data.packets.values().collect::<Vec<_>>(),
             "replies":self.data.replies.values().collect::<Vec<_>>(),
             "conversationLinks":self.data.conversation_links.values().collect::<Vec<_>>(),
@@ -652,7 +665,7 @@ impl Disk {
             .data
             .records
             .values()
-            .filter(|x| x.topic_id == r.topic_id)
+            .filter(|x| x.topic_id == r.topic_id && x.trashed_at.is_none())
             .collect();
         records.sort_by(|a, b| b.updated_at.cmp(&a.updated_at).then(a.id.cmp(&b.id)));
         let decisions: Vec<_> = records
@@ -717,6 +730,11 @@ impl Disk {
         if !self.data.topics.contains_key(&r.topic_id) {
             return Err("Konu bulunamadı".into());
         }
+        if r.answers_question_id.as_ref().is_some_and(|q| {
+            self.data.records.get(q).is_some_and(|x| x.trashed_at.is_some())
+        }) {
+            return Err("Yanıtlanan soru çöp kutusunda".into());
+        }
         let source = r
             .source
             .map(|s| self.resolve_source(s, &r.topic_id, conversations))
@@ -755,6 +773,7 @@ impl Disk {
             history: vec![],
             legacy: None,
             creation_request_hash: request_hash,
+            trashed_at: None,
         };
         validate_record(&record)?;
         let mut next = self.data.clone();
@@ -838,6 +857,9 @@ impl Disk {
             return Err("İnceleme ve durum değişikliği açık kullanıcı onayı gerektirir".into());
         }
         let old = self.data.records.get(&r.id).ok_or("Kayıt bulunamadı")?;
+        if old.trashed_at.is_some() {
+            return Err("Kayıt çöp kutusunda; incelemek için önce geri al".into());
+        }
         if old.revision != r.expected_revision {
             return Err("Kayıt değişmiş; yeniden yükleyin".into());
         }
@@ -937,6 +959,7 @@ impl Disk {
                     .data
                     .records
                     .get(rid)
+                    .filter(|c| c.trashed_at.is_none())
                     .ok_or("Seçilen kayıt bulunamadı")?;
                 if c.topic_id != r.topic_id || c.review != "reviewed" || c.currency != "current" {
                     return Err(
@@ -1219,6 +1242,7 @@ fn legacy_record(card: &opinions::Card) -> Result<Record, String> {
         history: vec![],
         legacy: Some(card.clone()),
         creation_request_hash: hash(card)?,
+        trashed_at: None,
     };
     validate_record(&record)?;
     Ok(record)

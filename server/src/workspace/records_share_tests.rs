@@ -217,3 +217,24 @@ fn shared_contexts_reads_without_lock_or_writes_and_follows_revocation() {
     drop(d);
     fs::remove_dir_all(data).unwrap();
 }
+
+#[test]
+fn a_shared_packet_whose_record_a_newer_toere_changed_is_hidden_others_stay() {
+    let data = data_dir();
+    let mut d = Disk::open(data.join("conversations")).unwrap();
+    let (_, kept) = prepared(&mut d, "SENTETİK soru bir");
+    let (_, hidden) = prepared(&mut d, "SENTETİK soru iki");
+    share(&mut d, &kept, true).unwrap();
+    share(&mut d, &hidden, true).unwrap();
+    drop(d);
+    let file = data.join("conversations/records-v1.json");
+    let mut v: Value = serde_json::from_slice(&fs::read(&file).unwrap()).unwrap();
+    let record = hidden["recordIds"][0].as_str().unwrap().to_owned();
+    v["records"][&record]["futureField"] = json!(true);
+    v["futureSection"] = json!([]);
+    fs::write(&file, serde_json::to_vec(&v).unwrap()).unwrap();
+    let contexts = shared_contexts(&data).unwrap();
+    assert_eq!(contexts.len(), 1);
+    assert_eq!(contexts[0].id, kept["id"].as_str().unwrap());
+    fs::remove_dir_all(data).unwrap();
+}

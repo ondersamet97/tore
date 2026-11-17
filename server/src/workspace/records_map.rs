@@ -348,6 +348,7 @@ impl Disk {
             .data
             .map_entries
             .values()
+            .filter(|e| self.data.records[&e.record_id].trashed_at.is_none())
             .map(|e| self.map_item(e))
             .collect();
         Ok(json!({"catalog":catalog(),"entries":entries,"stateHash":hash(&self.data)?}))
@@ -374,6 +375,14 @@ impl Disk {
             .any(|e| e.record_id == r.record_id)
         {
             return Err("Bu kayıt haritada zaten var".into());
+        }
+        if self
+            .data
+            .records
+            .get(&r.record_id)
+            .is_some_and(|x| x.trashed_at.is_some())
+        {
+            return Err("Kayıt çöp kutusunda; haritaya koymak için önce geri al".into());
         }
         let time = now();
         let entry = MapEntry {
@@ -454,7 +463,10 @@ impl Disk {
     }
 
     fn exportable(e: &MapEntry, r: &Record, pending: bool, suggested: bool) -> bool {
-        if r.review == "rejected" || (!suggested && e.placement == "suggested") {
+        if r.trashed_at.is_some()
+            || r.review == "rejected"
+            || (!suggested && e.placement == "suggested")
+        {
             return false;
         }
         if pending {

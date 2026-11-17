@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 0.13.0" src="https://img.shields.io/badge/version-0.13.0-2b4eff">
+  <img alt="Version 0.15.0" src="https://img.shields.io/badge/version-0.15.0-2b4eff">
   <img alt="Status: preview" src="https://img.shields.io/badge/status-preview-0f1115">
   <img alt="Licence: AGPL-3.0" src="https://img.shields.io/badge/licence-AGPL--3.0-0f1115">
   <img alt="Platform: macOS" src="https://img.shields.io/badge/platform-macOS-0f1115">
@@ -46,7 +46,15 @@ töre is built around one question: **where did I leave off?**
   <img src="docs/images/record.png" alt="A decision opened next to the original quote it came from, with separate review, adoption and currency states" width="760">
 </p>
 
-## What is in 0.14.0
+## What is in 0.15.0
+
+### New in 0.15.0
+
+- **Claude Code plugin.** Install [töre for Claude Code](https://github.com/ondersamet97/tore-claude-plugin) and say "continue from my töre topic X": Claude reads that topic's adopted decisions, open tasks and open questions, and `/tore:propose` leaves a result in your inbox. The plugin contains no data; it connects to the töre on your own computer.
+- **Trash.** Move any record to the trash, restore it, or delete it permanently with a separate consent and an automatic backup first.
+- **Open every topic at once.** One consent on **Konularım** opens all existing topics to the connected AI tool; one click closes them all.
+- **A connector that survives updates.** An older connector skips records written in a newer format instead of failing, and asks you to reconnect when it cannot read the notebook.
+- **A clean start.** The demo launcher is gone. `Başlat.command` starts a new checkout with an empty notebook.
 
 ### Topics: return to unfinished thinking
 
@@ -64,7 +72,7 @@ A reader-facing page (**Haritam**, `/harita`) that arranges records you already 
 - **Turkish and English.** A translation is stored next to the entry and labelled as an AI translation or as your own; the original wording always stays visible.
 - **One file to hand over.** With explicit consent töre writes a single script-free HTML file to your computer. By default it contains only records you reviewed and did not reject; conversation titles and identifiers are left out. töre sends it nowhere.
 
-### Work with Claude Code from töre *(new)*
+### Work with Claude Code from töre
 
 - **Tasks.** Besides decisions, opinions and questions, a topic now holds tasks. A task is open or closed; only you close it.
 - **Open a topic to a connected AI tool.** `tore-server mcp --data <folder>` lets Claude Code read the topics you opened: your adopted decisions and opinions, open tasks and open questions, nothing else.
@@ -81,7 +89,7 @@ töre does not score your affinity, rank you or infer an identity. Linking and u
   <img src="docs/images/thinkers.png" alt="The thinkers page with one thinker opened and a notebook record linked to it by the user" width="760">
 </p>
 
-### Connected AI tool: no copy-paste *(unreleased)*
+### Connected AI tool: no copy-paste
 
 Instead of copying a prepared context, you can open that one text to an AI tool on the same computer that speaks the Model Context Protocol, such as Claude Desktop or Claude Code. Opening it takes its own confirmation, the page shows **Bağlı AI aracına açık** while it is open, and one click closes it again. The tool can read only the contexts you opened, never your records, conversations or anything else, and it cannot write to töre. See [docs/MCP.md](docs/MCP.md).
 
@@ -136,7 +144,8 @@ töre is a single-user preview. There is no multi-user isolation, cloud sync, ho
 | [Record and API contract](docs/RECORDS-CONTRACT.md) | Record states, operations and storage rules |
 | [Connected AI tool (MCP)](docs/MCP.md) | Opening one prepared context to Claude Desktop or Claude Code, read-only |
 | [Known limitations](docs/PREVIEW-LIMITATIONS.md) | What this preview does not do |
-| [0.14.0 release note](docs/RELEASE-0.14.0.md) | What changed and how it was checked |
+| [Claude Code plugin](https://github.com/ondersamet97/tore-claude-plugin) | Continue from a topic and leave proposals from Claude Code |
+| [0.15.0 release note](docs/RELEASE-0.15.0.md) | What changed and how it was checked |
 | [Third-party notices](docs/THIRD-PARTY-NOTICES.md) | Licences of bundled and linked components |
 
 ## Releases

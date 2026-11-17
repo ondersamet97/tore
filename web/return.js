@@ -22,7 +22,7 @@ import { api } from '/private-client.js';
     glm: ['GLM', 'https://chat.z.ai/'], qwen: ['Alibaba / Qwen', 'https://chat.qwen.ai/'], mistral: ['Mistral', 'https://chat.mistral.ai/'],
     nvidia: ['NVIDIA', 'https://build.nvidia.com/'], openrouter: ['OpenRouter', null], other: ['Diğer hizmet', null]
   };
-  const state = { data: { topics: [], records: [], packets: [], replies: [], backups: [], conversationLinks: [] }, topicId: '', screen: 'overview', view: 'current', queuePage: 0, sourceCheckLimit: 6, dashboardLimits: { decisions: 6, opinions: 6, resume: 6 }, editing: null, source: null, packet: null, selected: new Set(), migration: null, bulk: null, conversationLimit: 20, overviewLimits: { approved: 8, candidates: 8 }, recordLimit: 30, busy: false, requestKeys: new Map(), replyDrafts: new Map(), inbox: [], inboxFailed: false, extra: null, editorClean: '', afterDiscard: null };
+  const state = { data: { topics: [], records: [], packets: [], replies: [], backups: [], conversationLinks: [] }, topicId: '', screen: 'overview', view: 'current', queuePage: 0, sourceCheckLimit: 6, dashboardLimits: { decisions: 6, opinions: 6, resume: 6 }, editing: null, source: null, packet: null, selected: new Set(), migration: null, bulk: null, conversationLimit: 20, overviewLimits: { approved: 8, candidates: 8 }, recordLimit: 30, busy: false, requestKeys: new Map(), replyDrafts: new Map(), inbox: [], inboxFailed: false, toolAccess: null, extra: null, editorClean: '', afterDiscard: null };
   const node = (tag, value, cls) => { const el = document.createElement(tag); if (value != null) el.textContent = String(value); if (cls) el.className = cls; return el; };
   const button = (title, cls) => { const el = node('button', title, cls); el.type = 'button'; return el; };
   const text = (id, value) => { $(id).textContent = value ?? ''; };
@@ -106,7 +106,7 @@ import { api } from '/private-client.js';
     show('context-service-link', Boolean(state.packet && $('context-consent').checked && targets[state.packet.target]?.[1]));
     const queued = filteredQueue();
     $('review-open-first').disabled = state.busy || !queued.length; $('review-prev').disabled = state.busy || state.queuePage === 0; $('review-next').disabled = state.busy || (state.queuePage + 1) * 20 >= queued.length;
-    toolAccessReadiness(); quickReadiness();
+    toolAccessReadiness(); allToolAccessReadiness(); quickReadiness();
   }
   async function refresh() {
     state.data = await call('records-list');
@@ -114,7 +114,8 @@ import { api } from '/private-client.js';
     if (state.data.conversationLinks === undefined) state.data.conversationLinks = [];
     if (!Array.isArray(state.data.conversationLinks)) throw Error('Konuşma bağlantıları okunamadı. Hiçbir şey silinmedi; sayfayı yenile.');
     if (!state.data.topics.some(t => t.id === state.topicId)) state.topicId = state.data.topics[0]?.id || '';
-    renderTopics(); renderTopic(); renderGlobal(); renderBackups();
+    if (!Array.isArray(state.data.trash)) state.data.trash = [];
+    renderTopics(); renderTopic(); renderGlobal(); renderBackups(); renderTrash(); syncAllToolAccess();
     await loadExtras();
   }
   function renderTopics() {
@@ -408,7 +409,7 @@ import { api } from '/private-client.js';
     $('record-topic').value = state.topicId; $('record-topic').disabled = false; $('record-kind').disabled = false;
     renderAnswerQuestions();
     $('record-text').value = source?.excerpt || original || ''; text('record-eyebrow', 'Yeni kayıt'); text('record-heading', source ? 'Bu sözü kayda geçir' : 'Yeni kayıt'); text('record-save', 'İncelemeye bırak');
-    show('quick-review', false); show('record-detail', false); $('record-detail').open = false; show('record-history', false); show('question-close-panel', false); show('record-save-next', false); show('record-editor', true); updateKind(); markClean(); reveal($('record-editor'), $('record-heading'));
+    show('quick-review', false); show('record-detail', false); $('record-detail').open = false; show('record-history', false); show('question-close-panel', false); show('record-save-next', false); show('record-trash', false); show('record-editor', true); updateKind(); markClean(); reveal($('record-editor'), $('record-heading'));
   }
   function updateKind() {
     const kind = state.editing ? state.editing.kind : $('record-kind').value, held = stateful(kind);
@@ -437,7 +438,7 @@ import { api } from '/private-client.js';
     setSource(source, source?.originalText || source?.excerpt || '', source?.title || source?.conversationTitle || (source ? 'Kaynak' : ''), source?.role || source?.speaker || (isProposal(record) ? 'assistant' : 'user'));
     show('excerpt-field', false); show('excerpt-help', false);
     text('record-attribution', isProposal(record) ? 'Bu ifade bir AI önerisi. Sen benimsemeden görüşün veya kararın sayılmaz; kaynaktaki söz yukarıda ayrıca korunur.' : record.source ? 'Kaynaktaki sözün korunur. Aşağıdaki ifade ve incelemen ondan ayrıdır.' : 'Bu senin kendi notun. Her değişiklik geçmişe kaydedilir.');
-    show('quick-review', true); show('record-detail', true); show('record-save-next', record.review === 'pending');
+    show('quick-review', true); show('record-detail', true); show('record-save-next', record.review === 'pending'); show('record-trash', true);
     for (const id of ['quick-adopt', 'quick-hypothesis', 'quick-reject']) show(id, !held); show('quick-keep-open', held && !closed);
     $('quick-consent').checked = false; show('quick-consent-field', !held && !ownNote(record));
     show('question-close-panel', held); text('question-close-label', 'Bu ' + (record.kind === 'task' ? 'işi' : 'soruyu') + ' kendi kararımla kapatıyorum.'); text('question-close-apply', record.kind === 'task' ? 'İşi kapat' : 'Soruyu kapat');
@@ -654,13 +655,40 @@ import { api } from '/private-client.js';
   async function setToolAccess(read, write) {
     const topicId = state.topicId; if (write && !read) throw Error('Öneri izni için önce okuma iznini aç.');
     await call('records-tool-access', { topicId, read, write, confirmedByUser: true });
-    await refresh();
+    await refresh(); await loadInbox();
     text('tool-access-status', !read ? 'Bu konu bağlı AI aracına kapatıldı. Araç bir sonraki istekte okuyamaz; önceden okuduğu geri alınamaz.' : 'Bu konu bağlı AI aracına açıldı: ' + (write ? 'okuma ve öneri. Aracın önerileri gelen kutusunda seni bekler.' : 'yalnız okuma.'));
   }
+  // One switch for every topic that exists now; each topic keeps its own panel too.
+  function allAccessCounts() {
+    const access = state.toolAccess; if (!access) return null;
+    const topics = state.data.topics.map(t => t.id), open = topics.filter(id => access[id]?.read);
+    return { total: topics.length, open: open.length, write: open.filter(id => access[id]?.write).length };
+  }
+  function syncAllToolAccess() {
+    const c = allAccessCounts(), all = Boolean(c && c.total && c.open === c.total);
+    $('all-tool-access-read').checked = all; $('all-tool-access-write').checked = all && c.write === c.total;
+    text('all-tool-access-state', !c ? 'İzin durumu okunamadı. Sayfayı yenile.' : !c.open ? 'Bağlı AI aracına kapalı' : all ? 'Bütün konuların bağlı AI aracına açık: ' + (c.write === c.total ? 'okuma ve öneri' : c.write ? 'okuma; ' + c.write + ' konuda öneri' : 'okuma') : c.total + ' konudan ' + c.open + ' tanesi bağlı AI aracına açık');
+    $('all-tool-access-state').classList.toggle('shared', Boolean(c?.open)); show('all-tool-access-close', Boolean(c?.open));
+    allToolAccessReadiness();
+  }
+  function allToolAccessReadiness() {
+    const c = allAccessCounts(), read = $('all-tool-access-read').checked;
+    if (!read) $('all-tool-access-write').checked = false;
+    $('all-tool-access-read').disabled = !c || !c.total; $('all-tool-access-write').disabled = !c || !c.total || !read;
+    const same = c && read === (c.total > 0 && c.open === c.total) && $('all-tool-access-write').checked === (c.total > 0 && c.open === c.total && c.write === c.total);
+    $('all-tool-access-save').disabled = state.busy || !c || !c.total || !read || same;
+    $('all-tool-access-close').disabled = state.busy;
+  }
+  async function setAllToolAccess(read, write) {
+    if (write && !read) throw Error('Öneri izni için önce okuma iznini aç.');
+    const result = await call('records-tool-access-all', { read, write, confirmedByUser: true });
+    await refresh(); await loadInbox();
+    text('all-tool-access-status', !read ? 'Bütün konular bağlı AI aracına kapatıldı. Araç bir sonraki istekte okuyamaz; önceden okuduğu geri alınamaz.' : result.topics + ' konu bağlı AI aracına açıldı: ' + (write ? 'okuma ve öneri. Aracın önerileri gelen kutusunda seni bekler.' : 'yalnız okuma.') + ' Bundan sonra açtığın konular kapalı başlar.');
+  }
   async function loadInbox() {
-    try { const result = await call('inbox'); state.inbox = Array.isArray(result.items) ? result.items : []; state.inboxFailed = false; }
-    catch { state.inbox = []; state.inboxFailed = true; }
-    renderInbox();
+    try { const result = await call('inbox'); state.inbox = Array.isArray(result.items) ? result.items : []; state.toolAccess = result.toolAccess && typeof result.toolAccess === 'object' ? result.toolAccess : {}; state.inboxFailed = false; }
+    catch { state.inbox = []; state.toolAccess = null; state.inboxFailed = true; }
+    renderInbox(); syncAllToolAccess();
   }
   function renderInbox() {
     const list = $('inbox-list'); list.replaceChildren();
@@ -699,6 +727,31 @@ import { api } from '/private-client.js';
   }
 
   // --- Bakım -------------------------------------------------------------------
+  // Trash: hidden everywhere, restorable; permanent removal needs a separate consent.
+  function renderTrash() {
+    const items = Array.isArray(state.data.trash) ? state.data.trash : [], list = $('trash-list'); list.replaceChildren();
+    text('trash-heading', items.length ? 'Silinenler · ' + items.length : 'Silinenler');
+    if (!items.length) list.append(node('p', 'Çöp kutusu boş.', 'small'));
+    for (const r of [...items].sort((a, b) => String(b.trashedAt).localeCompare(String(a.trashedAt)))) {
+      const article = node('article', null, 'record-card trash-item'), meta = node('div', null, 'record-meta'), actions = node('div', null, 'actions'), back = button('Geri al', 'secondary'), purge = button('Kalıcı sil', 'quiet danger'), problem = node('p', null, 'error');
+      article.dataset.trashItem = r.id; problem.setAttribute('role', 'alert'); problem.hidden = true;
+      meta.append(node('span', labels.kind[r.kind] || r.kind, 'badge'), node('span', topicName(r.topicId), 'small'), node('span', 'Silindi: ' + date(r.trashedAt), 'small'));
+      back.dataset.trashRestore = r.id; purge.dataset.trashPurge = r.id; purge.disabled = state.busy || !$('trash-purge-consent').checked;
+      back.onclick = () => run(back, problem, async () => { await call('records-untrash', { id: r.id, confirmedByUser: true }); await refresh(); text('trash-status', 'Kayıt geri alındı; yeniden görünümlerinde.'); return () => $('trash-heading').focus({ preventScroll: true }); });
+      purge.onclick = () => run(purge, problem, async () => {
+        if (!$('trash-purge-consent').checked) throw Error('Kalıcı silmek için önce kutuyu işaretle.');
+        await call('records-purge', { id: r.id, confirmedByUser: true }); await refresh(); $('trash-purge-consent').checked = false; renderTrash();
+        text('trash-status', 'Kayıt kalıcı silindi. Silmeden önce yedek alındı; gerekirse Yedek ve geri yükleme bölümünden dönebilirsin.'); return () => $('trash-heading').focus({ preventScroll: true });
+      });
+      actions.append(back, purge); article.append(meta, node('p', r.text, 'record-text'), actions, problem); list.append(article);
+    }
+  }
+  async function trashRecord() {
+    const record = state.editing; if (!record) throw Error('Önce bir kayıt aç.');
+    await call('records-trash', { id: record.id, expectedRevision: record.revision, confirmedByUser: true });
+    closeEditor(); await refresh(); await loadInbox();
+    text('record-result', 'Kayıt çöp kutusuna taşındı. Sayfanın altındaki “Silinenler” bölümünden geri alabilirsin.');
+  }
   function renderBackups() {
     const previous = $('restore-backup').value; $('restore-backup').replaceChildren(option('', state.data.backups.length ? 'Geri dönülecek yedeği seç' : 'Henüz yedek yok'));
     state.data.backups.forEach((backup, index) => { const id = typeof backup === 'string' ? backup : backup.id || backup.backupId; const item = option(id, (typeof backup === 'string' ? 'Yedek ' + (index + 1) : date(backup.createdAt)) + (backup.valid === false ? ' · bozuk, kullanılamaz' : '')); item.disabled = backup.valid === false; $('restore-backup').append(item); });
@@ -751,6 +804,8 @@ import { api } from '/private-client.js';
   $('record-discard-no').onclick = () => { show('record-discard', false); state.afterDiscard = null; $('record-text').focus({ preventScroll: true }); };
   $('record-kind').onchange = updateKind;
   $('record-topic').onchange = () => { renderAnswerQuestions(); updateKind(); };
+  $('record-trash').onclick = () => run('record-trash', 'record-error', trashRecord);
+  $('trash-purge-consent').onchange = renderTrash; $('trash-heading').tabIndex = -1;
   $('record-form').onsubmit = event => { event.preventDefault(); run('record-save', 'record-error', () => saveRecord()); };
   $('record-save-adopt').onclick = () => run('record-save-adopt', 'record-error', () => saveRecord({ adopt: true }));
   $('record-save-next').onclick = () => run('record-save-next', 'record-error', () => saveRecord({ next: true }));
@@ -769,6 +824,9 @@ import { api } from '/private-client.js';
   $('reply-text').oninput = replyChanged; $('reply-format').onchange = replyChanged;
   $('context-copy').onclick = () => run('context-copy', 'context-error', async () => { if (!state.packet || !$('context-consent').checked) throw Error('Önce metni oku ve kutuyu işaretle.'); if (!navigator.clipboard?.writeText) throw Error('Pano erişilemiyor. Tam metni yukarıdaki önizlemeden seçip kopyalayabilirsin.'); await navigator.clipboard.writeText(state.packet.text); text('context-copy-status', 'Metin panoya kopyalandı. Kendi sohbet hesabına yapıştır; gelen yanıtı aşağıya getir.'); });
   $('reply-save').onclick = () => run('reply-save', 'reply-error', saveReply);
+  $('all-tool-access-read').onchange = allToolAccessReadiness; $('all-tool-access-write').onchange = allToolAccessReadiness;
+  $('all-tool-access-save').onclick = () => run('all-tool-access-save', 'all-tool-access-error', () => setAllToolAccess($('all-tool-access-read').checked, $('all-tool-access-read').checked && $('all-tool-access-write').checked));
+  $('all-tool-access-close').onclick = () => run('all-tool-access-close', 'all-tool-access-error', async () => { await setAllToolAccess(false, false); return () => $('all-tool-access-details').querySelector('summary').focus({ preventScroll: true }); });
   $('tool-access-read').onchange = toolAccessReadiness; $('tool-access-write').onchange = toolAccessReadiness;
   $('tool-access-save').onclick = () => run('tool-access-save', 'tool-access-error', () => setToolAccess($('tool-access-read').checked, $('tool-access-read').checked && $('tool-access-write').checked));
   $('tool-access-close').onclick = () => run('tool-access-close', 'tool-access-error', async () => { await setToolAccess(false, false); return () => $('tool-access-details').querySelector('summary').focus({ preventScroll: true }); });

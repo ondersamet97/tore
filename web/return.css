@@ -33,3 +33,5 @@ summary{padding:6px 0;min-height:24px}.global-record-card summary{color:var(--in
 @media(min-width:641px){.sidebar{max-height:calc(100vh - 40px);display:flex;flex-direction:column;overflow-y:auto}.sidebar>*{flex:none}.sidebar .topic-list{flex:1 1 auto;min-height:90px;max-height:none}}
 @media(max-width:640px){.topbar nav{justify-content:flex-start;gap:4px 14px;flex-basis:100%}.topbar nav a{padding:8px 2px;font-size:13px}.record-foot .small{font-size:12px}.record-text{font-size:16px}.inbox{padding:16px}.actions>button,.actions>.link-button{min-height:44px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.danger{color:#9b2c1f}.trash-item .actions{margin-top:6px}
+.all-tool-access{margin:20px 0 28px}.all-tool-access h2{font-size:22px;margin-bottom:8px}

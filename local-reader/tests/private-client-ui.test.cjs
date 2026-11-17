@@ -13,7 +13,7 @@ function setup(t,opts={}){
  w.fetch=async(url,request)=>{
   requests.push({url,method:request.method});
   if(opts.fail)return{ok:false,status:409,json:async()=>({error:opts.fail})};
-  if(url==='/api/private/tore/status')return opts.noVersion?{ok:false,status:500,json:async()=>({error:'x'})}:{ok:true,status:200,json:async()=>({version:opts.version||'0.14.0'})};
+  if(url==='/api/private/tore/status')return opts.noVersion?{ok:false,status:500,json:async()=>({error:'x'})}:{ok:true,status:200,json:async()=>({version:opts.version||'0.15.0'})};
   if(url==='/api/private/shutdown')return{ok:true,status:200,json:async()=>({message:'ok'})};
   return{ok:true,status:200,json:async()=>({})};
  };
@@ -30,7 +30,7 @@ test('sayfa altı sürümü status yanıtından yazar; üst menüye sürüm koym
  const line=footer.querySelector('.app-version');assert.equal(line.hidden,true);assert.equal(requests.length,0,'açılışta kendiliğinden istek yok');
  await seen();
  assert.deepEqual(requests.map(r=>r.url),['/api/private/tore/status']);
- assert.equal(line.hidden,false);assert.equal(line.textContent,'töre 0.14.0');
+ assert.equal(line.hidden,false);assert.equal(line.textContent,'töre 0.15.0');
  await seen();assert.equal(requests.length,1,'sürüm bir kez sorulur');
 });
 

@@ -1,6 +1,6 @@
 # Connected AI tool (MCP)
 
-Status: contexts since 0.13.0 (read-only); topics and the proposal inbox since 0.14.0. The notebook itself is never written by a tool.
+Status: contexts since 0.13.0 (read-only); topics and the proposal inbox since 0.14.0; a Claude Code plugin since 0.15.0. The notebook itself is never written by a tool.
 
 töre can let an AI tool on the same computer read a prepared continuation context directly, through the [Model Context Protocol](https://modelcontextprotocol.io), instead of you copying and pasting it. The first targets are Claude Desktop and Claude Code.
 
@@ -35,6 +35,17 @@ Use the same directory the normal server receives as `--data`, not the archive a
 | `Başlat.command` | `<checkout>/.demo-data/runtime` |
 
 The path must be absolute and must not contain symbolic links (on macOS, `/tmp` and `/var` are symbolic links; use `/private/tmp/...` instead). Build the binary first with `bash scripts/build.sh`; it is `server/target/debug/tore-server`.
+
+## Claude Code plugin (easiest)
+
+The [töre plugin for Claude Code](https://github.com/ondersamet97/tore-claude-plugin) sets this up for you and adds a skill to continue from a topic and a `/tore:propose` command:
+
+```
+/plugin marketplace add ondersamet97/tore-claude-plugin
+/plugin install tore@tore
+```
+
+When asked, enter the absolute path of your töre checkout. The plugin contains no data; it starts `tore-server mcp` from your own checkout with your own notebook.
 
 ## Connect Claude Desktop
 
@@ -76,6 +87,7 @@ Then ask, for example, "List my shared töre contexts and continue from the late
 - The page is in Turkish; the tool descriptions and the preamble line are in English, the context text itself is in the language you wrote it in.
 - Verified on macOS only. Only stdio is supported; there is no HTTP transport.
 - One notebook per configured server entry; the `--data` path is fixed in the tool configuration.
+- A connector keeps running the töre build it started with. After töre is updated, a record written in a newer format is hidden from the older connector, and a notebook it cannot read at all returns an error that asks the person to reconnect (in Claude Code: `/mcp`, choose tore, Reconnect). The reason is written to stderr as error kind and field name only, never record content.
 
 ## Topics and the proposal inbox (0.14.0)
 
