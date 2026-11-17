@@ -22,7 +22,7 @@ try:
         status=json.load(response)
     if status.get('version')!='0.14.0': raise ValueError('version')
     subprocess.run(['open',base+'/#local='+token],check=True)
-    print('Çalışan Töre demo oturumu açıldı.')
+    print('Çalışan töre oturumu açıldı.')
 except Exception:
     sys.exit(1)
 PY_REUSE

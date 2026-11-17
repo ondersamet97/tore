@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 #[tokio::main]
 async fn main() {
     if let Err(e) = run().await {
-        eprintln!("Töre demo başlatılamadı: {e}");
+        eprintln!("töre başlatılamadı: {e}");
         std::process::exit(1);
     }
 }
@@ -20,11 +20,11 @@ fn safe_directory(path: &Path) -> Result<(), String> {
             .components()
             .any(|c| matches!(c, std::path::Component::ParentDir))
     {
-        return Err("Demo dizinleri açık, mutlak ve kök olmayan yollar olmalı".into());
+        return Err("Veri dizinleri açık, mutlak ve kök olmayan yollar olmalı".into());
     }
     for p in path.ancestors() {
         if std::fs::symlink_metadata(p).is_ok_and(|m| m.file_type().is_symlink()) {
-            return Err("Demo veri yollarında sembolik bağ kullanılamaz".into());
+            return Err("Veri yollarında sembolik bağ kullanılamaz".into());
         }
     }
     Ok(())
@@ -64,16 +64,16 @@ async fn run() -> Result<(), String> {
             }
             _ => {
                 return Err(
-                    "Bu demo yalnız --archive, --data, --listen ve --open seçeneklerini kabul eder"
+                    "töre yalnız --archive, --data, --listen ve --open seçeneklerini kabul eder"
                         .into(),
                 );
             }
         }
     }
     let archive = PathBuf::from(
-        archive.ok_or("Demo için ayrı --archive yolu zorunlu; üretim varsayılanı yok")?,
+        archive.ok_or("Ayrı bir --archive yolu zorunlu; varsayılan yol yok")?,
     );
-    let data = PathBuf::from(data.ok_or("Demo için ayrı --data yolu zorunlu")?);
+    let data = PathBuf::from(data.ok_or("Ayrı bir --data yolu zorunlu")?);
     safe_directory(&archive)?;
     safe_directory(&data)?;
     if archive.starts_with(&data) || data.starts_with(&archive) {
@@ -82,18 +82,18 @@ async fn run() -> Result<(), String> {
     let listen = listen.unwrap_or_else(|| "127.0.0.1:0".into());
     let addr: std::net::SocketAddr = listen.parse().map_err(|_| "Geçersiz dinleme adresi")?;
     if !addr.ip().is_loopback() {
-        return Err("Teknik demo yalnız bu bilgisayarda çalışır".into());
+        return Err("töre yalnız bu bilgisayarda çalışır".into());
     }
-    std::fs::create_dir_all(&archive).map_err(|_| "Demo arşivi oluşturulamadı")?;
+    std::fs::create_dir_all(&archive).map_err(|_| "Arşiv oluşturulamadı")?;
     let runtime = data.join(".tore-runtime");
     safe_directory(&runtime)?;
-    std::fs::create_dir_all(&runtime).map_err(|_| "Demo çalışma alanı oluşturulamadı")?;
+    std::fs::create_dir_all(&runtime).map_err(|_| "Çalışma alanı oluşturulamadı")?;
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
         for d in [&archive, &data, &runtime] {
             std::fs::set_permissions(d, std::fs::Permissions::from_mode(0o700))
-                .map_err(|_| "Demo izinleri ayarlanamadı")?;
+                .map_err(|_| "İzinler ayarlanamadı")?;
         }
     }
     let token = format!(

@@ -10,7 +10,6 @@
 <p align="center">
   <a href="https://ondersamet97.github.io/tore-site/">Website</a> ·
   <a href="https://ondersamet97.github.io/tore-site/tr/">Türkçe</a> ·
-  <a href="docs/PREVIEW-DEMO.md">Three-minute demo</a> ·
   <a href="CHANGELOG.md">Change log</a> ·
   <a href="https://www.linkedin.com/company/tore-app/">LinkedIn</a>
 </p>
@@ -102,10 +101,8 @@ cd local-reader
 npm ci --ignore-scripts
 cd ..
 bash scripts/build.sh
-bash Preview.command
+bash Başlat.command
 ```
-
-`Preview.command` opens an isolated store in `.preview-data`, so you can try töre without touching any other data. Import `fixtures/return-topic.json` under **Konuşmalarım** and follow [the three-minute demo](docs/PREVIEW-DEMO.md).
 
 `Başlat.command` is the everyday launcher. It keeps your data in `.demo-data` inside the checkout; despite the name, treat that folder as your real notebook and back it up.
 
@@ -138,7 +135,6 @@ töre is a single-user preview. There is no multi-user isolation, cloud sync, ho
 | [Architecture and data flow](docs/PREVIEW-ARCHITECTURE.md) | How the local server, stores and pages fit together |
 | [Record and API contract](docs/RECORDS-CONTRACT.md) | Record states, operations and storage rules |
 | [Connected AI tool (MCP)](docs/MCP.md) | Opening one prepared context to Claude Desktop or Claude Code, read-only |
-| [Demo script](docs/PREVIEW-DEMO.md) | A synthetic walk-through in two to three minutes |
 | [Known limitations](docs/PREVIEW-LIMITATIONS.md) | What this preview does not do |
 | [0.14.0 release note](docs/RELEASE-0.14.0.md) | What changed and how it was checked |
 | [Third-party notices](docs/THIRD-PARTY-NOTICES.md) | Licences of bundled and linked components |

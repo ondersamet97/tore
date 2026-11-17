@@ -452,7 +452,7 @@ async fn dispatch(s: Arc<Workspace>, op: &str, r: Value) -> Result<Value, String
                 .ok_or("Konuşma bulunamadı")?;
             let (draft, findings) = policy::prepare(c, req)?;
             if disk.data.drafts.len() >= 2000 {
-                return Err("Demo taslak sınırına ulaşıldı".into());
+                return Err("Taslak sınırına ulaşıldı".into());
             }
             let mut next = disk.data.clone();
             next.drafts.insert(draft.id.clone(), draft.clone());

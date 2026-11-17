@@ -33,7 +33,6 @@ Use the same directory the normal server receives as `--data`, not the archive a
 | Launcher | `--data` directory |
 |---|---|
 | `Başlat.command` | `<checkout>/.demo-data/runtime` |
-| `Preview.command` | `<checkout>/.preview-data/runtime` |
 
 The path must be absolute and must not contain symbolic links (on macOS, `/tmp` and `/var` are symbolic links; use `/private/tmp/...` instead). Build the binary first with `bash scripts/build.sh`; it is `server/target/debug/tore-server`.
 

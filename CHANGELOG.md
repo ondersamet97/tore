@@ -1,5 +1,9 @@
 # Change log
 
+## Unreleased
+
+- **The demo is gone.** `Preview.command` and the three-minute demo script are removed. `Başlat.command` is the only launcher; on a new checkout it starts with an empty notebook. Server messages no longer call töre a demo.
+
 ## 0.14.0 — Working from töre: tasks, two-way MCP and a simpler interface (2026-11-16)
 
 ### Tasks

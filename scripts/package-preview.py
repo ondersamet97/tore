@@ -3,8 +3,8 @@
 import argparse, hashlib, json, re, zipfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent.parent
-ROOT_FILES=['README.md','CHANGELOG.md','LICENSE','NOTICE.md','.gitignore','Başlat.command','Preview.command']
-DOCS=['LISANS-SECENEKLERI.tr.md','PREVIEW-ARCHITECTURE.md','PREVIEW-LIMITATIONS.md','PREVIEW-DEMO.md','PREVIEW-VERIFICATION.md','PREVIEW-LICENSE-REVIEW.md','THIRD-PARTY-NOTICES.md','RECORDS-CONTRACT.md','records-http-report.json','preview-browser-report.json','model-catalog-snapshot.json']
+ROOT_FILES=['README.md','CHANGELOG.md','LICENSE','NOTICE.md','.gitignore','Başlat.command']
+DOCS=['LISANS-SECENEKLERI.tr.md','PREVIEW-ARCHITECTURE.md','PREVIEW-LIMITATIONS.md','PREVIEW-VERIFICATION.md','PREVIEW-LICENSE-REVIEW.md','THIRD-PARTY-NOTICES.md','RECORDS-CONTRACT.md','records-http-report.json','preview-browser-report.json','model-catalog-snapshot.json']
 SCRIPTS=['build.sh','build-core.sh','verify-records.py','verify-opinions.py','verify-ideology.py','workspace-e2e.cjs','package-preview.py']
 TREES=['server/src','core/src','core/fixtures','core/pkg','core/pkg-node','web','vendor','licenses','fixtures','local-reader/src','local-reader/vendor','local-reader/tests']
 EXAMPLE_FILES=['teori-test-konusmasi.txt','TEST - Türkçe Okuma.md','TEST - Güvenilmeyen İçerik.md','Okuma Grubu Planlama Raporu - Sentetik Test.md']
