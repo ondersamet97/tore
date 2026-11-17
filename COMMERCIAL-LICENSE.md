@@ -10,6 +10,6 @@ A separate commercial licence is for cases where the AGPL terms do not fit, for 
 
 A commercial licence is a written agreement with the copyright holder. Terms and price depend on the use. Nothing in this file is itself a licence or an offer: until an agreement is signed, only the AGPL applies.
 
-To ask about one, write to <onders97@hotmail.com> with a short description of what you want to build.
+To ask about one, open an issue titled "Commercial licence" at <https://github.com/ondersamet97/tore/issues>, or message töre on LinkedIn, with a short description of what you want to build.
 
-Copyright (C) 2026 Önder Samet
+Copyright (C) 2026 the töre authors

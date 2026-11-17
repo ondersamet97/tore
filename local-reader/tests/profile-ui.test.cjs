@@ -78,7 +78,7 @@ test('hazır Töre HTML: eski rapor → kendi profilim → üç alan/geçmiş �
   await t.test('public profil formu; yalnız geçmiş görüşü boş diğer alanlarla saklanabilir', async () => {
     click('nav-self'); click('profile-create-self');
     assert.ok($('profile-dialog').open);
-    fill('profile-name', 'Önder — SENTETİK TEST'); fill('profile-bio', 'Yalnızca test verisi.');
+    fill('profile-name', 'Kişi — SENTETİK TEST'); fill('profile-bio', 'Yalnızca test verisi.');
     await submit('profile-form', 'profile-save', 'profile-dialog');
     self = (await readProfiles(fixture)).profiles.find(p => p.kind === 'self');
     assert.ok(self); assert.equal(self.sources.length, 0); assert.equal(self.views.length, 0);

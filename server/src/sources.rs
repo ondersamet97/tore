@@ -660,9 +660,9 @@ mod tests {
     }
     #[test]
     fn atom_alternate_href_author_nested_name_and_unknown_date() {
-        let items=parsed(r#"<feed xmlns="http://www.w3.org/2005/Atom"><entry><title>A &amp; B</title><link rel="related" href="https://wrong.invalid"/><link rel="alternate" href="https://arxiv.org/abs/1"/><author><name>Önder</name></author><published>not-a-date</published><summary>Türkçe içerik</summary></entry></feed>"#).unwrap();
+        let items=parsed(r#"<feed xmlns="http://www.w3.org/2005/Atom"><entry><title>A &amp; B</title><link rel="related" href="https://wrong.invalid"/><link rel="alternate" href="https://arxiv.org/abs/1"/><author><name>Kişi</name></author><published>not-a-date</published><summary>Türkçe içerik</summary></entry></feed>"#).unwrap();
         assert_eq!(items[0]["url"], "https://arxiv.org/abs/1");
-        assert_eq!(items[0]["authors"][0], "Önder");
+        assert_eq!(items[0]["authors"][0], "Kişi");
         assert!(items[0]["published"].is_null());
         assert_eq!(items[0]["title"], "A & B");
     }

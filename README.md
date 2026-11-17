@@ -11,7 +11,6 @@
   <a href="https://ondersamet97.github.io/tore-site/">Website</a> ·
   <a href="https://ondersamet97.github.io/tore-site/tr/">Türkçe</a> ·
   <a href="docs/PREVIEW-DEMO.md">Three-minute demo</a> ·
-  <a href="ABOUT.md">About me</a> ·
   <a href="CHANGELOG.md">Change log</a> ·
   <a href="https://www.linkedin.com/company/tore-app/">LinkedIn</a>
 </p>
@@ -156,8 +155,6 @@ If those terms do not work for you, for example because you want to build töre 
 
 Third-party code keeps its own licences in `licenses/`, `vendor/` and `local-reader/vendor/`. Your conversations and notes are yours and are not covered by the software licence. Copyright notice and licence history: [NOTICE.md](NOTICE.md).
 
-## About me
+## Contact
 
-töre is an independent project by Önder Samet. Before töre I worked on AI training data and evaluation at Yandex, as AI Editor and then AI Lead Editor, and in video production, including part-time at the Human Resources Office of the Presidency of the Republic of Türkiye. Who I am, why I am building töre and what I hold to are in **[About me](ABOUT.md)**.
-
-Contact: <onders97@hotmail.com> · [töre on LinkedIn](https://www.linkedin.com/company/tore-app/)
+töre is an independent open-source project. For questions, bug reports or a commercial-licence enquiry, open an issue on GitHub or message [töre on LinkedIn](https://www.linkedin.com/company/tore-app/).

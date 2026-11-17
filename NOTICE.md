@@ -1,8 +1,8 @@
 # töre 0.14.0 — kaynak ve lisans bildirimi
 
-Bu yerel çekirdek, Önder Samet'in Töre 0.6 Rust sunucusu, Markdown arşivi, kaynak/sürüm geçmişi ve paylaşım önizlemesi temel alınarak geliştirilmiştir. 0.12.1 sürümünden itibaren bu depodaki özgün kod **GNU Affero General Public License, sürüm 3 (AGPL-3.0-only)** ile sunulur; tam metin LICENSE dosyasındadır ve değiştirilmemiştir. AGPL koşullarına uymak istemeyenler için ayrı bir ticari lisans sahibinden alınabilir; bkz. COMMERCIAL-LICENSE.md. Konuşma içeriği ve kullanıcı verisi bu yazılım lisansına otomatik olarak girmez.
+Bu yerel çekirdek, Töre 0.6 Rust sunucusu, Markdown arşivi, kaynak/sürüm geçmişi ve paylaşım önizlemesi temel alınarak geliştirilmiştir. 0.12.1 sürümünden itibaren bu depodaki özgün kod **GNU Affero General Public License, sürüm 3 (AGPL-3.0-only)** ile sunulur; tam metin LICENSE dosyasındadır ve değiştirilmemiştir. AGPL koşullarına uymak istemeyenler için ayrı bir ticari lisans sahibinden alınabilir; bkz. COMMERCIAL-LICENSE.md. Konuşma içeriği ve kullanıcı verisi bu yazılım lisansına otomatik olarak girmez.
 
-Copyright (C) 2026 Önder Samet
+Copyright (C) 2026 töre geliştiricileri (the töre authors)
 
 Lisans geçmişi: 0.11.0-rc.3 ve önceki sürümler AGPL-3.0-only kapsamında hazırlanmış, yayımlanmamıştı. 0.11.0-rc.4 ve kamuya yayımlanan 0.12.0, PolyForm Noncommercial License 1.0.0 ile sunuldu. 0.12.1 ile AGPL-3.0-only lisansına dönüldü. Değişiklik, önceki sürümler için o sürümlerin lisansıyla verilmiş hakları geriye dönük kaldırmaz.
 
