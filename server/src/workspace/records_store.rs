@@ -1,0 +1,590 @@
+//! Bounded, locked, atomic sidecar storage and local rollback snapshots.
+use super::*;
+use fs2::FileExt;
+use std::{
+    fs::{self, File, OpenOptions},
+    io::{Read, Write},
+    path::{Path, PathBuf},
+};
+const MAX_BYTES: u64 = 32 * 1024 * 1024;
+
+fn no_symlinks(path: &Path) -> Result<(), String> {
+    for p in path.ancestors() {
+        match fs::symlink_metadata(p) {
+            Ok(m) if m.file_type().is_symlink() => {
+                return Err("Konu deposunda sembolik bağlantı kullanılamaz".into());
+            }
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
+                return Err("Konu deposu yolu okunamadı".into());
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+fn options() -> OpenOptions {
+    let mut o = OpenOptions::new();
+    o.read(true).write(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        o.mode(0o600).custom_flags(libc::O_NOFOLLOW);
+    }
+    o
+}
+fn directory(path: &Path) -> Result<(), String> {
+    no_symlinks(path)?;
+    fs::create_dir_all(path).map_err(|_| "Konu deposu dizini açılamadı")?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(path, fs::Permissions::from_mode(0o700))
+            .map_err(|_| "Konu deposu izinleri ayarlanamadı")?;
+    }
+    Ok(())
+}
+fn read(path: &Path) -> Result<Option<Vec<u8>>, String> {
+    no_symlinks(path)?;
+    let mut opts = OpenOptions::new();
+    opts.read(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        opts.custom_flags(libc::O_NOFOLLOW);
+    }
+    let f = match opts.open(path) {
+        Ok(f) => f,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(_) => return Err("Konu dosyası okunamadı".into()),
+    };
+    let meta = f.metadata().map_err(|_| "Konu dosyası bilgisi alınamadı")?;
+    if !meta.is_file() || meta.len() > MAX_BYTES {
+        return Err("Konu dosyası boyutu veya türü geçersiz".into());
+    }
+    let mut bytes = Vec::new();
+    f.take(MAX_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|_| "Konu dosyası okunamadı")?;
+    if bytes.len() as u64 > MAX_BYTES {
+        return Err("Konu dosyası sınırı aşıldı".into());
+    }
+    Ok(Some(bytes))
+}
+
+/// What the connector could read of the notebook, and which records it hid.
+pub(super) struct Snapshot {
+    pub(super) store: Store,
+    /// `(record id, topic id)` of every record this build could not read or
+    /// validate. Ids only, already reduced to safe ASCII; never record text.
+    pub(super) skipped: Vec<(String, String)>,
+}
+
+/// Read-only snapshot for another process (the MCP adapter): no directory
+/// creation, no lock file, no write. The writer replaces the file atomically,
+/// so an open descriptor always sees one complete committed version.
+///
+/// Forward compatible on purpose, unlike [`Disk::open`]: a newer töre may add a
+/// field or a state this build does not know. Instead of refusing the whole
+/// notebook, each topic, record, packet and permission is read on its own and
+/// one this build cannot read or validate is left out (fail closed: a record
+/// that might be in the trash is hidden, an unreadable permission counts as
+/// closed). Sections the connector never uses are not read at all. Only the
+/// writer stays strict, so an older töre never drops fields it does not know.
+/// The reason for every skip goes to stderr as kind and field name only.
+pub(super) fn read_snapshot(root: &Path) -> Result<Snapshot, String> {
+    let Some(bytes) = read(&root.join("records-v1.json"))? else {
+        return Ok(Snapshot {
+            store: Store::default(),
+            skipped: vec![],
+        });
+    };
+    let raw: Value = serde_json::from_slice(&bytes).map_err(|e| {
+        format!(
+            "Konu deposu bozuk; okunmadı ({:?} at line {}, column {})",
+            e.classify(),
+            e.line(),
+            e.column()
+        )
+    })?;
+    let Value::Object(mut raw) = raw else {
+        return Err("Konu deposu bozuk; okunmadı (not an object)".into());
+    };
+    match raw.get("schemaVersion").and_then(Value::as_u64) {
+        Some(1) => {}
+        Some(v) if v > 1 => {
+            return Err(format!(
+                "Konu deposu daha yeni bir töre sürümüyle yazılmış (schemaVersion {v}); okunmadı"
+            ));
+        }
+        _ => return Err("Konu deposu sürümü tanınmıyor; okunmadı".into()),
+    }
+    let mut store = Store::default();
+    let mut skipped = Vec::new();
+
+    store.topics = lenient(raw.remove("topics"), true, "topics", |_, _| {})?;
+    store.topics.retain(|id, t| {
+        let ok = id == &t.id && bounded(&t.title, 300, true) && bounded(&t.goal, 6000, false);
+        if !ok {
+            skip_note("topic", id, "invalid topic");
+        }
+        ok
+    });
+
+    let mut raw_topic = |id: &str, v: &Value| {
+        let topic = v.get("topicId").and_then(Value::as_str).unwrap_or("");
+        skipped.push((safe_id(id), safe_id(topic)));
+    };
+    let mut records: BTreeMap<String, Record> =
+        lenient(raw.remove("records"), true, "records", &mut raw_topic)?;
+    records.retain(|id, r| {
+        let why = validate_record(r).err().or_else(|| {
+            (id != &r.id || !store.topics.contains_key(&r.topic_id))
+                .then(|| "Kayıt konu bağlantısı geçersiz".to_owned())
+        });
+        if let Some(why) = why {
+            skip_note("record", id, &why);
+            skipped.push((safe_id(id), safe_id(&r.topic_id)));
+            return false;
+        }
+        true
+    });
+    // An answer to a question this build hid is hidden too; repeat until no
+    // answer points at a missing question.
+    loop {
+        let orphans: Vec<String> = records
+            .values()
+            .filter(|r| {
+                r.answers_question_id.as_ref().is_some_and(|q| {
+                    !records
+                        .get(q)
+                        .is_some_and(|x| x.kind == "question" && x.topic_id == r.topic_id)
+                })
+            })
+            .map(|r| r.id.clone())
+            .collect();
+        if orphans.is_empty() {
+            break;
+        }
+        for id in orphans {
+            if let Some(r) = records.remove(&id) {
+                skip_note("record", &id, "Yanıtın soru bağlantısı geçersiz");
+                skipped.push((safe_id(&id), safe_id(&r.topic_id)));
+            }
+        }
+    }
+    store.records = records;
+
+    store.tool_access = lenient(raw.remove("toolAccess"), false, "toolAccess", |_, _| {})?;
+    store.tool_access.retain(|topic, a| {
+        let ok = store.topics.contains_key(topic) && !(a.write && !a.read);
+        if !ok {
+            skip_note("tool permission", topic, "Bağlı araç izni geçersiz");
+        }
+        ok
+    });
+    store.inbox_handled = lenient(raw.remove("inboxHandled"), false, "inboxHandled", |_, _| {})?;
+
+    let packets: BTreeMap<String, Packet> =
+        lenient(raw.remove("packets"), true, "packets", |_, _| {})?;
+    for (id, p) in packets {
+        match validate_packet(&store, &id, &p) {
+            Ok(()) => {
+                store.packets.insert(id, p);
+            }
+            Err(why) => skip_note("packet", &id, &why),
+        }
+    }
+    Ok(Snapshot { store, skipped })
+}
+
+/// Decode one map section entry by entry; an entry this build cannot read is
+/// reported and left out. A missing optional section is empty.
+fn lenient<T: serde::de::DeserializeOwned>(
+    section: Option<Value>,
+    required: bool,
+    name: &str,
+    mut bad: impl FnMut(&str, &Value),
+) -> Result<BTreeMap<String, T>, String> {
+    let entries = match section {
+        Some(Value::Object(m)) => m,
+        None if !required => return Ok(BTreeMap::new()),
+        _ => return Err(format!("Konu deposu bozuk; okunmadı (section {name})")),
+    };
+    let mut out = BTreeMap::new();
+    for (id, value) in entries {
+        match T::deserialize(&value) {
+            Ok(item) => {
+                out.insert(id, item);
+            }
+            Err(e) => {
+                skip_note(name, &id, &item_reason(&e));
+                bad(&id, &value);
+            }
+        }
+    }
+    Ok(out)
+}
+
+/// Kind of a decode error and, for an unknown field, its name. Never the
+/// value: serde's messages for invalid values may quote personal text.
+fn item_reason(e: &serde_json::Error) -> String {
+    let message = e.to_string();
+    let field = message
+        .strip_prefix("unknown field `")
+        .and_then(|rest| rest.split('`').next())
+        .filter(|f| {
+            !f.is_empty()
+                && f.len() <= 64
+                && f.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+        });
+    match field {
+        Some(f) => format!("unknown field `{f}`"),
+        None => format!("{:?} error", e.classify()),
+    }
+}
+
+/// An id as it may appear in a diagnostic: UUID-like ASCII, or a placeholder.
+fn safe_id(id: &str) -> String {
+    if !id.is_empty()
+        && id.len() <= 80
+        && id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | ':'))
+    {
+        id.to_owned()
+    } else {
+        "?".to_owned()
+    }
+}
+
+fn skip_note(what: &str, id: &str, why: &str) {
+    eprintln!(
+        "tore mcp {}: skipped {what} {}: {why}",
+        env!("CARGO_PKG_VERSION"),
+        safe_id(id)
+    );
+}
+
+pub struct Disk {
+    root: PathBuf,
+    _lock: File,
+    pub(super) data: Store,
+    hash: Option<String>,
+    healthy: bool,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Backup {
+    schema_version: u32,
+    id: String,
+    created_at: String,
+    state_hash: String,
+    data: Store,
+}
+impl Disk {
+    pub fn open(root: PathBuf) -> Result<Self, String> {
+        directory(&root)?;
+        let lock = options()
+            .create(true)
+            .truncate(false)
+            .open(root.join("records.lock"))
+            .map_err(|_| "Konu deposu kilidi açılamadı")?;
+        lock.try_lock_exclusive()
+            .map_err(|_| "Konu deposu başka bir Töre sürecinde açık")?;
+        let bytes = read(&root.join("records-v1.json"))?;
+        let data = match &bytes {
+            Some(bytes) => {
+                serde_json::from_slice(bytes).map_err(|_| "Konu deposu bozuk; sıfırlanmadı")?
+            }
+            None => Store::default(),
+        };
+        validate_store(&data)?;
+        Ok(Self {
+            root,
+            _lock: lock,
+            data,
+            hash: bytes.map(|b| digest(&b)),
+            healthy: true,
+        })
+    }
+    pub(super) fn root(&self) -> &Path {
+        &self.root
+    }
+    pub(super) fn check(&self) -> Result<(), String> {
+        if !self.healthy {
+            return Err("Konu deposu yazma hatasından sonra kilitlendi; yeniden açın".into());
+        }
+        if read(&self.root.join("records-v1.json"))?.map(|b| digest(&b)) != self.hash {
+            return Err("Konu deposu dışarıdan değişmiş; üzerine yazılmadı".into());
+        }
+        Ok(())
+    }
+    pub(super) fn commit(&mut self, next: Store) -> Result<(), String> {
+        self.check()?;
+        validate_store(&next)?;
+        let bytes = serde_json::to_vec(&next).map_err(|_| "Konu deposu kodlanamadı")?;
+        if bytes.len() as u64 > MAX_BYTES {
+            return Err("Konu deposu boyut sınırı aşıldı".into());
+        }
+        let path = self.root.join("records-v1.json");
+        let temp = self.root.join(format!(".records-{}.tmp", id()));
+        let result = (|| {
+            let mut f = options()
+                .create_new(true)
+                .open(&temp)
+                .map_err(|_| "Geçici konu dosyası açılamadı")?;
+            f.write_all(&bytes)
+                .and_then(|_| f.sync_all())
+                .map_err(|_| "Konu kaydı yazılamadı")?;
+            self.check()?;
+            fs::rename(&temp, &path).map_err(|_| "Konu kaydı atomik tamamlanamadı")?;
+            File::open(&self.root)
+                .and_then(|f| f.sync_all())
+                .map_err(|_| "Konu kaydının kalıcılığı doğrulanamadı")?;
+            Ok::<(), String>(())
+        })();
+        if result.is_err() {
+            self.healthy = false;
+            let _ = fs::remove_file(temp);
+        }
+        result?;
+        self.hash = Some(digest(&bytes));
+        self.data = next;
+        Ok(())
+    }
+    pub fn backup(&self) -> Result<Value, String> {
+        self.check()?;
+        let dir = self.root.join("records-backups");
+        directory(&dir)?;
+        if self.backups()?.len() >= 100 {
+            return Err("100 yerel yedek sınırına ulaşıldı; mevcut yedekler korunuyor".into());
+        }
+        let backup = Backup {
+            schema_version: 1,
+            id: id(),
+            created_at: now(),
+            state_hash: hash(&self.data)?,
+            data: self.data.clone(),
+        };
+        let bytes = serde_json::to_vec(&backup).map_err(|_| "Yedek kodlanamadı")?;
+        if bytes.len() as u64 > MAX_BYTES {
+            return Err("Yedek boyutu sınırı aşıldı".into());
+        }
+        let final_path = dir.join(format!("{}.json", backup.id));
+        let temp = dir.join(format!(".{}.tmp", backup.id));
+        let result = (|| {
+            let mut file = options()
+                .create_new(true)
+                .open(&temp)
+                .map_err(|_| "Yedek açılamadı")?;
+            file.write_all(&bytes)
+                .and_then(|_| file.sync_all())
+                .map_err(|_| "Yedek yazılamadı")?;
+            fs::rename(&temp, &final_path).map_err(|_| "Yedek tamamlanamadı")?;
+            File::open(&dir)
+                .and_then(|f| f.sync_all())
+                .map_err(|_| "Yedek kalıcılığı doğrulanamadı")?;
+            Ok::<(), String>(())
+        })();
+        if result.is_err() {
+            let _ = fs::remove_file(temp);
+        }
+        result?;
+        // Read back the committed file before advertising a recoverable snapshot.
+        self.read_backup(&backup.id)?;
+        Ok(
+            json!({"backupId":backup.id,"stateHash":backup.state_hash,"createdAt":backup.created_at}),
+        )
+    }
+    fn read_backup(&self, backup_id: &str) -> Result<Backup, String> {
+        let canonical = uuid::Uuid::parse_str(backup_id)
+            .map_err(|_| "Yedek kimliği geçersiz")?
+            .to_string();
+        if canonical != backup_id {
+            return Err("Yedek kimliği geçersiz".into());
+        }
+        let bytes = read(
+            &self
+                .root
+                .join("records-backups")
+                .join(format!("{}.json", canonical)),
+        )?
+        .ok_or("Yedek bulunamadı")?;
+        let backup: Backup = serde_json::from_slice(&bytes)
+            .map_err(|_| "Yedek bozuk; mevcut veriler değiştirilmedi")?;
+        if backup.schema_version != 1
+            || backup.id != canonical
+            || backup.state_hash != hash(&backup.data)?
+        {
+            return Err("Yedek bütünlüğü doğrulanamadı; mevcut veriler değiştirilmedi".into());
+        }
+        validate_store(&backup.data)?;
+        Ok(backup)
+    }
+    pub(super) fn backups(&self) -> Result<Vec<Value>, String> {
+        let dir = self.root.join("records-backups");
+        no_symlinks(&dir)?;
+        let entries = match fs::read_dir(&dir) {
+            Ok(x) => x,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(vec![]),
+            Err(_) => return Err("Yedek listesi okunamadı".into()),
+        };
+        let mut list = vec![];
+        for entry in entries.take(201) {
+            let entry = entry.map_err(|_| "Yedek listesi okunamadı")?;
+            let name = entry.file_name().to_string_lossy().to_string();
+            if let Some(id) = name.strip_suffix(".json") {
+                if uuid::Uuid::parse_str(id).is_err() {
+                    continue;
+                }
+                // Listing must not deserialize up to 100 full snapshots on an
+                // M1 merely to render a menu. Restore always validates content.
+                let metadata =
+                    fs::symlink_metadata(entry.path()).map_err(|_| "Yedek bilgisi okunamadı")?;
+                let safe_file = metadata.is_file()
+                    && !metadata.file_type().is_symlink()
+                    && metadata.len() <= MAX_BYTES;
+                let timestamp = metadata
+                    .modified()
+                    .ok()
+                    .map(|time| chrono::DateTime::<chrono::Utc>::from(time).to_rfc3339());
+                list.push(json!({"id":id,"backupId":id,"createdAt":timestamp,"valid":if safe_file {Value::Null}else{json!(false)},"validationStatus":if safe_file {"not_checked"}else{"invalid"}}));
+            }
+        }
+        list.sort_by(|a, b| b["createdAt"].as_str().cmp(&a["createdAt"].as_str()));
+        Ok(list)
+    }
+    pub fn restore(
+        &mut self,
+        input: Value,
+        conversations: &BTreeMap<String, Conversation>,
+    ) -> Result<Value, String> {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase", deny_unknown_fields)]
+        struct Restore {
+            backup_id: String,
+            expected_state_hash: String,
+            confirmed_by_user: bool,
+        }
+        self.check()?;
+        let r: Restore = decode(input)?;
+        if !r.confirmed_by_user {
+            return Err("Geri alma açık kullanıcı onayı gerektirir".into());
+        }
+        if r.expected_state_hash != hash(&self.data)? {
+            return Err("Konu deposu değişti; geri alma önizlemesini yenileyin".into());
+        }
+        let mut data = self.read_backup(&r.backup_id)?.data;
+        validate_sources(&data, conversations)?;
+        // Sharing with a connected AI tool is consent given now, not a state to
+        // bring back: a restored snapshot never reopens a context silently.
+        let mut closed = 0;
+        for packet in data.packets.values_mut() {
+            closed += usize::from(std::mem::take(&mut packet.shared_with_tools));
+        }
+        closed += data.tool_access.len();
+        data.tool_access.clear();
+        let previous = self.backup()?;
+        self.commit(data)?;
+        Ok(
+            json!({"restored":true,"restoredBackupId":r.backup_id,"backupId":previous["backupId"],"stateHash":hash(&self.data)?,"toolSharingClosed":closed}),
+        )
+    }
+}
+
+pub(super) fn validate_sources(
+    store: &Store,
+    conversations: &BTreeMap<String, Conversation>,
+) -> Result<(), String> {
+    for link in store.conversation_links.values() {
+        let conversation = conversations
+            .get(&link.conversation_id)
+            .ok_or("Yedekteki konu konuşması mevcut kasada yok")?;
+        if conversation.provider != link.provider
+            || conversation.title != link.title
+            || conversation.created_at != link.source_created_at
+            || conversation.updated_at != link.source_updated_at
+        {
+            return Err("Konu konuşması kaynak bilgisi değişmiş".into());
+        }
+        if let Some(source) = &link.last_user_source {
+            let message = conversation
+                .messages
+                .iter()
+                .find(|m| Some(&m.id) == source.message_id.as_ref())
+                .ok_or("Konu konuşmasının kaynak mesajı yok")?;
+            if message.role != "user"
+                || !message.text.contains(&source.excerpt)
+                || message.timestamp != source.timestamp
+                || source.provider != conversation.provider
+                || source.title != conversation.title
+                || message.phase.as_deref().is_some_and(|p| {
+                    [
+                        "analysis",
+                        "reasoning",
+                        "thoughts",
+                        "summary",
+                        "justify",
+                        "confidence",
+                        "tool",
+                    ]
+                    .contains(&p)
+                })
+            {
+                return Err("Konu konuşmasının kullanıcı alıntısı doğrulanamadı".into());
+            }
+        }
+    }
+    for record in store.records.values() {
+        if let Some(source) = &record.source {
+            match source.kind.as_str() {
+                "conversation" => {
+                    let c = source
+                        .conversation_id
+                        .as_ref()
+                        .and_then(|id| conversations.get(id))
+                        .ok_or(
+                            "Yedek kaynağı mevcut konuşma kasasında yok; geri alma durduruldu",
+                        )?;
+                    let m = c
+                        .messages
+                        .iter()
+                        .find(|m| Some(&m.id) == source.message_id.as_ref())
+                        .ok_or("Yedek kaynak mesajı bulunamadı")?;
+                    if m.role != source.role
+                        || !m.text.contains(&source.excerpt)
+                        || c.provider != source.provider
+                        || m.timestamp != source.timestamp
+                        || m.phase
+                            .as_deref()
+                            .is_some_and(|p| ["analysis", "reasoning", "tool"].contains(&p))
+                    {
+                        return Err("Yedek alıntısı veya konuşmacısı kaynakla eşleşmiyor".into());
+                    }
+                }
+                "reply" => {
+                    let r = source
+                        .reply_id
+                        .as_ref()
+                        .and_then(|id| store.replies.get(id))
+                        .ok_or("Yedek AI yorum kaynağı bulunamadı")?;
+                    if r.topic_id != record.topic_id
+                        || r.validation_status == "invalid"
+                        || source.role != "assistant"
+                        || !r.commentary.contains(&source.excerpt)
+                    {
+                        return Err("Yedek AI yorum alıntısı uyuşmuyor".into());
+                    }
+                }
+                // A tool proposal has no vault message; the record carries its own text.
+                "tool" => {
+                    if source.role != "assistant" || record.attribution != "assistant_proposal" {
+                        return Err("Yedek araç önerisi kaynağı uyuşmuyor".into());
+                    }
+                }
+                _ => return Err("Yedek kaynak türü desteklenmiyor".into()),
+            }
+        }
+    }
+    Ok(())
+}

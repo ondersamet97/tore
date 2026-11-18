@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title data-i18n="title.conversations">töre — Konuşmalarım</title>
+  <link rel="stylesheet" href="/return.css">
+  <link rel="stylesheet" href="/workspace.css">
+  <script src="/i18n.js"></script>
+  <script src="/i18n-workspace.js"></script>
+  <script type="module" src="/workspace.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="common.skip">İçeriğe geç</a>
+  <header class="topbar"><a href="/" class="brand" aria-label="töre ana sayfa" data-i18n-attr="aria-label:common.home">töre</a><nav aria-label="Ana gezinme" data-i18n-attr="aria-label:common.mainNav"><a href="/konular" data-i18n="nav.topics">Konular</a><a href="/konular?gorunum=bekleyenler" data-i18n="nav.waiting">Seni bekleyenler</a><a href="/harita" data-i18n="nav.map">Haritam</a><a href="/calisma" aria-current="page" data-i18n="nav.conversations">Konuşmalar</a></nav><span class="lang-switch" role="group" aria-label="Arayüz dili" data-i18n-attr="aria-label:lang.group"><button type="button" data-ui-lang="en" aria-pressed="false" lang="en" title="English">EN</button><span aria-hidden="true">|</span><button type="button" data-ui-lang="tr" aria-pressed="true" lang="tr" title="Türkçe">TR</button></span><span class="private-mark"><span aria-hidden="true">● </span><span data-i18n="common.private">Bu bilgisayarda</span></span></header>
+  <main id="main">
+    <div class="page-head"><h1 data-i18n="nav.conversations">Konuşmalar</h1><p class="page-meta"><b id="conversation-count">0</b> <span id="conversation-count-label">konuşma · aslı değişmez</span></p></div><p class="page-sub" data-i18n="workspace.head.sub">ChatGPT, Claude ve başka AI araçlarındaki konuşmalarını buraya al. Önemli sözlerini kayda geçir; gerisi kaynak olarak durur.</p>
+    <nav class="subnav" aria-label="Konuşmalar altında" data-i18n-attr="aria-label:nav.underConversations"><a href="/calisma" aria-current="page" data-i18n="nav.conversations">Konuşmalar</a><a href="/guncelle" data-i18n="nav.update">Güncelle</a><a href="/arsiv" data-i18n="nav.archive">Arşiv</a></nav>
+    <p id="global-status" class="status" role="status" aria-live="polite">Konuşmaların açılıyor…</p>
+    <div class="layout">
+      <aside class="library" aria-label="Konuşma listesi" data-i18n-attr="aria-label:workspace.list.label">
+        <div class="library-heading"><h2 data-i18n="nav.conversations">Konuşmalar</h2><button id="import-toggle" class="secondary" aria-controls="import-panel" aria-expanded="false" data-i18n="workspace.import.toggle">+ İçe al</button></div>
+        <label class="search-label" for="conversation-search"><span data-i18n="workspace.list.search">Konuşmalarda ara</span><input id="conversation-search" type="search" placeholder="Başlık ya da kaynak" data-i18n-attr="placeholder:workspace.list.searchPlaceholder"></label>
+        <div id="conversation-list" class="conversation-list"></div>
+        <p class="small library-note" data-i18n="workspace.list.note">Konuşmanın aslı değişmez. Kayda geçirdiğin söz kaynağına bağlı kalır.</p>
+      </aside>
+      <div id="workbench" class="main-column">
+        <section id="import-panel" class="import-panel panel" hidden aria-labelledby="import-heading">
+          <div class="section-heading"><div><p class="eyebrow" data-i18n="workspace.import.eyebrow">İlk adım</p><h2 id="import-heading" data-i18n="workspace.import.heading">Konuşma içe al</h2></div><button id="import-close" class="quiet" data-i18n="workspace.close">Kapat</button></div>
+          <p class="small" data-i18n="workspace.import.intro">Seçtiğin dosya bu bilgisayarda okunur. Önce içinde ne olduğunu görürsün, sonra hangi konuşmaları alacağını seçersin.</p>
+          <div class="field-grid"><label><span data-i18n="workspace.import.from">Nereden alıyorsun?</span><select id="import-provider"><option value="chatgpt" data-i18n="workspace.import.optChatgpt">ChatGPT · dışa aktarım dosyası</option><option value="claude" data-i18n="workspace.import.optClaude">Claude · dışa aktarım dosyası</option><option value="claude-code" data-i18n="workspace.import.optClaudeCode">Claude Code · bu bilgisayardaki oturumlar</option><option value="codex" data-i18n="workspace.import.optCodex">Codex · oturum dosyası</option><option value="generic" data-i18n="workspace.import.optGeneric">Başka bir uygulama</option></select></label><label id="import-developer-field" hidden><span data-i18n="workspace.import.company">Hangi şirketin modeli?</span><select id="import-developer"></select></label></div>
+          <label id="import-generic-format-field" hidden><span data-i18n="workspace.import.what">Elinde ne var?</span><select id="import-generic-format"><option value="text" data-i18n="workspace.import.optText">Kopyaladığım metin</option><option value="file" data-i18n="workspace.import.optFile">töre konuşma dosyası (.json)</option></select></label>
+          <div id="import-help" class="notice import-help"><p><strong id="import-help-title">Dosyayı nereden alırım?</strong></p><ol id="import-help-steps"></ol></div>
+          <div id="file-import">
+            <label id="import-file-field" class="file-drop"><span data-i18n="workspace.import.file">Dosyan</span><input id="import-file" type="file" accept=".json,.jsonl,.jsonl.zst,.zst,.zip,application/json,application/zip"><span id="import-file-hint" class="small"></span></label>
+            <div id="import-text-fields" hidden><label><span data-i18n="workspace.import.title">Konuşmanın başlığı</span><input id="import-title" maxlength="240" placeholder="Örneğin: Ürün fikrim üzerine" data-i18n-attr="placeholder:workspace.import.titlePlaceholder"></label><label><span data-i18n="workspace.import.text">Konuşma metni</span><textarea id="import-text" rows="7" placeholder="Konuşmayı buraya yapıştır." data-i18n-attr="placeholder:workspace.import.textPlaceholder"></textarea></label><p class="small" data-i18n="workspace.import.textNote">Düz metinde kimin konuştuğu tahmin edilmez. Bunu sonra sen işaretlersin.</p></div>
+            <div class="actions"><button id="preview-import" class="primary">İçindekileri göster</button></div>
+          </div>
+          <div id="cc-panel" hidden>
+            <p class="small" data-i18n="workspace.cc.intro">Yalnız senin yazdıkların ve asistanın görünür yanıtları alınır. Araç çağrıları, araç çıktıları ve düşünme alınmaz. töre arka planda hiçbir şey izlemez; oturum dosyaların değişmez.</p>
+            <div class="actions"><button id="cc-list" class="primary" data-i18n="workspace.cc.list">Bu bilgisayardaki oturumları göster</button></div>
+            <div id="cc-chooser" hidden>
+              <div class="actions choice-tools"><button id="cc-select-all" class="quiet" data-i18n="workspace.cc.selectAll">Tümünü seç (içe alınmamış)</button><button id="cc-clear" class="quiet" data-i18n="workspace.clearSelection">Seçimi kaldır</button><span id="cc-count" class="small"></span></div>
+              <div id="cc-sessions" class="choice-list"></div>
+              <button id="cc-more" class="quiet" hidden data-i18n="workspace.cc.more">Daha fazla göster</button>
+              <div class="actions"><button id="cc-preview" class="primary" disabled data-i18n="workspace.cc.preview">Seçilenleri önizle</button></div>
+            </div>
+            <p id="cc-status" class="small" role="status"></p>
+          </div>
+          <p id="import-status" class="small" role="status"></p>
+          <div id="import-preview" hidden><h3 data-i18n="workspace.preview.heading">Hangilerini alalım?</h3><div class="actions choice-tools"><button id="preview-select-all" class="quiet" data-i18n="workspace.preview.selectAll">Tümünü seç</button><button id="preview-clear" class="quiet" data-i18n="workspace.clearSelection">Seçimi kaldır</button><span id="preview-count" class="small"></span></div><div id="import-preview-list" class="choice-list"></div><div class="actions"><button id="commit-import" class="primary" disabled data-i18n="workspace.preview.commit">Seçilenleri içe al</button></div></div>
+        </section>
+
+        <section id="import-receipt" class="receipt panel" hidden aria-labelledby="receipt-heading">
+          <div class="section-heading"><div><p class="eyebrow" data-i18n="workspace.receipt.eyebrow">İçe aktarma dökümü</p><h2 id="receipt-heading" tabindex="-1" data-i18n="workspace.receipt.heading">töre neleri okudu</h2></div><button id="receipt-close" class="quiet" type="button" data-i18n="workspace.close">Kapat</button></div>
+          <p id="receipt-source" class="small"></p>
+          <div class="receipt-scroll"><table class="receipt-table"><caption class="small" data-i18n="workspace.receipt.caption">Sayılar bu içe almanın yanıtından gelir. Bilinmeyen bir sayı yazılmaz.</caption><thead><tr><th scope="col" data-i18n="workspace.receipt.colWhat">Ne</th><th scope="col" class="num" data-i18n="workspace.receipt.colCount">Sayı</th><th scope="col" data-i18n="workspace.receipt.colNote">Not</th></tr></thead><tbody id="receipt-rows"></tbody></table></div>
+          <p id="receipt-waiting" class="receipt-waiting" hidden></p>
+          <p class="small" data-i18n="workspace.receipt.after">İçe aldığın konuşmalar kendiliğinden kayıt olmaz. Konular'da “Konuşmalarımı konulara yerleştir” ile aday kayıt çıkarabilir ya da bir sözünü kendin kayda geçirebilirsin. Sen incelemeden hiçbiri defterine girmez.</p>
+          <div class="actions"><a id="receipt-waiting-link" class="link-button" href="/konular?gorunum=bekleyenler" data-i18n="nav.waiting">Seni bekleyenler</a></div>
+        </section>
+
+        <section id="welcome" class="empty-state welcome" aria-labelledby="welcome-heading">
+          <h2 id="welcome-heading">Burada AI konuşmaların durur.</h2>
+          <p id="welcome-text">Önce bir konuşma içe al. Sonra önemli sözlerini kayda geçirir, Konularım'da kaldığın yerden devam edersin.</p>
+          <button id="welcome-import" class="primary" data-i18n="workspace.import.heading">Konuşma içe al</button>
+          <ol class="welcome-steps"><li data-i18n="workspace.welcome.step1">Konuşmanı içe al</li><li data-i18n="workspace.welcome.step2">Önemli sözlerini kayda geçir</li><li data-i18n="workspace.welcome.step3">Konularım'da devam et</li></ol>
+        </section>
+
+        <section id="conversation-workspace" hidden aria-labelledby="conversation-title">
+          <div class="conversation-heading"><p id="conversation-source" class="eyebrow"></p><h2 id="conversation-title"></h2><p id="conversation-meta" class="small"></p></div>
+          <div id="next-step" class="next-step">
+            <p id="import-done" class="import-done" role="status" hidden></p>
+            <p data-i18n-rich="workspace.next.text"><strong>Sıradaki adım:</strong> önemli bir sözü kayda geçir. Söz, kaynağıyla birlikte bir konunun kaydı olur; başka bir söz için o mesajdaki “Kayda geçir”e bas.</p>
+            <div class="actions"><a id="primary-record" class="link-button primary" href="/konular" data-i18n="workspace.next.record">Bu konuşmadan kayıt çıkar</a><a id="to-topics" class="link-button" href="/konular" data-i18n="workspace.next.place">Konulara yerleştir</a><button id="continue-toggle" class="quiet" aria-controls="continue-panel" aria-expanded="false" data-i18n="workspace.next.continue">Başka modelle devam et</button></div>
+          </div>
+          <div id="conversation-warnings" class="notice warning-note" hidden></div>
+          <div id="branch-bar" class="branch-bar" hidden><label><span data-i18n="workspace.branch.label">Konuşmanın hangi sürümü?</span><select id="branch-leaf"></select></label><p id="branch-hint" class="small"></p></div>
+          <div id="work-grid" class="work-grid">
+            <section class="message-work" aria-labelledby="messages-heading">
+              <div class="section-heading compact"><h3 id="messages-heading" data-i18n="workspace.message.heading">Mesajlar</h3><span id="selection-count" class="badge" hidden>0 seçili</span></div>
+              <div id="transfer-tools" class="actions choice-tools" hidden><button id="select-human" class="quiet" data-i18n="workspace.message.selectMine">Kendi sözlerimi seç</button><button id="clear-selection" class="quiet" data-i18n="workspace.clearSelection">Seçimi kaldır</button></div>
+              <div id="message-list" class="message-list"></div>
+            </section>
+
+            <aside id="continue-panel" class="continue-panel panel" hidden aria-labelledby="destination-heading">
+              <p class="eyebrow" data-i18n="workspace.optional">İsteğe bağlı</p><h3 id="destination-heading" tabindex="-1" data-i18n="workspace.continue.heading">Başka bir modelle devam et</h3>
+              <p id="intent-description" class="small"><span data-i18n="workspace.continue.introA">Götürmek istediğin mesajları işaretle, sorunu yaz; töre sana bir devam metni hazırlar. Bir konunun kayıtlarıyla devam etmek istiyorsan </span><a href="/konular" data-i18n="workspace.continue.introLink">Konularım</a><span data-i18n="workspace.continue.introB">’daki “Bu konudan devam et”i kullan.</span></p>
+              <label id="mode-field"><span data-i18n="workspace.continue.how">Nasıl devam edeceksin?</span><select id="run-mode"><option value="manual" data-i18n="workspace.continue.optManual">Kopyala ya da indir (önerilen)</option><optgroup label="Gelişmiş" data-i18n-attr="label:workspace.continue.advanced"><option value="live" data-i18n="workspace.continue.optLive">Canlı · ücretsiz model (anahtar ister)</option><option value="simulation" data-i18n="workspace.mode.simulation">Deneme · örnek yanıt</option></optgroup></select></label>
+              <p id="mode-status" class="mode-status" role="status"></p>
+              <label id="target-label"><span data-i18n="workspace.continue.target">Hangi AI için?</span><select id="target-developer"></select></label>
+              <label id="model-field" hidden>Model<select id="target-model"><option value="" data-i18n="workspace.model.refreshOption">Önce model listesini yenile</option></select></label>
+              <p id="model-hint" class="small" hidden></p>
+              <button id="settings-toggle" class="quiet" aria-controls="settings-panel" aria-expanded="false" hidden data-i18n="workspace.settings.toggle">Bağlantı ayarları</button>
+              <label id="question-label"><span data-i18n="workspace.continue.question">Yeni sorun</span><textarea id="target-question" rows="4" maxlength="4000" placeholder="Bu konuşmayla neyi sormak istiyorsun?" data-i18n-attr="placeholder:workspace.continue.questionPlaceholder"></textarea></label>
+              <details id="privacy-panel" class="privacy-panel">
+                <summary data-i18n="workspace.privacy.summary">Özel bilgileri gizle</summary>
+                <p class="small" data-i18n="workspace.privacy.intro">Basit örüntülerle e-posta, telefon gibi bilgileri arar. Hepsini bulacağının güvencesi yok; son metni yine sen oku.</p>
+                <div class="mask-options"><label class="check"><input type="checkbox" id="mask-email" checked><span data-i18n="workspace.mask.email">E-posta</span></label><label class="check"><input type="checkbox" id="mask-phone" checked><span data-i18n="workspace.mask.phone">Telefon</span></label><label class="check"><input type="checkbox" id="mask-key" checked><span data-i18n="workspace.mask.key">Anahtar</span></label><label class="check"><input type="checkbox" id="mask-path" checked><span data-i18n="workspace.mask.path">Dosya yolu</span></label></div>
+                <label><span data-i18n="workspace.privacy.more">Başka neleri gizleyelim?</span> <span class="optional" data-i18n="workspace.optional">İsteğe bağlı</span><textarea id="literal-masks" rows="2" placeholder="İsim, adres ya da başka bir ifade; her satıra bir tane" data-i18n-attr="placeholder:workspace.privacy.morePlaceholder"></textarea></label>
+                <div class="actions"><button id="scan-pii" data-i18n="workspace.privacy.scan">Seçili mesajları tara</button><button id="apply-masks" class="quiet" data-i18n="workspace.privacy.apply">Bulunanları gizle</button></div>
+                <div id="pii-review" hidden><div class="scan-totals"><p><span data-i18n="workspace.privacy.before">Özgün metinde</span><strong id="pii-before-count">0</strong></p><span aria-hidden="true">→</span><p><span data-i18n="workspace.privacy.after">Götüreceğin kopyada</span><strong id="pii-after-count">0</strong></p></div><div id="pii-findings"></div><p id="question-pii" class="small"></p></div>
+                <p id="mask-status" class="small" role="status"></p>
+              </details>
+              <button id="prepare-draft" class="primary wide" disabled data-i18n="workspace.continue.prepare">Devam metnini önizle</button><p id="prepare-hint" class="small"></p><p id="action-error" class="error" role="alert" hidden></p>
+              <p class="small" data-i18n="workspace.continue.previewNote">Önizlemek hiçbir şey göndermez. Metni görür, sonra ayrıca onaylarsın.</p>
+            </aside>
+          </div>
+        </section>
+
+        <section id="draft-panel" class="draft-panel panel" hidden aria-labelledby="draft-heading">
+          <div class="section-heading"><div><p class="eyebrow" data-i18n="workspace.draft.eyebrow">Son kontrol</p><h2 id="draft-heading" data-i18n="workspace.draft.heading">Devam metnin tam olarak bu.</h2></div><span id="draft-mode" class="badge"></span></div>
+          <dl class="draft-facts"><div><dt data-i18n="workspace.draft.purposeLabel">Ne için</dt><dd id="draft-purpose" data-i18n="workspace.draft.purpose">Konuşmaya devam</dd></div><div><dt data-i18n="workspace.draft.targetLabel">Hangi AI için</dt><dd id="draft-target"></dd></div></dl>
+          <div class="draft-question"><h3 data-i18n="workspace.draft.question">Sorun</h3><p id="draft-question"></p></div>
+          <pre id="draft-context" class="context-preview" tabindex="0"></pre>
+          <div id="draft-warnings" class="notice warning-note" hidden></div>
+          <details class="detail"><summary data-i18n="workspace.details">Ayrıntı</summary><p class="small" data-i18n="workspace.draft.hash">Bu metnin parmak izi (metin değişirse değişir):</p><code id="draft-hash"></code></details>
+          <label id="send-consent-label" class="check consent"><input type="checkbox" id="send-consent"><span id="send-consent-text"></span></label>
+          <div class="actions"><button id="execute-draft" class="primary" disabled>Onayla ve devam et</button><button id="revoke-draft" class="quiet" data-i18n="workspace.draft.cancel">Vazgeç</button></div><p id="draft-status" class="small" role="status"></p>
+        </section>
+
+        <section id="result-panel" class="result-panel panel" hidden aria-labelledby="result-heading"><p class="eyebrow" data-i18n="workspace.result.eyebrow">Sonuç</p><h2 id="result-heading" tabindex="-1"></h2><p id="result-description" class="small"></p><pre id="result-text" class="context-preview" tabindex="0" hidden></pre><div id="result-actions" class="actions"></div><p id="result-status" class="small" role="status"></p></section>
+
+        <section id="settings-panel" class="settings-panel panel" hidden aria-labelledby="settings-heading">
+          <div><p class="eyebrow" data-i18n="workspace.settings.eyebrow">Gelişmiş · isteğe bağlı</p><h2 id="settings-heading" data-i18n="workspace.settings.heading">Canlı kullanım için bağlantı</h2><p class="small" data-i18n="workspace.settings.intro">Canlı kullanımda devam metnin OpenRouter üzerinden seçtiğin ücretsiz modele gider. Anahtarın yalnız töre açıkken bellekte durur; tarayıcıya ya da diske yazılmaz, töre kapanınca silinir.</p><p class="small" data-i18n="workspace.settings.retention">töre, OpenRouter hesabındaki kayıt tutma ayarlarını değiştirmez; onları hesabından ayrıca gözden geçir.</p></div>
+          <div class="settings-controls"><label for="api-key"><span data-i18n="workspace.settings.key">OpenRouter API anahtarı</span><input type="password" id="api-key" autocomplete="off" spellcheck="false" placeholder="Anahtarını buraya yapıştır" data-i18n-attr="placeholder:workspace.settings.keyPlaceholder"></label><div class="actions"><button id="save-key" data-i18n="workspace.settings.useKey">Anahtarı kullan</button><button id="clear-key" class="quiet" data-i18n="workspace.settings.clearKey">Anahtarı sil</button></div><p id="key-state" class="small" role="status"></p><div class="actions"><button id="refresh-catalog" data-i18n="workspace.settings.refresh">Model listesini yenile</button></div><p class="small" data-i18n="workspace.settings.refreshNote">Bu düğme model listesini internetten alır; konuşmalarını göndermez. Canlı gönderim yalnız ücreti sıfır olan modellere açıktır.</p><p id="catalog-state" class="small" role="status"></p></div>
+        </section>
+
+        <details class="history-panel maintenance"><summary><span data-i18n="workspace.history.summary">Hazırladığın devam metinleri</span> <span id="history-count" class="badge">0</span></summary><p class="small" data-i18n="workspace.history.note">İzni geri çekmek sonraki kullanımı kapatır. Daha önce gönderilmiş ya da indirilmiş metni geri getirmez.</p><div id="draft-history"></div></details>
+      </div>
+    </div>
+  </main>
+  <noscript><p lang="tr">töre'nin arayüzü için JavaScript açık olmalı.</p><p lang="en">töre's interface needs JavaScript turned on.</p></noscript>
+</body>
+</html>

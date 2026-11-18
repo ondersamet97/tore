@@ -1,0 +1,79 @@
+/* 0.17 Update (/guncelle) and Surpassed thoughts (/asilmis). Built on return.css tokens. */
+.report-panel{max-width:56rem}
+.report-panel .section-heading,.report-section .section-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px 20px;margin-bottom:6px}
+.report-panel h2,.report-section h2{margin:0 0 6px}
+
+/* Projects */
+.project-list{display:grid;gap:0;margin:12px 0 0;border-top:1px solid var(--line)}
+.project-row{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name switch" "counts switch";gap:2px 18px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.project-name{grid-area:name;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;min-width:0}
+.project-name strong{font-weight:600}
+.project-path{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.project-counts{grid-area:counts;margin:0}
+.project-switch{grid-area:switch;display:inline-flex;align-items:center;gap:10px;min-height:44px;border:0;background:transparent;padding:0 4px}
+.switch-track{position:relative;flex:none;width:40px;height:22px;border-radius:999px;background:#d8dbe0;border:1px solid #b9bec6}
+.switch-track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--white);box-shadow:0 1px 2px #0003}
+.project-switch[aria-checked="true"] .switch-track{background:var(--green);border-color:var(--green)}
+.project-switch[aria-checked="true"] .switch-track::after{left:20px}
+.switch-text{font-size:14px;min-width:4.5em;text-align:left}
+.project-switch[aria-checked="true"] .switch-text{color:var(--ink);font-weight:600}
+
+/* New conversations */
+.session-list{display:grid;gap:18px;margin:10px 0 0}
+.session-group h3{font-family:var(--sans);font-size:15px;font-weight:650;margin:0 0 4px}
+.session-row{padding:2px 0;border-bottom:1px solid var(--line)}
+.session-row .check{margin:8px 0}
+.run-state{margin:0 0 10px 27px;font-size:14px;overflow-wrap:anywhere}
+.run-state-word{font-weight:600}
+.run-state[data-state="queued"],.run-state[data-state="skipped"]{color:var(--muted)}
+.run-state[data-state="preparing"] .run-state-word{color:var(--ai)}
+.run-state[data-state="error"] .run-state-word{color:var(--danger)}
+.run-error{white-space:pre-wrap}
+.consent-line{margin:20px 0 4px;padding:12px 14px;background:var(--wash);border-left:3px solid var(--green);border-radius:0 8px 8px 0;font-size:14px;max-width:70ch}
+.run-actions{flex-direction:row;align-items:center}
+
+/* Reports */
+.report-section{max-width:56rem;margin:34px 0 0}
+.report-toggle{margin:0}
+.report-list{display:grid;gap:0}
+.report-card{margin:18px 0}
+.report-card>.eyebrow{margin-bottom:4px}
+.report-title{font-size:22px;margin:0 0 4px;overflow-wrap:anywhere}
+.report-dropped{font-style:italic}
+.report-item{margin:18px 0 0;padding:16px 0 4px;border-top:1px solid var(--line)}
+.report-item:focus-visible{outline:3px solid var(--green);outline-offset:6px;border-radius:4px}
+.report-kind{font:600 12px/1.5 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin:0 0 6px}
+.report-item[data-kind="objection"] .report-kind{color:var(--danger)}
+.report-ai{margin:0 0 10px;max-width:70ch}
+.report-text{font-size:16px;margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.report-reason{font-size:13px;color:var(--muted);margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.report-source{margin:10px 0}
+.source-label{margin:0}
+blockquote.report-quote{margin:4px 0 0;font-size:16px;line-height:1.5;max-height:none;max-width:70ch}
+.report-earlier blockquote.report-quote{color:var(--muted)}
+.voice-own{font-family:var(--serif);font-size:16px;line-height:1.5;border-left:2px solid var(--ink);padding-left:14px;margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;max-width:70ch}
+.report-beyond{margin:12px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);max-width:70ch}
+.report-beyond .check{margin:10px 0 4px}
+.report-field{display:grid;gap:4px;font-size:14px;margin:10px 0;max-width:36rem}
+.report-field select,.report-field textarea{width:100%;padding:8px 10px;border:1px solid #7d8c7a;border-radius:8px;background:var(--white)}
+.report-actions{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 6px}
+.report-actions button{min-height:44px}
+.report-decline{margin:8px 0 6px;padding:12px 14px;border:1px dashed #7d8c7a;border-radius:12px;max-width:70ch}
+.report-decline .actions{flex-direction:row;gap:8px}
+.report-outcome{font-size:14px;color:var(--muted);margin:6px 0 4px}
+.report-item[data-decision]:not([data-decision="pending"]) .report-ai{background:transparent;padding:0}
+.report-closing{margin:22px 0;padding:18px 20px;border:1px dashed #b8c6b4;border-radius:var(--radius);color:var(--muted);max-width:70ch}
+
+/* Surpassed thoughts */
+.surpassed-tabs{display:inline-flex;border:1px solid #7d8c7a;border-radius:8px;overflow:hidden;margin:6px 0 18px}
+.surpassed-tabs button{border:0;border-radius:0;background:var(--white);min-height:44px}
+.surpassed-tabs button[aria-selected="true"]{background:var(--green);color:#fff}
+.surpassed-list{display:grid;gap:12px;max-width:56rem}
+.surpassed-row{padding:18px 20px;background:var(--white);border:1px solid var(--line);border-radius:var(--radius)}
+.surpassed-row .report-kind{margin-bottom:4px}
+.surpassed-text{font-family:var(--serif);font-size:18px;line-height:1.45;margin:0 0 6px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:70ch}
+.surpassed-by{margin:10px 0 0;font-size:14px}
+.surpassed-meta{margin:0}
+@media(max-width:640px){.project-row{grid-template-columns:1fr;grid-template-areas:"name" "counts" "switch"}.run-state{margin-left:0}}
+
+.report-pasted { color: var(--muted, inherit); font-style: italic; margin-top: .25rem; }

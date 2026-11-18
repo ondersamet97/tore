@@ -1,0 +1,8 @@
+SENTETİK TEST VERİSİ — gerçek bir kullanıcı görüşü değildir.
+Bu testteki erişilebilir konuşma bütünü aşağıdadır. Konuşmanın tarihi verilmemiştir.
+
+Kullanıcı: Okuma grubunu her hafta toplayalım. Her oturumda herkes söz almak zorunda olsun.
+AI: Her oturumu herkese açık bir canlı yayınla yapmayı öneriyorum; uzaktan katılımı kolaylaştırabilir.
+Kullanıcı: Önceki fikrimi düzeltiyorum: İki haftada bir toplanalım, çünkü haftalık hazırlığa zaman yetmiyor. Herkes söz almak zorunda olmasın; isteyen konuşsun. Canlı yayın önerisini kabul etmiyorum; henüz değerlendirmeyeceğim.
+AI: Toplantı süresi ne kadar olmalı?
+Kullanıcı: Süreyi henüz kararlaştırmadım. Bu konuşmadaki fikirleri raporlayalım.

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title data-i18n="title.map">töre — Haritam</title>
+  <link rel="stylesheet" href="/return.css">
+  <link rel="stylesheet" href="/map.css">
+  <script src="/i18n.js"></script>
+  <script src="/i18n-map.js"></script>
+  <script type="module" src="/map.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="common.skip">İçeriğe geç</a>
+  <header class="topbar"><a href="/" class="brand" aria-label="töre ana sayfa" data-i18n-attr="aria-label:common.home">töre</a><nav aria-label="Ana gezinme" data-i18n-attr="aria-label:common.mainNav"><a href="/konular" data-i18n="nav.topics">Konular</a><a href="/konular?gorunum=bekleyenler" data-i18n="nav.waiting">Seni bekleyenler</a><a href="/harita" aria-current="true" data-i18n="nav.map">Haritam</a><a href="/calisma" data-i18n="nav.conversations">Konuşmalar</a></nav><span class="lang-switch" role="group" aria-label="Arayüz dili" data-i18n-attr="aria-label:lang.group"><button type="button" data-ui-lang="en" aria-pressed="false" lang="en" title="English">EN</button><span aria-hidden="true">|</span><button type="button" data-ui-lang="tr" aria-pressed="true" lang="tr" title="Türkçe">TR</button></span><span class="private-mark"><span aria-hidden="true">● </span><span data-i18n="common.private">Bu bilgisayarda</span></span></header>
+  <main id="main">
+    <div class="page-head"><h1 id="map-title" data-i18n="nav.map">Haritam</h1><p class="page-meta"><b id="entry-count">0</b> <span id="entry-count-label">kayıt haritada</span> · <b id="pending-count">0</b> <span id="pending-count-label">inceleme bekliyor</span></p></div><p class="page-sub"><span id="map-eyebrow" data-i18n="map.eyebrow">Nereden başladım, neyi savunuyorum, nerede ayrılıyorum</span><span aria-hidden="true"> · </span><span id="map-method"></span></p>
+    <nav class="subnav" aria-label="Haritam altında" data-i18n-attr="aria-label:nav.underMap"><a href="/harita" data-i18n="nav.canvas">Tuval</a><a href="/harita/liste" aria-current="page" data-i18n="nav.list">Liste</a><a href="/dusunurler" data-i18n="nav.thinkers">Düşünürler</a><a href="/asilmis" data-i18n="nav.surpassed">Aşılmış düşünceler</a></nav>
+    <p id="page-status" class="status" role="status" aria-live="polite" data-i18n="map.loading">Harita açılıyor…</p><p id="page-error" class="error" role="alert" hidden></p>
+    <div class="map-toolbar" role="group" aria-label="Görünüm" data-i18n-attr="aria-label:map.view">
+      <span class="map-switch-wrap"><span id="content-lang-label" class="map-switch-label" data-i18n="map.contentLanguage">Harita içeriğinin dili</span><span class="map-switch" role="group" aria-labelledby="content-lang-label"><button type="button" id="lang-tr" aria-pressed="true" lang="tr">Türkçe</button><button type="button" id="lang-en" aria-pressed="false" lang="en">English</button></span></span>
+      <span class="map-switch" role="group" aria-label="Okuma ya da düzenleme" data-i18n-attr="aria-label:map.modeGroup"><button type="button" id="mode-read" aria-pressed="true" data-i18n="map.modeRead">Okur görünümü</button><button type="button" id="mode-edit" aria-pressed="false" data-i18n="map.modeEdit">Düzenle</button></span>
+      <label class="check"><input type="checkbox" id="show-pending" checked><span id="show-pending-label" data-i18n="map.showPending">İnceleme bekleyenleri göster</span></label>
+      <label class="check"><input type="checkbox" id="show-adopted"><span id="show-adopted-label" data-i18n="map.showAdopted">Yalnız benimsediklerimi göster</span></label>
+      <label class="check"><input type="checkbox" id="show-suggested" checked><span id="show-suggested-label" data-i18n="map.showSuggested">Yeri AI önerisi olanları göster</span></label>
+    </div>
+    <nav id="map-contents" class="map-contents" aria-label="Bölümler" data-i18n-attr="aria-label:map.sections"></nav>
+    <section id="map-tools" class="panel" hidden>
+      <h2 data-i18n="map.add.title">Haritaya kayıt ekle</h2>
+      <p class="small" data-i18n="map.add.intro">Yalnız defterindeki bir kaydı yerleştirirsin. Kaydın kaynağı, inceleme ve benimseme durumu değişmez.</p>
+      <form id="add-form" class="map-form">
+        <label><span data-i18n="map.add.search">Kayıt ara (konu adı ya da kayıt metni)</span><input type="search" id="add-search" autocomplete="off" spellcheck="false"></label>
+        <p id="add-search-count" class="small" role="status"></p>
+        <div id="add-record" class="record-options" role="radiogroup" aria-label="Yerleştirilecek kayıt" data-i18n-attr="aria-label:map.add.record"></div>
+        <label><span data-i18n="map.add.section">Bölüm</span><select id="add-section"></select></label>
+        <label><span data-i18n="map.add.role">Bu kayıt haritada ne?</span><select id="add-role"></select></label>
+        <p id="add-role-hint" class="small" hidden data-i18n="map.add.roleHint">Soru kayıtları haritaya “Açık soru” olarak girer.</p>
+        <label><span data-i18n="map.add.heading">Kısa başlık (isteğe bağlı)</span><input id="add-label" maxlength="200"></label>
+        <label class="check"><input type="checkbox" id="add-consent"><span data-i18n="map.add.consent">Bu kaydı haritaya kendi kararımla yerleştiriyorum.</span></label>
+        <div class="actions"><button type="submit" class="secondary" id="add-save" disabled data-i18n="map.add.save">Haritaya ekle</button></div>
+        <p id="add-result" class="small" role="status"></p>
+        <p id="add-error" class="error" role="alert" hidden></p>
+      </form>
+      <h2 data-i18n="map.export.title">Tek dosya olarak dışa aktar</h2>
+      <p class="small" data-i18n="map.export.intro">Önce dosyaya ne gireceğini burada görürsün, sonra bu bilgisayara indirirsin. Dosya tek bir web sayfasıdır; içinde çalışan kod yoktur. töre hiçbir yere göndermez; dosyayı kime vereceğine sen karar verirsin. Konuşma başlıkları ve kimlikleri dosyaya girmez.</p>
+      <form id="export-form" class="map-form">
+        <label><span data-i18n="map.export.language">Dil</span><select id="export-language"><option value="tr" lang="tr">Türkçe</option><option value="en" lang="en">English</option></select></label>
+        <label class="check"><input type="checkbox" id="export-pending"><span data-i18n="map.export.pending">İnceleme bekleyen kayıtları da ekle (benimsemediğin görüşler olarak işaretlenir).</span></label>
+        <label class="check"><input type="checkbox" id="export-suggested"><span data-i18n="map.export.suggested">Yeri AI önerisi olan kayıtları da ekle.</span></label>
+        <div class="actions"><button type="submit" class="secondary" id="export-preview" data-i18n="map.export.prepare">Önizlemeyi hazırla</button></div>
+        <p id="export-error" class="error" role="alert" hidden></p>
+        <section id="export-preview-panel" class="map-export-preview" aria-labelledby="export-preview-heading" hidden>
+          <h3 id="export-preview-heading" tabindex="-1" data-i18n="map.export.previewTitle">Dosya önizlemesi</h3>
+          <p id="export-summary"></p>
+          <p id="export-findings" class="small"></p>
+          <div id="export-preview-body" class="map-preview"></div>
+          <label class="check"><input type="checkbox" id="export-consent"><span data-i18n="map.export.consent">Bu dosyanın içeriğini gördüm; bu bilgisayara insin.</span></label>
+          <div class="actions"><button type="button" class="secondary" id="export-save" disabled data-i18n="map.export.save">Dosyayı indir</button></div>
+        </section>
+        <p id="export-result" class="small" role="status"></p>
+      </form>
+    </section>
+    <div id="map-body"></div>
+    <noscript><p lang="tr">töre'nin arayüzü için JavaScript açık olmalı.</p><p lang="en">töre's interface needs JavaScript turned on.</p></noscript>
+  </main>
+</body>
+</html>

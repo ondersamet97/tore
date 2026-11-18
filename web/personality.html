@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title data-i18n="title.personality">töre — Kişilik testi</title>
+  <link rel="stylesheet" href="/return.css">
+  <link rel="stylesheet" href="/personality.css">
+  <script src="/i18n.js"></script>
+  <script src="/i18n-personality.js"></script>
+  <script type="module" src="/personality.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="common.skip">İçeriğe geç</a>
+  <header class="topbar"><a href="/" class="brand" aria-label="töre ana sayfa" data-i18n-attr="aria-label:common.home">töre</a><nav aria-label="Ana gezinme" data-i18n-attr="aria-label:common.mainNav"><a href="/konular" data-i18n="nav.topics">Konular</a><a href="/konular?gorunum=bekleyenler" data-i18n="nav.waiting">Seni bekleyenler</a><a href="/harita" data-i18n="nav.map">Haritam</a><a href="/calisma" data-i18n="nav.conversations">Konuşmalar</a></nav><span class="lang-switch" role="group" aria-label="Arayüz dili" data-i18n-attr="aria-label:lang.group"><button type="button" data-ui-lang="en" aria-pressed="false" lang="en" title="English">EN</button><span aria-hidden="true">|</span><button type="button" data-ui-lang="tr" aria-pressed="true" lang="tr" title="Türkçe">TR</button></span><span class="private-mark"><span aria-hidden="true">● </span><span data-i18n="common.private">Bu bilgisayarda</span></span></header>
+  <main id="main">
+    <div class="page-head"><h1 data-i18n="personality.title">Kişilik testi</h1></div>
+    <p class="page-sub" data-i18n="personality.sub">Büyük Beşli kişilik modelinin beş boyutunu ve 30 alt boyutunu ölçen, kamu malı IPIP-NEO-120 envanteri. Yanıtların bu sekmeden çıkmaz.</p>
+    <p id="page-status" class="status" role="status" aria-live="polite" data-i18n="personality.loading">Kişilik testi açılıyor…</p><p id="page-error" class="error" role="alert" hidden></p>
+    <div id="personality" class="pq"></div>
+    <noscript><p lang="tr">töre'nin arayüzü için JavaScript açık olmalı.</p><p lang="en">töre's interface needs JavaScript turned on.</p></noscript>
+  </main>
+</body>
+</html>

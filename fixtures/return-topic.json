@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "synthetic-library-topic",
+  "provider": "generic",
+  "sourceApp": "Sentetik genel örnek",
+  "sourceConversationId": "synthetic-library-topic",
+  "title": "SENTETİK — mahalle kitaplığı",
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:01:00Z",
+  "selectedLeafId": "question-example",
+  "messages": [
+    {
+      "id": "human-example",
+      "sourceId": "human-example",
+      "parentId": null,
+      "role": "user",
+      "phase": null,
+      "text": "Kitaplık denemesini yalnız cumartesi günleri yapmaya karar verdim.",
+      "attachments": [],
+      "timestamp": "2026-01-01T00:00:00Z",
+      "sourceLocator": "fixture#human",
+      "authorshipStatus": "human_original"
+    },
+    {
+      "id": "assistant-example",
+      "sourceId": "assistant-example",
+      "parentId": "human-example",
+      "role": "assistant",
+      "phase": "final_answer",
+      "model": "synthetic-model",
+      "text": "Her gün açmayı deneyebilirsiniz. Bu yalnız bir asistan önerisidir.",
+      "attachments": [],
+      "timestamp": "2026-01-01T00:01:00Z",
+      "sourceLocator": "fixture#assistant",
+      "authorshipStatus": "ai_output"
+    },
+    {
+      "id": "question-example",
+      "sourceId": "question-example",
+      "parentId": "assistant-example",
+      "role": "user",
+      "phase": null,
+      "text": "Gönüllü sayısı azalırsa açılış saatini nasıl değiştireceğiz?",
+      "attachments": [],
+      "timestamp": "2026-01-01T00:02:00Z",
+      "sourceLocator": "fixture#question",
+      "authorshipStatus": "human_original"
+    }
+  ],
+  "warnings": []
+}

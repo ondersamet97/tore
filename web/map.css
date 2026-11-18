@@ -1,0 +1,76 @@
+.map-toolbar{max-width:1280px;margin:0 auto 18px;padding:0;display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center}
+.map-toolbar label.check{margin:0}
+.map-switch{display:inline-flex;border:1px solid #7d8c7a;border-radius:8px;overflow:hidden}
+.map-switch button{border:0;border-radius:0;background:var(--white)}
+.map-switch button[aria-pressed="true"]{background:var(--green);color:#fff}
+.map-contents{max-width:1280px;margin:0 auto 8px;padding:0;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px}
+.map-contents a{padding:4px 0}
+#map-tools,#map-body{max-width:46rem;margin:0 0 28px}
+#map-tools{padding:22px 24px}
+.map-form{display:grid;gap:10px;margin:0 0 26px}
+.map-form label{display:grid;gap:4px;font-size:14px;margin:0}
+.map-form label.check{display:flex;gap:8px;align-items:flex-start}
+.map-form select,.map-form input:not([type=checkbox]):not([type=radio]),.map-form textarea{width:100%;padding:8px 10px;border:1px solid #7d8c7a;border-radius:8px;background:var(--white)}
+.map-form .actions{margin:0}
+.record-options{display:grid;gap:4px;max-height:280px;overflow-y:auto;padding:2px}
+.record-options:empty{display:none}
+.map-form label.record-option{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--white);font-weight:400;cursor:pointer}
+.map-form .record-option input[type=radio]{display:inline-block;flex:none;width:17px;height:17px;margin:3px 0 0;padding:0;accent-color:var(--green)}
+.record-option span{min-width:0;overflow-wrap:anywhere}
+.record-option:has(input:checked){border-color:var(--green);box-shadow:inset 3px 0 var(--green)}
+.map-section{margin:44px 0 0;border-top:2px solid var(--ink);padding-top:18px}
+.map-section>h2{margin-bottom:4px}
+.map-question{color:var(--muted);margin-bottom:18px;max-width:70ch}
+.map-entry{margin:18px 0;padding:4px 0 4px 16px;border-left:3px solid var(--green)}
+.map-entry .map-entry{border-left-color:#7d8c7a;margin:14px 0}
+.map-entry[data-role="objection"]{border-left-color:var(--danger)}
+.map-entry[data-role="test"]{border-left-style:dashed}
+.map-entry[data-adoption="hypothesis"]{border-left-style:dotted}
+.map-entry:focus{outline:3px solid var(--green);outline-offset:3px}
+.map-role{font:600 13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.8px;text-transform:uppercase;color:var(--green);margin:0 0 4px}
+.map-entry[data-role="objection"]>.map-role{color:var(--danger)}
+.map-hypothesis{display:inline-block;font-size:13px;font-weight:600;margin:0 0 6px;padding:2px 9px;border:1px dashed #8a5a00;border-radius:6px;color:#6f4800;background:#f5edda}
+.map-entry h3{font-size:19px;margin:0 0 6px;overflow-wrap:anywhere}
+.map-text{font:17px/1.6 Georgia,"Times New Roman",serif;white-space:pre-wrap;overflow-wrap:anywhere;max-width:70ch;margin:0 0 6px}
+.map-original{white-space:pre-wrap;overflow-wrap:anywhere;max-width:70ch;color:var(--muted);font-size:14px}
+.map-meta{font-size:13px;color:var(--muted);overflow-wrap:anywhere;max-width:70ch;margin:0 0 4px}
+.map-suggested{color:#6f4800}
+.map-test-line{font-size:13px;margin:6px 0 0;padding:6px 10px;background:var(--wash);border-radius:8px;display:inline-block}
+.map-note{font-size:14px;margin:6px 0;padding:8px 12px;background:var(--wash);border-left:3px solid var(--green);border-radius:0 8px 8px 0;overflow-wrap:anywhere}
+.map-edit{margin:10px 0 0;padding:12px;border:1px dashed #7d8c7a;border-radius:10px;display:grid;gap:10px}
+.map-edit summary{cursor:pointer;font-size:14px;padding:6px 0}
+.map-edit .actions{margin:0}
+.map-tool-title{font-size:14px;font-weight:650;margin:8px 0 0}
+.map-empty{margin:30px 0;padding:26px;border:1px dashed #7d8c7a;border-radius:14px;max-width:70ch}
+.map-empty p{margin:0 0 14px}
+.map-empty .link-button,.map-empty button{display:inline-block;margin:0 0 14px;min-height:44px;background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
+.map-export-preview{display:grid;gap:10px;margin:8px 0 0;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.map-export-preview h3{font-size:19px;margin:0}
+.map-export-preview p{margin:0}
+.map-preview-frame{display:block;width:100%;height:440px;border:1px solid #7d8c7a;border-radius:8px;background:#fff}
+@media(max-width:640px){#map-tools{padding:18px}.map-empty{padding:18px}.map-entry{padding-left:12px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media print{.topbar,.map-toolbar,.map-contents,#map-tools,.map-edit,.map-source,.map-record-link,.map-note,.map-empty a,.map-empty button,.hero-note,.skip-link,noscript,footer,#page-status,#page-error{display:none!important}body{background:#fff}main{max-width:none;padding:0}#map-body{max-width:none;margin:0}.map-text,.map-original,.map-meta,.map-question{max-width:70ch}.map-entry{break-inside:avoid}.map-section>h2{break-after:avoid}h1{font-size:28pt}}
+@page{margin:18mm}
+:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+.record-card>p{overflow-wrap:anywhere;max-width:70ch}
+.thinker-card>summary{padding:6px 0}
+.thinker-card>summary h2{display:inline;font-size:22px;margin:0 8px 0 0}
+.thinker-card h3{font-size:17px;margin:18px 0 6px}
+.thinker-card ul{max-width:70ch;margin:0 0 10px;padding-left:22px}
+.thinker-card .map-form{margin:0}
+
+#map-title{color:inherit}
+.map-switch-wrap{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}.map-switch-label{font-size:13px;color:var(--muted)}
+/* 0.17: last discussed and thought lineage */
+.map-last{display:inline-block;font-size:12px;letter-spacing:.04em;margin:0 0 4px;padding:1px 9px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--white)}
+.map-lineage{margin:6px 0 4px;max-width:70ch}
+.map-lineage>summary{cursor:pointer;font-size:14px;color:var(--muted);padding:6px 0;min-height:32px}
+.map-lineage-list{list-style:none;margin:6px 0 0;padding:0}
+.map-lineage-list li{margin:0 0 10px;padding-left:12px;border-left:2px dotted #7d8c7a}
+.map-lineage-list li[data-depth="2"]{margin-left:18px}
+.map-lineage-list li[data-depth="3"]{margin-left:36px}
+.map-lineage-list li[data-depth="4"]{margin-left:54px}
+.map-lineage-list li[data-depth="5"],.map-lineage-list li[data-depth="6"]{margin-left:72px}
+.map-lineage-text{font-family:var(--serif);font-size:15px;line-height:1.5;margin:0 0 2px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+@media print{.map-lineage,.map-last{display:none!important}}

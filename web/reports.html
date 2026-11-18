@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title data-i18n="title.update">töre — Güncelle</title>
+  <link rel="stylesheet" href="/return.css">
+  <link rel="stylesheet" href="/reports.css">
+  <script src="/i18n.js"></script>
+  <script src="/i18n-reports.js"></script>
+  <script type="module" src="/reports.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="common.skip">İçeriğe geç</a>
+  <header class="topbar"><a href="/" class="brand" aria-label="töre ana sayfa" data-i18n-attr="aria-label:common.home">töre</a><nav aria-label="Ana gezinme" data-i18n-attr="aria-label:common.mainNav"><a href="/konular" data-i18n="nav.topics">Konular</a><a href="/konular?gorunum=bekleyenler" data-i18n="nav.waiting">Seni bekleyenler</a><a href="/harita" data-i18n="nav.map">Haritam</a><a href="/calisma" aria-current="true" data-i18n="nav.conversations">Konuşmalar</a></nav><span class="lang-switch" role="group" aria-label="Arayüz dili" data-i18n-attr="aria-label:lang.group"><button type="button" data-ui-lang="en" aria-pressed="false" lang="en" title="English">EN</button><span aria-hidden="true">|</span><button type="button" data-ui-lang="tr" aria-pressed="true" lang="tr" title="Türkçe">TR</button></span><span class="private-mark"><span aria-hidden="true">● </span><span data-i18n="common.private">Bu bilgisayarda</span></span></header>
+  <main id="main">
+    <div class="page-head"><h1 data-i18n="nav.update">Güncelle</h1><p class="page-meta"><b id="waiting-count">0</b> <span id="waiting-count-label">madde kararını bekliyor</span></p></div>
+    <p class="page-sub" data-i18n="reports.intro">Claude Code konuşmalarından birini seçersin; bir model o konuşmayı okur ve senin sözlerine dayanan düşünceler önerir. Her öneriye sen karar verirsin; sen karar vermeden defterine hiçbir şey girmez.</p>
+    <nav class="subnav" aria-label="Konuşmalar altında" data-i18n-attr="aria-label:nav.underConversations"><a href="/calisma" data-i18n="nav.conversations">Konuşmalar</a><a href="/guncelle" aria-current="page" data-i18n="nav.update">Güncelle</a><a href="/arsiv" data-i18n="nav.archive">Arşiv</a></nav>
+    <p id="page-status" class="status" role="status" aria-live="polite" data-i18n="reports.loading">Güncelle açılıyor…</p><p id="page-error" class="error" role="alert" hidden></p>
+
+    <section id="projects" class="panel report-panel" aria-labelledby="projects-heading">
+      <div class="section-heading"><div><p class="eyebrow" data-i18n="reports.projects.eyebrow">1 · Hangi projeler?</p><h2 id="projects-heading" data-i18n="reports.projects.heading">Claude Code projelerin</h2></div><button type="button" id="projects-refresh" class="quiet" data-i18n="reports.projects.refresh">Listeyi yenile</button></div>
+      <p class="small" data-i18n="reports.projects.intro">Her proje kapalı başlar. Yalnız açtığın projelerin konuşmaları rapora konabilir.</p>
+      <div id="project-list" class="project-list"></div>
+      <p id="projects-note" class="small" role="status"></p>
+    </section>
+
+    <section id="sessions" class="panel report-panel" aria-labelledby="sessions-heading">
+      <p class="eyebrow" data-i18n="reports.sessions.eyebrow">2 · Yeni konuşmalar</p><h2 id="sessions-heading" data-i18n="reports.sessions.heading">Rapora konacak konuşmalar</h2>
+      <div id="session-list" class="session-list"></div>
+      <div id="run-area" hidden>
+        <p id="run-consent" class="consent-line" data-i18n="reports.run.consent">Seçtiğin konuşmalar bu bilgisayardaki Claude Code ile modele gönderilir. Rapor töre'ye hiçbir şey eklemez; her maddeye sen karar verirsin.</p>
+        <div class="actions run-actions"><button type="button" id="run-start" class="primary">Seçilenleri raporla</button><button type="button" id="run-stop" class="quiet" hidden data-i18n="reports.run.stop">Bundan sonra dur</button></div>
+        <p id="run-status" class="small" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section id="reports" class="report-section" aria-labelledby="reports-heading">
+      <div class="section-heading"><div><p class="eyebrow" data-i18n="reports.list.eyebrow">3 · Raporlar</p><h2 id="reports-heading" data-i18n="reports.list.heading">Kararını bekleyen öneriler</h2></div><label class="check report-toggle"><input type="checkbox" id="show-decided"><span data-i18n="reports.list.showDecided">Karar verdiklerimi de göster</span></label></div>
+      <p class="small" data-i18n-rich="reports.list.keys">Bir maddeye odaklanınca <kbd>1</kbd> haritama ekler, <kbd>2</kbd> hipotez olarak ekler, <kbd>3</kbd> eklememeyi açar, <kbd>4</kbd> sonraya bırakır.</p>
+      <div id="report-list" class="report-list"></div>
+    </section>
+    <noscript><p lang="tr">töre'nin arayüzü için JavaScript açık olmalı.</p><p lang="en">töre's interface needs JavaScript turned on.</p></noscript>
+  </main>
+</body>
+</html>

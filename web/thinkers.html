@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title data-i18n="title.thinkers">töre — Düşünürler</title>
+  <link rel="stylesheet" href="/return.css">
+  <link rel="stylesheet" href="/map.css">
+  <script src="/i18n.js"></script>
+  <script src="/i18n-thinkers.js"></script>
+  <script type="module" src="/thinkers.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="common.skip">İçeriğe geç</a>
+  <header class="topbar"><a href="/" class="brand" aria-label="töre ana sayfa" data-i18n-attr="aria-label:common.home">töre</a><nav aria-label="Ana gezinme" data-i18n-attr="aria-label:common.mainNav"><a href="/konular" data-i18n="nav.topics">Konular</a><a href="/konular?gorunum=bekleyenler" data-i18n="nav.waiting">Seni bekleyenler</a><a href="/harita" aria-current="true" data-i18n="nav.map">Haritam</a><a href="/calisma" data-i18n="nav.conversations">Konuşmalar</a></nav><span class="lang-switch" role="group" aria-label="Arayüz dili" data-i18n-attr="aria-label:lang.group"><button type="button" data-ui-lang="en" aria-pressed="false" lang="en" title="English">EN</button><span aria-hidden="true">|</span><button type="button" data-ui-lang="tr" aria-pressed="true" lang="tr" title="Türkçe">TR</button></span><span class="private-mark"><span aria-hidden="true">● </span><span data-i18n="common.private">Bu bilgisayarda</span></span></header>
+  <main id="main">
+    <div class="page-head"><h1 data-i18n="thinkers.heading">Örnek düşünürler</h1><p class="page-meta"><b id="link-count">0</b> <span id="link-count-label">bağlantı</span> · <b id="thinker-count">0</b> <span id="thinker-count-label">örnek düşünür katalogda</span></p></div><p class="page-sub" data-i18n="thinkers.example">Buradaki düşünürler yalnız örnek olarak verilmiştir; seçim bir sıralama ya da öneri değildir. Her fikrin yanında, hangi yıllarda ve hangi olaylar karşısında savunulduğu yazar.</p><p class="page-sub" data-i18n="thinkers.intro">Bir kaydını bir düşünüre yalnız sen bağlarsın. Bağlantı, o düşünürün bütün görüşlerini benimsediğin anlamına gelmez; töre yakınlık puanı veya siyasi kimlik çıkarmaz.</p>
+    <nav class="subnav" aria-label="Haritam altında" data-i18n-attr="aria-label:nav.underMap"><a href="/harita" data-i18n="nav.canvas">Tuval</a><a href="/harita/liste" data-i18n="nav.list">Liste</a><a href="/dusunurler" aria-current="page" data-i18n="nav.thinkers">Düşünürler</a><a href="/asilmis" data-i18n="nav.surpassed">Aşılmış düşünceler</a></nav>
+    <p id="page-status" class="status" role="status" aria-live="polite" data-i18n="thinkers.loading">Düşünürler açılıyor…</p><p id="page-error" class="error" role="alert" hidden></p>
+    <div id="thinker-list" class="record-list"></div>
+    <noscript><p lang="tr">töre'nin arayüzü için JavaScript açık olmalı.</p><p lang="en">töre's interface needs JavaScript turned on.</p></noscript>
+  </main>
+</body>
+</html>

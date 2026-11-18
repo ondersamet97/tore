@@ -1,0 +1,453 @@
+{
+  "date": "2026-11-15",
+  "scope": "Additional exact third-party notice files for the 0.11 preparation; does not relicense the dependencies or original Tore code.",
+  "packages": [
+    {
+      "package": "adler2",
+      "version": "2.0.1",
+      "declaredLicense": "0BSD OR MIT OR Apache-2.0",
+      "crateSha256": "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/adler2-2.0.1/LICENSE-0BSD",
+          "sha256": "861399f8c21c042b110517e76dc6b63a2b334276c8cf17412fc3c8908ca8dc17",
+          "origin": "https://static.crates.io/crates/adler2/adler2-2.0.1.crate#adler2-2.0.1/LICENSE-0BSD"
+        },
+        {
+          "path": "licenses/rust/adler2-2.0.1/LICENSE-APACHE",
+          "sha256": "8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb",
+          "origin": "https://static.crates.io/crates/adler2/adler2-2.0.1.crate#adler2-2.0.1/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/adler2-2.0.1/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "origin": "https://static.crates.io/crates/adler2/adler2-2.0.1.crate#adler2-2.0.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "aho-corasick",
+      "version": "1.1.5",
+      "declaredLicense": "Unlicense OR MIT",
+      "crateSha256": "c982642fa9e8606056828ee9a8505737230110bb1099153c79efe865c59d12ba",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/aho-corasick-1.1.5/COPYING",
+          "sha256": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
+          "origin": "https://static.crates.io/crates/aho-corasick/aho-corasick-1.1.5.crate#aho-corasick-1.1.5/COPYING"
+        },
+        {
+          "path": "licenses/rust/aho-corasick-1.1.5/LICENSE-MIT",
+          "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+          "origin": "https://static.crates.io/crates/aho-corasick/aho-corasick-1.1.5.crate#aho-corasick-1.1.5/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "arbitrary",
+      "version": "1.5.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "crateSha256": "3bc62ac97cc33321f50863d514c3bc38a453947a8f9e781137e47c7401020aed",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/arbitrary-1.5.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": "https://static.crates.io/crates/arbitrary/arbitrary-1.5.0.crate#arbitrary-1.5.0/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/arbitrary-1.5.0/LICENSE-MIT",
+          "sha256": "15656cc11a8331f28c0986b8ab97220d3e76f98e60ed388b5ffad37dfac4710c",
+          "origin": "https://static.crates.io/crates/arbitrary/arbitrary-1.5.0.crate#arbitrary-1.5.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "crc32fast",
+      "version": "1.5.5",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "crateSha256": "2b929dd2a135771f40afabd1073f85eed59c800b7c61901e5c254270497dad64",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/crc32fast-1.5.5/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "origin": "https://static.crates.io/crates/crc32fast/crc32fast-1.5.5.crate#crc32fast-1.5.5/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/crc32fast-1.5.5/LICENSE-MIT",
+          "sha256": "61d383b05b87d78f94d2937e2580cce47226d17823c0430fbcad09596537efcf",
+          "origin": "https://static.crates.io/crates/crc32fast/crc32fast-1.5.5.crate#crc32fast-1.5.5/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "crossbeam-utils",
+      "version": "0.8.23",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "crateSha256": "a31eee39dddec8330830986fcd7625edb5a24ec90ea038215273bbc3adb08ac6",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/crossbeam-utils-0.8.23/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": "https://static.crates.io/crates/crossbeam-utils/crossbeam-utils-0.8.23.crate#crossbeam-utils-0.8.23/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/crossbeam-utils-0.8.23/LICENSE-MIT",
+          "sha256": "5734ed989dfca1f625b40281ee9f4530f91b2411ec01cb748223e7eb87e201ab",
+          "origin": "https://static.crates.io/crates/crossbeam-utils/crossbeam-utils-0.8.23.crate#crossbeam-utils-0.8.23/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "derive_arbitrary",
+      "version": "1.5.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "crateSha256": "1b034bd7d5f032402a2479444dcc6f74e36a03f31854d41680fb240ef682a1ac",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/derive_arbitrary-1.5.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": "https://static.crates.io/crates/derive_arbitrary/derive_arbitrary-1.5.0.crate#derive_arbitrary-1.5.0/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/derive_arbitrary-1.5.0/LICENSE-MIT",
+          "sha256": "15656cc11a8331f28c0986b8ab97220d3e76f98e60ed388b5ffad37dfac4710c",
+          "origin": "https://static.crates.io/crates/derive_arbitrary/derive_arbitrary-1.5.0.crate#derive_arbitrary-1.5.0/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "flate2",
+      "version": "1.1.11",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "crateSha256": "626d4928326b646e70f65ed36fc7cf9f206bdb68a0019ee7c6b4709da4e084c4",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/flate2-1.1.11/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": "https://static.crates.io/crates/flate2/flate2-1.1.11.crate#flate2-1.1.11/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/flate2-1.1.11/LICENSE-MIT",
+          "sha256": "025436edff4cfcdde17a5811fdea78892d8482efd1abdec5a17872d07a4f2112",
+          "origin": "https://static.crates.io/crates/flate2/flate2-1.1.11.crate#flate2-1.1.11/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "jobserver",
+      "version": "0.1.35",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "crateSha256": "1c00acbd29eabad4a2392fa0e921c874934dbbf4194312ad20f04a0ed67a3cb3",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/jobserver-0.1.35/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": "https://static.crates.io/crates/jobserver/jobserver-0.1.35.crate#jobserver-0.1.35/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/jobserver-0.1.35/LICENSE-MIT",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "origin": "https://static.crates.io/crates/jobserver/jobserver-0.1.35.crate#jobserver-0.1.35/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "miniz_oxide",
+      "version": "0.9.1",
+      "declaredLicense": "MIT OR Zlib OR Apache-2.0",
+      "crateSha256": "b63fbc4a50860e98e7b2aa7804ded1db5cbc3aff9193adaff57a6931bf7c4b4c",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/miniz_oxide-0.9.1/LICENSE",
+          "sha256": "4108245a1f2df9d4e94df8abed5b4ba0759bb2f9b40a6b939f1be141077ae50b",
+          "origin": "https://static.crates.io/crates/miniz_oxide/miniz_oxide-0.9.1.crate#miniz_oxide-0.9.1/LICENSE"
+        },
+        {
+          "path": "licenses/rust/miniz_oxide-0.9.1/LICENSE-APACHE.md",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "origin": "https://static.crates.io/crates/miniz_oxide/miniz_oxide-0.9.1.crate#miniz_oxide-0.9.1/LICENSE-APACHE.md"
+        },
+        {
+          "path": "licenses/rust/miniz_oxide-0.9.1/LICENSE-MIT.md",
+          "sha256": "799e9ca9d179295ef372f25d3769cdda7d25bb2668add6a6a1e22d1e4c678b8d",
+          "origin": "https://static.crates.io/crates/miniz_oxide/miniz_oxide-0.9.1.crate#miniz_oxide-0.9.1/LICENSE-MIT.md"
+        },
+        {
+          "path": "licenses/rust/miniz_oxide-0.9.1/LICENSE-ZLIB.md",
+          "sha256": "0a54e647fe54104658b5e563c04c6f9edf251710e47bce692e0bd990a4ddaa39",
+          "origin": "https://static.crates.io/crates/miniz_oxide/miniz_oxide-0.9.1.crate#miniz_oxide-0.9.1/LICENSE-ZLIB.md"
+        }
+      ]
+    },
+    {
+      "package": "pkg-config",
+      "version": "0.3.34",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "crateSha256": "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/pkg-config-0.3.34/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": "https://static.crates.io/crates/pkg-config/pkg-config-0.3.34.crate#pkg-config-0.3.34/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/pkg-config-0.3.34/LICENSE-MIT",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "origin": "https://static.crates.io/crates/pkg-config/pkg-config-0.3.34.crate#pkg-config-0.3.34/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "r-efi",
+      "version": "5.3.0",
+      "declaredLicense": "MIT OR Apache-2.0 OR LGPL-2.1-or-later",
+      "crateSha256": "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/r-efi-5.3.0/AUTHORS",
+          "sha256": "ff92bed461f50338dd703a9ba9aee496a425957873df1d91192776e4bdf5dda7",
+          "origin": "https://static.crates.io/crates/r-efi/r-efi-5.3.0.crate#r-efi-5.3.0/AUTHORS"
+        }
+      ]
+    },
+    {
+      "package": "r-efi",
+      "version": "6.0.0",
+      "declaredLicense": "MIT OR Apache-2.0 OR LGPL-2.1-or-later",
+      "crateSha256": "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/r-efi-6.0.0/AUTHORS",
+          "sha256": "d027e91dbc9cdbb2f1190068e498bd6b61cff022b6a032b191021ba658d96111",
+          "origin": "https://static.crates.io/crates/r-efi/r-efi-6.0.0.crate#r-efi-6.0.0/AUTHORS"
+        }
+      ]
+    },
+    {
+      "package": "regex",
+      "version": "1.13.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "crateSha256": "f020237b6c8eed93db2e2cb53c00c60a8e1bc73da7d073199a1180401450218d",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/regex-1.13.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": "https://static.crates.io/crates/regex/regex-1.13.1.crate#regex-1.13.1/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/regex-1.13.1/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "origin": "https://static.crates.io/crates/regex/regex-1.13.1.crate#regex-1.13.1/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "regex-automata",
+      "version": "0.4.18",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "crateSha256": "ad8553b9b26413251cbf30e620595c7a41b3887f03da04579c0e6b0d6a06b4b2",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/regex-automata-0.4.18/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": "https://static.crates.io/crates/regex-automata/regex-automata-0.4.18.crate#regex-automata-0.4.18/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/regex-automata-0.4.18/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "origin": "https://static.crates.io/crates/regex-automata/regex-automata-0.4.18.crate#regex-automata-0.4.18/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "package": "regex-syntax",
+      "version": "0.8.11",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "crateSha256": "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/regex-syntax-0.8.11/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": "https://static.crates.io/crates/regex-syntax/regex-syntax-0.8.11.crate#regex-syntax-0.8.11/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/regex-syntax-0.8.11/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "origin": "https://static.crates.io/crates/regex-syntax/regex-syntax-0.8.11.crate#regex-syntax-0.8.11/LICENSE-MIT"
+        },
+        {
+          "path": "licenses/rust/regex-syntax-0.8.11/src/unicode_tables/LICENSE-UNICODE",
+          "sha256": "74db5baf44a41b1000312c673544b3374e4198af5605c7f9080a402cec42cfa3",
+          "origin": "https://static.crates.io/crates/regex-syntax/regex-syntax-0.8.11.crate#regex-syntax-0.8.11/src/unicode_tables/LICENSE-UNICODE"
+        }
+      ]
+    },
+    {
+      "package": "simd-adler32",
+      "version": "0.3.10",
+      "declaredLicense": "MIT",
+      "crateSha256": "3a219298ac11a56ea9a6d2120044824d6f01aeb034955e7af7bc16858527deea",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/simd-adler32-0.3.10/LICENSE.md",
+          "sha256": "42a35170233e83e18856792e748de4c1ce4a63b2afce9a370c89ef3fe23f9f2d",
+          "origin": "https://static.crates.io/crates/simd-adler32/simd-adler32-0.3.10.crate#simd-adler32-0.3.10/LICENSE.md"
+        }
+      ]
+    },
+    {
+      "package": "winapi-i686-pc-windows-gnu",
+      "version": "0.4.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "crateSha256": "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/winapi-i686-pc-windows-gnu-0.4.0/LICENSE-MIT",
+          "sha256": "ce7bc3499fee93d5022ef430d5e4201e79a6d9154f3974e42f41349f0569e09b",
+          "origin": "https://github.com/retep998/winapi-rs/blob/0.3.9/LICENSE-MIT"
+        },
+        {
+          "path": "licenses/rust/winapi-i686-pc-windows-gnu-0.4.0/LICENSE-APACHE",
+          "sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+          "origin": "https://github.com/retep998/winapi-rs/blob/0.3.9/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/winapi-i686-pc-windows-gnu-0.4.0/COPYRIGHT-HEADER",
+          "sha256": "9b0a59b4c5af60f46f79d2adbe433e07189d076972b8d33e9abca077dc10ccf7",
+          "origin": "https://static.crates.io/crates/winapi-i686-pc-windows-gnu/winapi-i686-pc-windows-gnu-0.4.0.crate#winapi-i686-pc-windows-gnu-0.4.0/src/lib.rs"
+        }
+      ]
+    },
+    {
+      "package": "winapi-x86_64-pc-windows-gnu",
+      "version": "0.4.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "crateSha256": "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/winapi-x86_64-pc-windows-gnu-0.4.0/LICENSE-MIT",
+          "sha256": "ce7bc3499fee93d5022ef430d5e4201e79a6d9154f3974e42f41349f0569e09b",
+          "origin": "https://github.com/retep998/winapi-rs/blob/0.3.9/LICENSE-MIT"
+        },
+        {
+          "path": "licenses/rust/winapi-x86_64-pc-windows-gnu-0.4.0/LICENSE-APACHE",
+          "sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+          "origin": "https://github.com/retep998/winapi-rs/blob/0.3.9/LICENSE-APACHE"
+        },
+        {
+          "path": "licenses/rust/winapi-x86_64-pc-windows-gnu-0.4.0/COPYRIGHT-HEADER",
+          "sha256": "9b0a59b4c5af60f46f79d2adbe433e07189d076972b8d33e9abca077dc10ccf7",
+          "origin": "https://static.crates.io/crates/winapi-x86_64-pc-windows-gnu/winapi-x86_64-pc-windows-gnu-0.4.0.crate#winapi-x86_64-pc-windows-gnu-0.4.0/src/lib.rs"
+        }
+      ]
+    },
+    {
+      "package": "zip",
+      "version": "2.6.1",
+      "declaredLicense": "MIT",
+      "crateSha256": "1dcb24d0152526ae49b9b96c1dcf71850ca1e0b882e4e28ed898a93c41334744",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/zip-2.6.1/LICENSE",
+          "sha256": "04dc52136d82400b11df5f474949863a70a5d05d2278dec45b99c479494450a6",
+          "origin": "https://static.crates.io/crates/zip/zip-2.6.1.crate#zip-2.6.1/LICENSE"
+        }
+      ]
+    },
+    {
+      "package": "zopfli",
+      "version": "0.8.4",
+      "declaredLicense": "Apache-2.0",
+      "crateSha256": "aaf7fc5d30c28483d93805c4a5e12b05bbb52407fa67c5f8bd552374cd01fb11",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/zopfli-0.8.4/COPYING",
+          "sha256": "018b1cb87efdf7a04c2fcc13d57ed63f62149113fb207b27ea13430d64f13513",
+          "origin": "https://static.crates.io/crates/zopfli/zopfli-0.8.4.crate#zopfli-0.8.4/COPYING"
+        }
+      ]
+    },
+    {
+      "package": "zstd",
+      "version": "0.13.5",
+      "declaredLicense": "BSD-3-Clause",
+      "crateSha256": "50adf04cf3ec914b0b9905c9dde90c80fe74bfd701e331fc80a39c512c525278",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/zstd-0.13.5/LICENSE",
+          "sha256": "ce4868c8e4ebe47a7d4b3c93dbf6b802033e5ae2fa7638098173f80836daac60",
+          "origin": "https://static.crates.io/crates/zstd/zstd-0.13.5.crate#zstd-0.13.5/LICENSE"
+        }
+      ]
+    },
+    {
+      "package": "zstd-safe",
+      "version": "7.4.1",
+      "declaredLicense": "BSD-3-Clause",
+      "crateSha256": "498d94ad68720c89b4fbe41b9090850651e68cb2dd9210ce7ffbff3a94653819",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/zstd-safe-7.4.1/LICENSE",
+          "sha256": "ce4868c8e4ebe47a7d4b3c93dbf6b802033e5ae2fa7638098173f80836daac60",
+          "origin": "https://static.crates.io/crates/zstd-safe/zstd-safe-7.4.1.crate#zstd-safe-7.4.1/LICENSE"
+        }
+      ]
+    },
+    {
+      "package": "zstd-sys",
+      "version": "2.1.3+zstd.1.5.7",
+      "declaredLicense": "BSD-3-Clause AND BSD-2-Clause",
+      "crateSha256": "f729a06d0257428fd9d997ac8db7e1407bd0262ab016b085b36bc52957c0052d",
+      "crateChecksumVerifiedAgainst": "server/Cargo.lock",
+      "files": [
+        {
+          "path": "licenses/rust/zstd-sys-2.1.3+zstd.1.5.7/LICENSE",
+          "sha256": "ce4868c8e4ebe47a7d4b3c93dbf6b802033e5ae2fa7638098173f80836daac60",
+          "origin": "https://static.crates.io/crates/zstd-sys/zstd-sys-2.1.3+zstd.1.5.7.crate#zstd-sys-2.1.3+zstd.1.5.7/LICENSE"
+        },
+        {
+          "path": "licenses/rust/zstd-sys-2.1.3+zstd.1.5.7/LICENSE.BSD-2-Clause",
+          "sha256": "982cd76c8a6b5c597aa999be672c4f16b953eb6d074fe29c0a931d7aae2c8fc2",
+          "origin": "https://static.crates.io/crates/zstd-sys/zstd-sys-2.1.3+zstd.1.5.7.crate#zstd-sys-2.1.3+zstd.1.5.7/LICENSE.BSD-2-Clause"
+        },
+        {
+          "path": "licenses/rust/zstd-sys-2.1.3+zstd.1.5.7/LICENSE.BSD-3-Clause",
+          "sha256": "bf7017a73a95ea63bf3716b13ec2bcd79c92942356e3408c6fb66332bad6d977",
+          "origin": "https://static.crates.io/crates/zstd-sys/zstd-sys-2.1.3+zstd.1.5.7.crate#zstd-sys-2.1.3+zstd.1.5.7/LICENSE.BSD-3-Clause"
+        },
+        {
+          "path": "licenses/rust/zstd-sys-2.1.3+zstd.1.5.7/zstd/COPYING",
+          "sha256": "f9c375a1be4a41f7b70301dd83c91cb89e41567478859b77eef375a52d782505",
+          "origin": "https://static.crates.io/crates/zstd-sys/zstd-sys-2.1.3+zstd.1.5.7.crate#zstd-sys-2.1.3+zstd.1.5.7/zstd/COPYING"
+        },
+        {
+          "path": "licenses/rust/zstd-sys-2.1.3+zstd.1.5.7/zstd/LICENSE",
+          "sha256": "7055266497633c9025b777c78eb7235af13922117480ed5c674677adc381c9d8",
+          "origin": "https://static.crates.io/crates/zstd-sys/zstd-sys-2.1.3+zstd.1.5.7.crate#zstd-sys-2.1.3+zstd.1.5.7/zstd/LICENSE"
+        }
+      ]
+    }
+  ]
+}

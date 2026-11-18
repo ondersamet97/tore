@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title data-i18n="title.surpassed">töre — Aşılmış düşünceler</title>
+  <link rel="stylesheet" href="/return.css">
+  <link rel="stylesheet" href="/reports.css">
+  <script src="/i18n.js"></script>
+  <script src="/i18n-superseded.js"></script>
+  <script type="module" src="/superseded.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="common.skip">İçeriğe geç</a>
+  <header class="topbar"><a href="/" class="brand" aria-label="töre ana sayfa" data-i18n-attr="aria-label:common.home">töre</a><nav aria-label="Ana gezinme" data-i18n-attr="aria-label:common.mainNav"><a href="/konular" data-i18n="nav.topics">Konular</a><a href="/konular?gorunum=bekleyenler" data-i18n="nav.waiting">Seni bekleyenler</a><a href="/harita" aria-current="true" data-i18n="nav.map">Haritam</a><a href="/calisma" data-i18n="nav.conversations">Konuşmalar</a></nav><span class="lang-switch" role="group" aria-label="Arayüz dili" data-i18n-attr="aria-label:lang.group"><button type="button" data-ui-lang="en" aria-pressed="false" lang="en" title="English">EN</button><span aria-hidden="true">|</span><button type="button" data-ui-lang="tr" aria-pressed="true" lang="tr" title="Türkçe">TR</button></span><span class="private-mark"><span aria-hidden="true">● </span><span data-i18n="common.private">Bu bilgisayarda</span></span></header>
+  <main id="main">
+    <div class="page-head"><h1 data-i18n="nav.surpassed">Aşılmış düşünceler</h1><p class="page-meta"><b id="surpassed-count">0</b> <span id="surpassed-count-label">aşıldı</span> · <b id="declined-count">0</b> <span id="declined-count-label">eklenmedi</span></p></div>
+    <p class="page-sub" data-i18n="surpassed.intro">Vardığın yere giderken geride bıraktığın düşünceler ve rapordan eklemediğin öneriler. Hiçbiri silinmez; nereden geldiğin burada görünür.</p>
+    <nav class="subnav" aria-label="Haritam altında" data-i18n-attr="aria-label:nav.underMap"><a href="/harita" data-i18n="nav.canvas">Tuval</a><a href="/harita/liste" data-i18n="nav.list">Liste</a><a href="/dusunurler" data-i18n="nav.thinkers">Düşünürler</a><a href="/asilmis" aria-current="page" data-i18n="nav.surpassed">Aşılmış düşünceler</a></nav>
+    <p id="page-status" class="status" role="status" aria-live="polite" data-i18n="surpassed.loading">Aşılmış düşünceler açılıyor…</p><p id="page-error" class="error" role="alert" hidden></p>
+    <div class="surpassed-tabs" role="tablist" aria-label="Aşılmış düşünceler" data-i18n-attr="aria-label:nav.surpassed"><button type="button" role="tab" id="tab-surpassed" aria-selected="true" aria-controls="panel" data-i18n="surpassed.tab.surpassed">Aşıldı</button><button type="button" role="tab" id="tab-declined" aria-selected="false" aria-controls="panel" tabindex="-1" data-i18n="surpassed.tab.declined">Eklenmedi</button></div>
+    <div id="panel" role="tabpanel" aria-labelledby="tab-surpassed" tabindex="0"><p id="panel-intro" class="small"></p><div id="surpassed-list" class="surpassed-list"></div></div>
+    <noscript><p lang="tr">töre'nin arayüzü için JavaScript açık olmalı.</p><p lang="en">töre's interface needs JavaScript turned on.</p></noscript>
+  </main>
+</body>
+</html>
