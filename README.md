@@ -1,15 +1,15 @@
 <h1 align="center">töre</h1>
 
-<p align="center"><strong>Pick up your thinking where you left off.</strong></p>
+<p align="center"><strong>A place where you can discuss the topics that interest you with people who share those interests.</strong></p>
 
 <p align="center">
-  A local notebook that keeps the ideas, decisions and open questions from your AI conversations<br>
-  connected to their sources, so you can return to a topic and continue with the right context.
+  Today, töre works as an open-source, local notebook. It keeps the decisions, views and open questions<br>
+  from your conversations with AI together with their sources. The discussion app is in development.
 </p>
 
 <p align="center">
-  <a href="https://ondersamet97.github.io/tore-site/">Website</a> ·
-  <a href="https://ondersamet97.github.io/tore-site/tr/">Türkçe</a> ·
+  <a href="https://ondersamet97.github.io/en/">Website</a> ·
+  <a href="https://ondersamet97.github.io/">Türkçe</a> ·
   <a href="CHANGELOG.md">Change log</a> ·
   <a href="https://www.linkedin.com/company/tore-app/">LinkedIn</a>
 </p>
