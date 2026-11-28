@@ -11,7 +11,7 @@ async function start(archive,data){
 }
 // Harnesses read the Turkish copy unless a test asks for another browser language.
 async function browser(server,{navigatorLanguage='tr-TR'}={}){
- const infoResponse=await fetch(server.url+'/api/info');assert.equal(infoResponse.status,200);assert.equal((await infoResponse.json()).version,'0.18.0','Native HTTP sürümü 0.18.0 olmalı');const htmlResponse=await fetch(server.url+'/arsiv');assert.equal(htmlResponse.status,200);const html=await htmlResponse.text();assert.match(html,/0\.16\.0/);assert.equal(html,await fs.readFile(path.join(root,'local-reader/Hosted.html'),'utf8'),'Sunulan hazır HTML son build olmalı');const requests=[],downloads=[],blobs=new Map(),errors=[];
+ const infoResponse=await fetch(server.url+'/api/info');assert.equal(infoResponse.status,200);assert.equal((await infoResponse.json()).version,'0.19.0','Native HTTP sürümü 0.19.0 olmalı');const htmlResponse=await fetch(server.url+'/arsiv');assert.equal(htmlResponse.status,200);const html=await htmlResponse.text();assert.match(html,/0\.16\.0/);assert.equal(html,await fs.readFile(path.join(root,'local-reader/Hosted.html'),'utf8'),'Sunulan hazır HTML son build olmalı');const requests=[],downloads=[],blobs=new Map(),errors=[];
  class NoRemote extends ResourceLoader{fetch(url){throw Error('Beklenmeyen otomatik kaynak: '+url);}}
  const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
  const dom=new JSDOM(html,{url:server.url+'/arsiv#local='+server.localToken+'&davet='+encodeURIComponent(server.invite),runScripts:'dangerously',resources:new NoRemote(),virtualConsole:vc,beforeParse(w){

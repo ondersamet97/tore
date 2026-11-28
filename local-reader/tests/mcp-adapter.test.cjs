@@ -48,6 +48,10 @@ test('MCP kipi yalnız açıkça paylaşılan devam metnini okutur; kapatma heme
  assert.equal(item.topic,'SENTETİK film konusu');assert.equal(item.recordCount,1);assert.equal(item.question,'SENTETİK devam sorusu?');assert.equal(item.declaredDestination,'claude');
  const got=await client.tool(4,'tore_get_shared_context',{id:packet.id});const body=got.result.content[0].text,newline=body.indexOf('\n');
  assert.match(body.slice(0,newline),/explicitly shared/);assert.equal(body.slice(newline+1),packet.text,'kişinin önizlemede gördüğü metnin aynısı');
+ // Yapılı çıktı (tore.context/1): metindeki kayıtların aynısı, üç ses ayrı; metinde olmayan hiçbir şey yok.
+ assert.ok(tools.result.tools.filter(x=>x.name!=='tore_propose').every(x=>x.outputSchema&&x.outputSchema.type==='object'));assert.deepEqual(tools.result.tools.find(x=>x.name==='tore_propose').inputSchema.properties.basis.required,['quote','source']);
+ const structured=got.result.structuredContent;assert.equal(structured.schema,'tore.context/1');assert.equal(structured.type,'shared_context');assert.deepEqual(structured.records.map(r=>[r.id,r.kind,r.voice,r.status,r.origin,r.text,r.source.voice,r.source.speaker]),[[ids[0],'decision','person','adopted','user_authored','SENTETİK benimsenen karar','source','user']]);
+ assert.ok(structured.records.every(r=>packet.text.includes(r.text)&&packet.text.includes(r.source.quote)&&packet.text.includes(r.source.id)));assert.ok(!JSON.stringify(got).includes(SECRET)&&!JSON.stringify(got).includes(HIDDEN_QUESTION));
  const unshared=await client.tool(5,'tore_get_shared_context',{id:hidden.id}),unknown=await client.tool(6,'tore_get_shared_context',{id:'00000000-0000-4000-8000-000000000000'});
  assert.equal(unshared.result.isError,true);assert.deepEqual(unshared.result.content,unknown.result.content,'var olup olmadığı açığa çıkmaz');
  assert.equal((await client.send('{bozuk')).error.code,-32700);

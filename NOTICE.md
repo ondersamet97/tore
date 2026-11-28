@@ -1,4 +1,4 @@
-# töre 0.18.0 — kaynak ve lisans bildirimi
+# töre 0.19.0 — kaynak ve lisans bildirimi
 
 Bu yerel çekirdek, Töre 0.6 Rust sunucusu, Markdown arşivi, kaynak/sürüm geçmişi ve paylaşım önizlemesi temel alınarak geliştirilmiştir. 0.12.1 sürümünden itibaren bu depodaki özgün kod **GNU Affero General Public License, sürüm 3 (AGPL-3.0-only)** ile sunulur; tam metin LICENSE dosyasındadır ve değiştirilmemiştir. AGPL koşullarına uymak istemeyenler için ayrı bir ticari lisans sahibinden alınabilir; bkz. COMMERCIAL-LICENSE.md. Konuşma içeriği ve kullanıcı verisi bu yazılım lisansına otomatik olarak girmez.
 

@@ -25,6 +25,79 @@ pub struct SharedContext {
     pub record_count: usize,
     pub question: String,
     pub text: String,
+    /// The selected records as structured data. Every entry repeats what
+    /// `text` already says about that record and nothing else.
+    pub records: Vec<Value>,
+}
+
+/// The records of one packet as structured data, at the revision the packet
+/// was prepared from. An entry is given only when the exact lines it is built
+/// from are found in the packet text, so the structure cannot say more than
+/// the text the person saw and shared; anything else is left out.
+fn structured_records(store: &Store, p: &Packet) -> Vec<Value> {
+    let selected = p
+        .record_ids
+        .iter()
+        .map(|id| (id, false))
+        .chain(p.proposal_ids.iter().map(|id| (id, true)));
+    selected
+        .zip(&p.sources)
+        .filter_map(|((id, proposal), source)| {
+            let r = store.records.get(id)?;
+            let (text, reason, priority, attribution) = if source.revision == r.revision {
+                (&r.text, &r.reason, &r.priority, &r.attribution)
+            } else {
+                let h = r.history.get(source.revision.checked_sub(1)? as usize)?;
+                (&h.text, &h.reason, &h.priority, &h.attribution)
+            };
+            let block = packet_block(&PacketBlock {
+                kind: &r.kind,
+                proposal,
+                id: &r.id,
+                revision: source.revision,
+                priority,
+                attribution,
+                text,
+                reason,
+                source_id: &source.source_id,
+                role: &source.role,
+                quote: &source.quote,
+            });
+            if !p.text.contains(&block) {
+                return None;
+            }
+            let mut v = json!({
+                "id": r.id,
+                "revision": source.revision,
+                "voice": if proposal { "ai_suggestion" } else { "person" },
+                "status": if proposal {
+                    "unadopted"
+                } else if stateful(&r.kind) {
+                    "open"
+                } else {
+                    "adopted"
+                },
+                "priority": priority,
+                "origin": attribution,
+                "text": text,
+                "source": {
+                    "voice": "source",
+                    "id": source.source_id,
+                    "speaker": source.role,
+                    "quote": source.quote,
+                },
+            });
+            // The label of an unadopted AI suggestion does not say whether it
+            // was filed as an opinion or a decision, so neither does this.
+            if !proposal {
+                v["kind"] = json!(r.kind);
+            }
+            if !reason.is_empty() {
+                v["reason"] = json!(reason);
+            }
+            Some(v)
+        })
+        .collect()
 }
 
 const QUESTION_HEAD: &str = "Kullanıcının devam sorusu: ";
@@ -93,6 +166,7 @@ pub fn shared_contexts(data_dir: &Path) -> Result<Vec<SharedContext>, String> {
             record_count: p.sources.len(),
             question: question(&p.text),
             text: p.text.clone(),
+            records: structured_records(&store, p),
         })
         .collect();
     out.sort_by(|a, b| b.created_at.cmp(&a.created_at).then(a.id.cmp(&b.id)));

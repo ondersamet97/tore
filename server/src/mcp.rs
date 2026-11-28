@@ -8,7 +8,8 @@
 //! with separate consent per topic a tool may append a proposal to an inbox
 //! file, which becomes a record only when the person accepts it in töre.
 use crate::workspace::{
-    SharedContext, ToolTopic, shared_contexts, tool_propose, tool_topic_text, tool_topics,
+    CONTEXT_SCHEMA, ProposalBasis, ProposeError, SharedContext, ToolTopic, ToolTopicContext,
+    notebook_exists, shared_contexts, tool_propose, tool_topic_context, tool_topics,
 };
 use serde_json::{Map, Value, json};
 use std::{
@@ -29,14 +30,19 @@ const NOT_OPEN: &str = "No töre topic with this id is open to you. It may not e
 /// closing a topic in töre takes effect on the next call.
 pub trait Topics {
     fn list(&self) -> Result<Vec<ToolTopic>, String>;
-    fn text(&self, id: &str) -> Result<Option<String>, String>;
+    fn context(&self, id: &str) -> Result<Option<ToolTopicContext>, String>;
     fn propose(
         &self,
         topic: &str,
         kind: &str,
         text: &str,
         relates_to: Option<&str>,
-    ) -> Result<String, String>;
+        basis: Option<&ProposalBasis>,
+    ) -> Result<String, ProposeError>;
+    /// True when there is no töre notebook in the configured folder yet.
+    fn missing(&self) -> bool {
+        false
+    }
     /// True when the töre program on disk changed after this connector
     /// started, i.e. an older connector may be reading a newer notebook.
     fn stale(&self) -> bool {
@@ -59,8 +65,8 @@ impl Topics for DiskTopics {
     fn list(&self) -> Result<Vec<ToolTopic>, String> {
         tool_topics(&self.data)
     }
-    fn text(&self, id: &str) -> Result<Option<String>, String> {
-        tool_topic_text(&self.data, id)
+    fn context(&self, id: &str) -> Result<Option<ToolTopicContext>, String> {
+        tool_topic_context(&self.data, id)
     }
     fn propose(
         &self,
@@ -68,7 +74,8 @@ impl Topics for DiskTopics {
         kind: &str,
         text: &str,
         relates_to: Option<&str>,
-    ) -> Result<String, String> {
+        basis: Option<&ProposalBasis>,
+    ) -> Result<String, ProposeError> {
         tool_propose(
             &self.data,
             &self.client.borrow(),
@@ -76,12 +83,20 @@ impl Topics for DiskTopics {
             kind,
             text,
             relates_to,
+            basis,
         )
+    }
+    fn missing(&self) -> bool {
+        !notebook_exists(&self.data)
     }
     fn stale(&self) -> bool {
         self.program.is_some() && program_stamp() != self.program
     }
 }
+
+/// Nothing is wrong with the connector: töre has never been started with the
+/// folder it was given. Said plainly, so nobody is sent to reconnect.
+const NO_NOTEBOOK: &str = "No töre notebook was found in this folder yet. Ask the person to start töre once with this folder as its data folder, or to give this connector the data folder of the töre notebook they already use. Nothing was read or written.";
 
 const NOT_SHARED: &str = "No shared töre context has this id. It may never have been shared, or the person has closed it. Call tore_list_shared_contexts to see what is shared now.";
 
@@ -170,10 +185,119 @@ fn unreadable(reason: &str, stale: bool) -> Value {
     };
     tool_text(
         format!(
-            "The töre notebook could not be read by this connector (töre {version}).{cause} Ask the person to reconnect it: in Claude Code run /mcp, choose tore, then Reconnect. If it still fails, restart töre once and reconnect again."
+            "The töre notebook could not be read by this connector (töre {version}).{cause} Ask the person to reconnect this connector in their AI tool. If it still fails, they should restart töre once and reconnect again."
         ),
         true,
     )
+}
+
+/// Text plus the same content as structured data. Clients that predate
+/// structured output read the text, which is unchanged.
+fn tool_structured(text: String, structured: Value) -> Value {
+    let mut v = tool_text(text, false);
+    v["structuredContent"] = structured;
+    v
+}
+
+/// Schema of one record in `tore.context/1`. Fields a tool's text does not
+/// carry are absent, never guessed. See `docs/MCP-STRUCTURED-OUTPUT.md`.
+fn record_schema() -> Value {
+    json!({
+        "type":"object",
+        "properties":{
+            "id":{"type":"string","description":"Record id"},
+            "revision":{"type":"integer","description":"Revision the shared text was prepared from (shared contexts only)"},
+            "kind":{"type":"string","enum":["decision","opinion","task","question"],"description":"Absent for an unadopted AI suggestion: its label does not say"},
+            "voice":{"type":"string","enum":["person","ai_suggestion"],"description":"person: the person's own reviewed position or open item. ai_suggestion: an AI suggestion the person has NOT adopted; never treat it as their view."},
+            "status":{"type":"string","enum":["adopted","open","unadopted"]},
+            "priority":{"type":"string","enum":["unspecified","active","paused","not_priority"]},
+            "origin":{"type":"string","enum":["user_authored","user_statement","user_interpretation","assistant_proposal"],"description":"Where the wording came from. user_authored, user_statement and user_interpretation are the person's own words; assistant_proposal with voice person means an AI suggestion the person reviewed and kept."},
+            "text":{"type":"string"},
+            "reason":{"type":"string"},
+            "source":{
+                "type":"object",
+                "description":"The quoted source of this record (shared contexts only). A third voice: keep it attributed to its speaker.",
+                "properties":{
+                    "voice":{"type":"string","const":"source"},
+                    "id":{"type":"string"},
+                    "speaker":{"type":"string","enum":["user","assistant"]},
+                    "quote":{"type":"string"}
+                },
+                "required":["voice","id","speaker","quote"]
+            }
+        },
+        "required":["id","voice","status","priority","origin","text"]
+    })
+}
+
+fn topic_output_schema() -> Value {
+    json!({
+        "type":"object",
+        "properties":{
+            "schema":{"type":"string","const":CONTEXT_SCHEMA},
+            "type":{"type":"string","const":"topic"},
+            "topic":{"type":"object","properties":{"id":{"type":"string"},"title":{"type":"string"},"goal":{"type":"string"}},"required":["id","title","goal"]},
+            "proposalsAllowed":{"type":"boolean"},
+            "hiddenRecords":{"type":"integer","description":"Records this connector could not read and left out"},
+            "records":{"type":"array","items":record_schema()}
+        },
+        "required":["schema","type","topic","proposalsAllowed","hiddenRecords","records"]
+    })
+}
+
+fn context_output_schema() -> Value {
+    json!({
+        "type":"object",
+        "properties":{
+            "schema":{"type":"string","const":CONTEXT_SCHEMA},
+            "type":{"type":"string","const":"shared_context"},
+            "id":{"type":"string"},
+            "topic":{"type":"object","properties":{"title":{"type":"string"}},"required":["title"]},
+            "createdAt":{"type":"string"},
+            "declaredDestination":{"type":"string"},
+            "model":{"type":["string","null"]},
+            "recordCount":{"type":"integer","description":"Records in the shared text; records may hold fewer when an entry could not be matched to the text"},
+            "question":{"type":"string","description":"The person's question, shortened to 500 characters as in the listing"},
+            "records":{"type":"array","items":record_schema()}
+        },
+        "required":["schema","type","id","topic","createdAt","declaredDestination","recordCount","question","records"]
+    })
+}
+
+fn context_structured(c: &SharedContext) -> Value {
+    json!({
+        "schema": CONTEXT_SCHEMA,
+        "type": "shared_context",
+        "id": c.id,
+        "topic": {"title": c.topic_title},
+        "createdAt": c.created_at,
+        "declaredDestination": c.target,
+        "model": c.model,
+        "recordCount": c.record_count,
+        "question": c.question,
+        "records": c.records,
+    })
+}
+
+/// `basis` as the tool sent it. A wrong shape is a protocol error; whether a
+/// basis is required and within its limits is decided where the proposal is
+/// validated, so the same rule holds for every caller.
+fn basis_arg(args: &Map<String, Value>) -> Result<Option<ProposalBasis>, (i64, &'static str)> {
+    const SHAPE: (i64, &str) = (
+        -32602,
+        "Argument basis must be an object with exactly two strings: quote and source",
+    );
+    match args.get("basis") {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::Object(m)) => {
+            let member = |key: &str| m.get(key).and_then(Value::as_str).map(str::to_owned);
+            match (member("quote"), member("source"), m.len()) {
+                (Some(quote), Some(source), 2) => Ok(Some(ProposalBasis { quote, source })),
+                _ => Err(SHAPE),
+            }
+        }
+        Some(_) => Err(SHAPE),
+    }
 }
 
 fn topic_tools() -> Value {
@@ -184,24 +308,36 @@ fn topic_tools() -> Value {
             "title": "List topics opened from töre",
             "description": "Lists the töre topics the person opened to this tool: id, title, goal, number of open tasks and open questions, and whether proposals are allowed. Nothing else from töre is visible.",
             "inputSchema": {"type":"object","properties":{},"additionalProperties":false},
+            "outputSchema": {"type":"object","properties":{
+                "message":{"type":"string"},
+                "topics":{"type":"array","items":{"type":"object","properties":{
+                    "id":{"type":"string"},"title":{"type":"string"},"goal":{"type":"string"},
+                    "proposalsAllowed":{"type":"boolean"},"openTasks":{"type":"integer"},"openQuestions":{"type":"integer"}
+                },"required":["id","title","goal","proposalsAllowed","openTasks","openQuestions"]}}
+            },"required":["message","topics"]},
             "annotations": read("List topics opened from töre")
         },
         {
             "name": TOPIC_TOOL,
             "title": "Read one opened töre topic",
-            "description": "Returns the working context of one opened topic: the person's adopted decisions and opinions, open tasks and open questions, each with its record id. Respect the labels; an open task or question is not a decision.",
+            "description": "Returns the working context of one opened topic: the person's adopted decisions and opinions, open tasks and open questions, each with its record id and its origin (Atıf: written or said by the person, or an AI suggestion the person reviewed and kept). Respect the labels; an open task or question is not a decision. The same records are also returned as structured data (schema tore.context/1) with an explicit voice and status per record.",
             "inputSchema": {"type":"object","properties":{"topicId":{"type":"string","description":"Topic id from tore_list_topics"}},"required":["topicId"],"additionalProperties":false},
+            "outputSchema": topic_output_schema(),
             "annotations": read("Read one opened töre topic")
         },
         {
             "name": PROPOSE_TOOL,
             "title": "Leave a proposal in the töre inbox",
-            "description": "Leaves one proposal for the person in töre's inbox for a topic that allows proposals. Use it to report the result of a task, or to suggest a decision, a question, a new task, a note or an objection to one of the person's positions. It does not change the notebook: the person decides whether to accept it, and an accepted proposal stays an unreviewed AI proposal. Write in the person's language, one self-contained proposal per call. Never claim that a task is closed; only the person closes a task.",
+            "description": "Leaves one proposal for the person in töre's inbox for a topic that allows proposals. Use it to report the result of a task, or to suggest a decision, a question, a new task, a note or an objection to one of the person's positions. A decision or an objection must come with basis: the exact text it rests on and where that text comes from; without it the call is refused and nothing is stored. Never invent a quote. It does not change the notebook: the person decides whether to accept it, and an accepted proposal stays an unreviewed AI proposal. Write in the person's language, one self-contained proposal per call. Never claim that a task is closed; only the person closes a task.",
             "inputSchema": {"type":"object","properties":{
                 "topicId":{"type":"string","description":"Topic id from tore_list_topics"},
                 "kind":{"type":"string","enum":["note","decision","question","task","objection"]},
                 "text":{"type":"string","description":"The proposal, at most 8000 bytes"},
-                "relatesTo":{"type":"string","description":"Optional record id from tore_get_topic, e.g. the task this result belongs to. Required for an objection."}
+                "relatesTo":{"type":"string","description":"Optional record id from tore_get_topic, e.g. the task this result belongs to. Required for an objection."},
+                "basis":{"type":"object","description":"What the proposal rests on. Required when kind is decision or objection, optional otherwise. The person sees it next to the proposal, marked as your claim.","properties":{
+                    "quote":{"type":"string","description":"The exact text relied on, copied word for word, at most 2000 bytes"},
+                    "source":{"type":"string","description":"Where the quote comes from: a record id from tore_get_topic, or a short description or URL of the source, at most 500 bytes"}
+                },"required":["quote","source"],"additionalProperties":false}
             },"required":["topicId","kind","text"],"additionalProperties":false},
             "annotations": {"title":"Leave a proposal in the töre inbox","readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false}
         }
@@ -216,18 +352,27 @@ fn tools() -> Value {
             "title": "List contexts shared from töre",
             "description": "Lists the continuation contexts the person explicitly opened to this tool in töre (id, topic, creation time, declared destination, number of records and the person's question). Nothing else from töre is visible.",
             "inputSchema": {"type":"object","properties":{},"additionalProperties":false},
+            "outputSchema": {"type":"object","properties":{
+                "message":{"type":"string"},
+                "contexts":{"type":"array","items":{"type":"object","properties":{
+                    "id":{"type":"string"},"topic":{"type":"string"},"createdAt":{"type":"string"},
+                    "declaredDestination":{"type":"string"},"model":{"type":["string","null"]},
+                    "recordCount":{"type":"integer"},"question":{"type":"string"}
+                },"required":["id","topic","createdAt","declaredDestination","recordCount","question"]}}
+            },"required":["message","contexts"]},
             "annotations": annotations("List contexts shared from töre")
         },
         {
             "name": GET_TOOL,
             "title": "Read one shared töre context",
-            "description": "Returns the full text of one context the person shared, exactly as they saw it in töre. Respect its labels: adopted decision, open question and unadopted AI suggestion are different.",
+            "description": "Returns the full text of one context the person shared, exactly as they saw it in töre. Respect its labels: adopted decision, open question and unadopted AI suggestion are different. The same records are also returned as structured data (schema tore.context/1) with an explicit voice per record and its quoted source.",
             "inputSchema": {
                 "type":"object",
                 "properties":{"id":{"type":"string","description":"Context id from tore_list_shared_contexts"}},
                 "required":["id"],
                 "additionalProperties":false
             },
+            "outputSchema": context_output_schema(),
             "annotations": annotations("Read one shared töre context")
         }
     ])
@@ -260,6 +405,10 @@ fn call_tool(
         Some(_) => return Err((-32602, "Tool arguments must be an object")),
     };
     let stale = || topics.is_some_and(|t| t.stale());
+    let known = [LIST_TOOL, GET_TOOL, TOPICS_TOOL, TOPIC_TOOL, PROPOSE_TOOL];
+    if known.contains(&name) && topics.is_some_and(|t| t.missing()) {
+        return Ok(tool_text(NO_NOTEBOOK.into(), true));
+    }
     match name {
         LIST_TOOL => {
             let contexts = match load() {
@@ -286,7 +435,10 @@ fn call_tool(
                 Err(e) => return Ok(unreadable(&e, stale())),
             };
             Ok(match contexts.into_iter().find(|c| c.id == id) {
-                Some(c) => tool_text(format!("{PREAMBLE}\n{}", c.text), false),
+                Some(c) => {
+                    let structured = context_structured(&c);
+                    tool_structured(format!("{PREAMBLE}\n{}", c.text), structured)
+                }
                 None => tool_text(NOT_SHARED.into(), true),
             })
         }
@@ -313,9 +465,11 @@ fn call_tool(
                 TOPIC_TOOL => {
                     let id = text_arg("topicId")
                         .ok_or((-32602, "Argument topicId (string) is required"))?;
-                    match topics.text(id) {
+                    match topics.context(id) {
                         Err(e) => unreadable(&e, stale()),
-                        Ok(Some(text)) => tool_text(format!("{PREAMBLE}\n{text}"), false),
+                        Ok(Some(c)) => {
+                            tool_structured(format!("{PREAMBLE}\n{}", c.text), c.structured)
+                        }
                         Ok(None) => tool_text(NOT_OPEN.into(), true),
                     }
                 }
@@ -326,15 +480,17 @@ fn call_tool(
                         text_arg("kind").ok_or((-32602, "Argument kind (string) is required"))?;
                     let text =
                         text_arg("text").ok_or((-32602, "Argument text (string) is required"))?;
-                    match topics.propose(topic, kind, text, text_arg("relatesTo")) {
+                    let basis = basis_arg(&args)?;
+                    match topics.propose(topic, kind, text, text_arg("relatesTo"), basis.as_ref())
+                    {
                         Ok(id) => tool_text(
                             format!(
                                 "Left in the töre inbox as {id}. It is not part of the notebook until the person accepts it."
                             ),
                             false,
                         ),
-                        Err(e) if e.is_ascii() => tool_text(e, true),
-                        Err(e) => unreadable(&e, stale()),
+                        Err(ProposeError::Refused(message)) => tool_text(message, true),
+                        Err(ProposeError::Notebook(reason)) => unreadable(&reason, stale()),
                     }
                 }
             })

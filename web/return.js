@@ -628,6 +628,7 @@ import { api } from '/private-client.js';
     const head = node('div', null, 'source-panel'); head.append(node('p', W.proposalFrom, 'eyebrow'), node('p', (item.tool || tx('return.tools.heading')) + ' · ' + date(item.receivedAt), 'source-pane-title'), node('p', W.topic(entry.topicTitle || topicName(item.topicId)), 'small'));
     const body = node('div', null, 'source-pane-record voice-ai'), label = node('p', null, 'eyebrow'); label.append(node('span', T.aiLabel, 'voice-ai-label'), ' · ' + (labels.inbox[item.kind] || tx('return.inbox.kind.proposal')));
     body.append(label, node('p', item.text, 'record-text'));
+    const basis = basisBlock(entry); if (basis) body.append(basis);
     box.append(head, body);
     if (related?.text) {
       const full = state.data.records.find(r => r.id === related.id), rel = node('div', null, 'waiting-related');
@@ -1040,10 +1041,23 @@ import { api } from '/private-client.js';
     updateWaitingCounts(); renderWaitingPane();
   }
   const dayLabel = value => { if (!value || Number.isNaN(new Date(value).getTime())) return tx('return.noDate'); return new Date(value).toLocaleDateString(I18N.locale(), { dateStyle: 'long' }); };
+  // What the tool says its suggestion rests on. It stays in the AI's voice and
+  // is worded as the tool's claim: never the person's words, never a checked
+  // source. Only a quote from a record of this topic is compared, by the server.
+  function basisBlock(entry) {
+    const basis = entry.item?.basis; if (!basis || typeof basis.quote !== 'string' || typeof basis.source !== 'string') return null;
+    const box = node('div', null, 'inbox-basis'), record = entry.basisRecord;
+    box.dataset.inboxBasis = entry.item.id;
+    box.append(node('p', tx('return.inbox.basis.label'), 'eyebrow'), node('blockquote', basis.quote, 'inbox-basis-quote'));
+    if (record?.text) box.append(node('p', tx('return.inbox.basis.record') + record.text, 'small inbox-basis-source'), node('p', tx(record.quoteFound ? 'return.inbox.basis.found' : 'return.inbox.basis.notFound'), 'small inbox-basis-check'));
+    else box.append(node('p', tx('return.inbox.basis.source') + basis.source, 'small inbox-basis-source'), node('p', tx('return.inbox.basis.unchecked'), 'small inbox-basis-check'));
+    return box;
+  }
   function inboxItem(entry) {
     const item = entry.item || {}, article = node('article', null, 'record-card inbox-item waiting-item'); article.dataset.inboxItem = item.id; article.dataset.waitingItem = 'proposal:' + item.id;
     article.append(statusLine(null, [labels.inbox[item.kind] || tx('return.inbox.kind.proposal')], true, false), node('p', (item.tool || tx('return.tools.heading')) + ' · ' + date(item.receivedAt) + ' · ' + W.topic(entry.topicTitle || topicName(item.topicId)), 'small'), node('p', item.text, 'record-text'));
     if (entry.related?.text) article.append(node('p', T.waiting.related(entry.related.kind) + entry.related.text, 'small related'));
+    const basis = basisBlock(entry); if (basis) article.append(basis);
     const consent = node('label', null, 'check'), box = document.createElement('input'), accept = button(tx('return.inbox.accept'), 'primary'), dismiss = button(W.remove, 'quiet'), actions = node('div', null, 'actions waiting-actions'), problem = node('p', null, 'error');
     box.type = 'checkbox'; box.dataset.inboxConsent = item.id; consent.append(box, node('span', tx('return.inbox.consent')));
     accept.dataset.inboxAccept = item.id; accept.disabled = true; dismiss.dataset.inboxDismiss = item.id; problem.setAttribute('role', 'alert'); problem.hidden = true;

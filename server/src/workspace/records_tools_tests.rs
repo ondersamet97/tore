@@ -33,6 +33,12 @@ fn adopt(d: &mut Disk, id: &str, text: &str) {
         "currency":"current","priority":"active","questionState":"not_applicable","changeReason":"Yapay inceleme.","confirmedByUser":true}))
         .unwrap();
 }
+fn basis() -> ProposalBasis {
+    ProposalBasis {
+        quote: "SENTETİK dayanak alıntısı".into(),
+        source: "SENTETİK kaynak tanımı".into(),
+    }
+}
 fn open(d: &mut Disk, topic: &str, read: bool, write: bool) -> Result<Value, String> {
     d.tool_access_set(json!({"topicId":topic,"read":read,"write":write,"confirmedByUser":true}))
 }
@@ -94,7 +100,7 @@ fn a_tool_sees_only_topics_the_person_opened_and_only_settled_or_open_work() {
     assert!(!text.contains("Bekleyen görüş") && !text.contains("Gizli iş"));
     assert_eq!(tool_topic_text(&base, &other).unwrap(), None);
     assert!(
-        tool_propose(&base, "Test", &t, "note", "Yapay not", None).is_err(),
+        tool_propose(&base, "Test", &t, "note", "Yapay not", None, None).is_err(),
         "okuma izni yazma izni değildir"
     );
     open(&mut d, &t, false, false).unwrap();
@@ -108,12 +114,12 @@ fn a_proposal_waits_in_the_inbox_and_becomes_a_pending_ai_record_only_when_accep
     let task = record(&mut d, &t, "task", "Yapay iş");
     open(&mut d, &t, true, true).unwrap();
     let before = fs::read(base.join("conversations/records-v1.json")).unwrap();
-    assert!(tool_propose(&base, "Test", &t, "plan", "x", None).is_err());
-    assert!(tool_propose(&base, "Test", &t, "note", "", None).is_err());
-    assert!(tool_propose(&base, "Test", &t, "note", "x", Some("missing")).is_err());
-    assert!(tool_propose(&base, "Test", &t, "objection", "x", Some(&task)).is_err());
-    let first = tool_propose(&base, "Claude Code", &t, "note", "Yapay sonuç", Some(&task)).unwrap();
-    let second = tool_propose(&base, "Claude Code", &t, "task", "Önerilen iş", None).unwrap();
+    assert!(tool_propose(&base, "Test", &t, "plan", "x", None, None).is_err());
+    assert!(tool_propose(&base, "Test", &t, "note", "", None, None).is_err());
+    assert!(tool_propose(&base, "Test", &t, "note", "x", Some("missing"), None).is_err());
+    assert!(tool_propose(&base, "Test", &t, "objection", "x", Some(&task), Some(&basis())).is_err());
+    let first = tool_propose(&base, "Claude Code", &t, "note", "Yapay sonuç", Some(&task), None).unwrap();
+    let second = tool_propose(&base, "Claude Code", &t, "task", "Önerilen iş", None, None).unwrap();
     assert_eq!(
         fs::read(base.join("conversations/records-v1.json")).unwrap(),
         before,
@@ -163,7 +169,7 @@ fn an_accepted_objection_hangs_under_the_position_as_a_suggested_placement() {
         .unwrap()
         .to_owned();
     open(&mut d, &t, true, true).unwrap();
-    let item = tool_propose(&base, "Test", &t, "objection", "Yapay itiraz", Some(&position)).unwrap();
+    let item = tool_propose(&base, "Test", &t, "objection", "Yapay itiraz", Some(&position), Some(&basis())).unwrap();
     let accepted = d
         .inbox_accept(json!({"itemId":item,"confirmedByUser":true}))
         .unwrap();
@@ -239,7 +245,7 @@ fn opening_all_topics_covers_existing_ones_only_and_closing_all_removes_every_pe
     let topics = tool_topics(&base).unwrap();
     assert_eq!(topics.len(), 3);
     assert!(topics.iter().all(|x| !x.can_write));
-    assert!(tool_propose(&base, "Test", &other, "note", "Yapay not", None).is_err());
+    assert!(tool_propose(&base, "Test", &other, "note", "Yapay not", None, None).is_err());
     d.tool_access_set_all(json!({"read":false,"write":false,"confirmedByUser":true}))
         .unwrap();
     assert!(tool_topics(&base).unwrap().is_empty());
@@ -260,7 +266,7 @@ fn a_connected_tool_never_sees_a_record_in_the_trash() {
     let text = tool_topic_text(&base, &t).unwrap().unwrap();
     assert!(!text.contains("Silinecek karar") && !text.contains("Silinecek iş"));
     assert_eq!(tool_topics(&base).unwrap()[0].open_tasks, 0);
-    assert!(tool_propose(&base, "Test", &t, "objection", "Yapay itiraz", Some(&decision)).is_err());
+    assert!(tool_propose(&base, "Test", &t, "objection", "Yapay itiraz", Some(&decision), Some(&basis())).is_err());
     fs::remove_dir_all(base).ok();
 }
 
@@ -327,14 +333,15 @@ fn a_record_from_a_newer_toere_is_hidden_and_the_rest_of_the_notebook_stays_read
         assert!(!text.contains(hidden), "{hidden} must stay hidden");
     }
     assert!(text.contains("NOTE: 4 record(s) in this topic could not be read"));
-    assert!(text.contains("/mcp, choose tore, then Reconnect"));
+    assert!(text.contains("reconnect this connector in their AI tool"));
+    assert!(!text.contains("Claude") && !text.contains("/mcp"));
     assert!(!text.contains("futureField") && !text.contains("yapay\""));
 
-    assert!(tool_propose(&base, "Test", &t, "note", "Yapay not", Some(&task)).is_ok());
+    assert!(tool_propose(&base, "Test", &t, "note", "Yapay not", Some(&task), None).is_ok());
     for id in [&future, &new_kind, &question, &answer, &trashed] {
-        assert!(tool_propose(&base, "Test", &t, "note", "Yapay not", Some(id)).is_err());
+        assert!(tool_propose(&base, "Test", &t, "note", "Yapay not", Some(id), None).is_err());
     }
-    assert!(tool_propose(&base, "Test", &other, "note", "Yapay not", None).is_err());
+    assert!(tool_propose(&base, "Test", &other, "note", "Yapay not", None, None).is_err());
     fs::remove_dir_all(base).ok();
 }
 

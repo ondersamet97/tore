@@ -37,7 +37,7 @@ async fn run() -> Result<(), String> {
     }
     if args == ["--help"] {
         println!(
-            "Töre 0.18.0 — Konuya Geri Dön: --archive MUTLAK_KLASÖR --data MUTLAK_KLASÖR [--listen 127.0.0.1:0] [--open]\n{}",
+            "Töre 0.19.0 — Konuya Geri Dön: --archive MUTLAK_KLASÖR --data MUTLAK_KLASÖR [--listen 127.0.0.1:0] [--open]\n{}",
             mcp::help()
         );
         return Ok(());

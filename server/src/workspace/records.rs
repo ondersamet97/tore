@@ -37,7 +37,10 @@ use tools::{InboxHandled, ToolAccess};
 mod reports;
 use reports::Report;
 pub use reports::run_report_provider;
-pub use tools::{ToolTopic, tool_propose, tool_topic_text, tool_topics};
+pub use tools::{
+    CONTEXT_SCHEMA, ProposalBasis, ProposeError, ToolTopic, ToolTopicContext, notebook_exists,
+    tool_propose, tool_topic_context, tool_topics,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -358,6 +361,49 @@ fn validate_record(r: &Record) -> Result<(), String> {
         }
     }
     Ok(())
+}
+/// What a continuation text says about one selected record.
+struct PacketBlock<'a> {
+    kind: &'a str,
+    proposal: bool,
+    id: &'a str,
+    revision: u32,
+    priority: &'a str,
+    attribution: &'a str,
+    text: &'a str,
+    reason: &'a str,
+    source_id: &'a str,
+    role: &'a str,
+    quote: &'a str,
+}
+/// The exact lines one selected record gets in a continuation text. The
+/// structured output for connected tools is checked against these same lines,
+/// so it can never say more than the text the person saw.
+fn packet_block(b: &PacketBlock) -> String {
+    let label = if b.proposal {
+        "BENİMSENMEMİŞ AI ÖNERİSİ"
+    } else if b.kind == "task" {
+        "AÇIK İŞ — KARAR DEĞİL"
+    } else if b.kind == "question" {
+        "AÇIK SORU — GÖRÜŞ DEĞİL"
+    } else if b.kind == "decision" {
+        "KULLANICININ BENİMSEDİĞİ KARAR"
+    } else {
+        "KULLANICININ BENİMSEDİĞİ GÖRÜŞ"
+    };
+    format!(
+        "[{}]\nKayıt: {} / sürüm {}\nÖncelik: {}\nAtıf: {}\nİfade: {}\nGerekçe: {}\nKaynak kimliği: {}\nÖzgün konuşmacı: {}\nBirebir alıntı: {}\n\n",
+        label,
+        b.id,
+        b.revision,
+        b.priority,
+        b.attribution,
+        b.text,
+        b.reason,
+        b.source_id,
+        b.role,
+        b.quote
+    )
 }
 /// One continuation packet against the store it lives in. Shared by the full
 /// validation and the connector's lenient read, which hides a failing packet.
@@ -1030,21 +1076,6 @@ impl Disk {
                 {
                     return Err("Ana bağlamda benimsenmiş görüş/karar veya açık soru seçin".into());
                 }
-                let label = if proposal {
-                    "BENİMSENMEMİŞ AI ÖNERİSİ"
-                } else if c.kind == "task" {
-                    "AÇIK İŞ — KARAR DEĞİL"
-                } else if c.kind == "question" {
-                    "AÇIK SORU — GÖRÜŞ DEĞİL"
-                } else if c.kind == "decision" {
-                    "KULLANICININ BENİMSEDİĞİ KARAR"
-                } else {
-                    "KULLANICININ BENİMSEDİĞİ GÖRÜŞ"
-                };
-                text.push_str(&format!(
-                    "[{}]\nKayıt: {} / sürüm {}\nÖncelik: {}\nAtıf: {}\nİfade: {}\nGerekçe: {}\n",
-                    label, c.id, c.revision, c.priority, c.attribution, c.text, c.reason
-                ));
                 let (source_id, quote, role) = if let Some(s) = &c.source {
                     (s.id.clone(), s.excerpt.clone(), s.role.clone())
                 } else {
@@ -1054,10 +1085,19 @@ impl Disk {
                         "user".into(),
                     )
                 };
-                text.push_str(&format!(
-                    "Kaynak kimliği: {}\nÖzgün konuşmacı: {}\nBirebir alıntı: {}\n\n",
-                    source_id, role, quote
-                ));
+                text.push_str(&packet_block(&PacketBlock {
+                    kind: &c.kind,
+                    proposal,
+                    id: &c.id,
+                    revision: c.revision,
+                    priority: &c.priority,
+                    attribution: &c.attribution,
+                    text: &c.text,
+                    reason: &c.reason,
+                    source_id: &source_id,
+                    role: &role,
+                    quote: &quote,
+                }));
                 sources.push(PacketSource {
                     source_id,
                     record_id: c.id.clone(),

@@ -36,7 +36,33 @@ pub struct InboxItem {
     pub kind: String,
     pub text: String,
     pub relates_to: Option<String>,
+    /// What the tool says the proposal rests on. Absent in lines written
+    /// before the field existed, and absent from their bytes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub basis: Option<ProposalBasis>,
 }
+
+/// The text a proposal rests on and where the tool says it comes from. Both
+/// are the tool's claim: töre stores them and shows them as such.
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProposalBasis {
+    pub quote: String,
+    /// A record id from the topic, or a free description or URL.
+    pub source: String,
+}
+
+/// One opened topic for a connected tool: the text, and the same records as
+/// structured data. The structure is built from the very records and labels
+/// the text is built from, in the same pass.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ToolTopicContext {
+    pub text: String,
+    pub structured: Value,
+}
+
+/// Version of the structured output. See `docs/MCP-STRUCTURED-OUTPUT.md`.
+pub const CONTEXT_SCHEMA: &str = "tore.context/1";
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -77,6 +103,11 @@ const INBOX_FILE: &str = "tool-inbox.jsonl";
 const INBOX_BYTES: u64 = 2 * 1024 * 1024;
 const INBOX_PENDING: usize = 200;
 const PROPOSAL_BYTES: usize = 8000;
+const BASIS_QUOTE_BYTES: usize = 2000;
+const BASIS_SOURCE_BYTES: usize = 500;
+/// Proposal kinds that claim something about what the person holds or should
+/// hold; these must say what they rest on.
+const BASIS_REQUIRED: [&str; 2] = ["decision", "objection"];
 pub const PROPOSAL_KINDS: [&str; 5] = ["note", "decision", "question", "task", "objection"];
 
 pub(super) fn validate_tools(s: &Store) -> Result<(), String> {
@@ -125,9 +156,14 @@ fn read_inbox(root: &Path) -> Vec<InboxItem> {
                 && PROPOSAL_KINDS.contains(&i.kind.as_str())
                 && bounded(&i.text, PROPOSAL_BYTES, true)
                 && bounded(&i.tool, 100, true)
+                && i.basis.as_ref().is_none_or(valid_basis)
                 && seen.insert(i.id.clone())
         })
         .collect()
+}
+
+fn valid_basis(b: &ProposalBasis) -> bool {
+    bounded(&b.quote, BASIS_QUOTE_BYTES, true) && bounded(&b.source, BASIS_SOURCE_BYTES, true)
 }
 
 fn open_of<'a>(s: &'a Store, topic: &str, kind: &str) -> Vec<&'a Record> {
@@ -172,9 +208,13 @@ pub fn tool_topics(data_dir: &Path) -> Result<Vec<ToolTopic>, String> {
 }
 
 /// The working context of one opened topic: what the person adopted, what is
-/// open and what is to be done. Unreviewed AI proposals, rejected or superseded
-/// records, sources and every other topic stay out.
-pub fn tool_topic_text(data_dir: &Path, topic_id: &str) -> Result<Option<String>, String> {
+/// open and what is to be done, each with where its wording came from (the
+/// record's attribution). Unreviewed AI proposals, rejected or superseded
+/// records, source quotes, dates and every other topic stay out.
+pub fn tool_topic_context(
+    data_dir: &Path,
+    topic_id: &str,
+) -> Result<Option<ToolTopicContext>, String> {
     let snapshot = persistence::read_snapshot(&data_dir.join("conversations"))?;
     let hidden = snapshot
         .skipped
@@ -202,15 +242,29 @@ pub fn tool_topic_text(data_dir: &Path, topic_id: &str) -> Result<Option<String>
         })
         .collect();
     adopted.sort_by(|a, b| a.created_at.cmp(&b.created_at).then(a.id.cmp(&b.id)));
-    let mut section = |label: &str, items: &[&Record]| {
+    // Each record is written to the text and to the structure together, so
+    // the structure holds exactly the records and fields the text holds.
+    let mut records = Vec::new();
+    let mut section = |label: &str, status: &str, items: &[&Record]| {
         for r in items {
             text.push_str(&format!(
-                "\n[{}]\nKayıt: {}\nÖncelik: {}\nİfade: {}\n",
-                label, r.id, r.priority, r.text
+                "\n[{}]\nKayıt: {}\nÖncelik: {}\nAtıf: {}\nİfade: {}\n",
+                label, r.id, r.priority, r.attribution, r.text
             ));
+            let mut v = json!({
+                "id": r.id,
+                "kind": r.kind,
+                "voice": "person",
+                "status": status,
+                "priority": r.priority,
+                "origin": r.attribution,
+                "text": r.text,
+            });
             if !r.reason.is_empty() {
                 text.push_str(&format!("Gerekçe: {}\n", r.reason));
+                v["reason"] = json!(r.reason);
             }
+            records.push(v);
         }
     };
     let decisions: Vec<&Record> = adopted
@@ -223,11 +277,16 @@ pub fn tool_topic_text(data_dir: &Path, topic_id: &str) -> Result<Option<String>
         .copied()
         .filter(|r| r.kind == "opinion")
         .collect();
-    section("KULLANICININ BENİMSEDİĞİ KARAR", &decisions);
-    section("KULLANICININ BENİMSEDİĞİ GÖRÜŞ", &opinions);
-    section("AÇIK İŞ — KARAR DEĞİL", &open_of(&s, topic_id, "task"));
+    section("KULLANICININ BENİMSEDİĞİ KARAR", "adopted", &decisions);
+    section("KULLANICININ BENİMSEDİĞİ GÖRÜŞ", "adopted", &opinions);
+    section(
+        "AÇIK İŞ — KARAR DEĞİL",
+        "open",
+        &open_of(&s, topic_id, "task"),
+    );
     section(
         "AÇIK SORU — GÖRÜŞ DEĞİL",
+        "open",
         &open_of(&s, topic_id, "question"),
     );
     text.push_str(if access.write {
@@ -237,15 +296,52 @@ pub fn tool_topic_text(data_dir: &Path, topic_id: &str) -> Result<Option<String>
     });
     if hidden > 0 {
         text.push_str(&format!(
-            "\nNOTE: {hidden} record(s) in this topic could not be read by this connector (töre {}) and are hidden. If töre was updated after this connector started, ask the person to reconnect it: in Claude Code run /mcp, choose tore, then Reconnect.\n",
+            "\nNOTE: {hidden} record(s) in this topic could not be read by this connector (töre {}) and are hidden. If töre was updated after this connector started, ask the person to reconnect this connector in their AI tool.\n",
             env!("CARGO_PKG_VERSION")
         ));
     }
-    Ok(Some(text))
+    let structured = json!({
+        "schema": CONTEXT_SCHEMA,
+        "type": "topic",
+        "topic": {"id": topic.id, "title": topic.title, "goal": topic.goal},
+        "proposalsAllowed": access.write,
+        "hiddenRecords": hidden,
+        "records": records,
+    });
+    Ok(Some(ToolTopicContext { text, structured }))
+}
+
+/// The text alone, as tests written before the structured output read it.
+#[cfg(test)]
+fn tool_topic_text(data_dir: &Path, topic_id: &str) -> Result<Option<String>, String> {
+    Ok(tool_topic_context(data_dir, topic_id)?.map(|c| c.text))
 }
 
 /// Append one proposal to the inbox file. The notebook itself is not opened
 /// for writing and no lock is taken.
+/// Why a proposal was not stored. The two cases must never be confused: a
+/// refusal is an answer for the tool, in English, that it can act on; an
+/// unreadable notebook is a fault whose reason stays out of the answer.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ProposeError {
+    /// The proposal itself is not acceptable. The message goes to the tool.
+    Refused(String),
+    /// The notebook could not be read. The reason goes to stderr only.
+    Notebook(String),
+}
+fn refused(message: &str) -> ProposeError {
+    ProposeError::Refused(message.into())
+}
+fn refuse<T>(message: &str) -> Result<T, ProposeError> {
+    Err(refused(message))
+}
+
+/// True once töre has been started with this data folder: it creates the
+/// notebook directory on its first start, before any topic exists.
+pub fn notebook_exists(data_dir: &Path) -> bool {
+    std::fs::symlink_metadata(data_dir.join("conversations")).is_ok_and(|m| m.is_dir())
+}
+
 pub fn tool_propose(
     data_dir: &Path,
     tool: &str,
@@ -253,24 +349,24 @@ pub fn tool_propose(
     kind: &str,
     text: &str,
     relates_to: Option<&str>,
-) -> Result<String, String> {
+    basis: Option<&ProposalBasis>,
+) -> Result<String, ProposeError> {
     let root = data_dir.join("conversations");
-    let s = persistence::read_snapshot(&root)?.store;
+    let s = persistence::read_snapshot(&root)
+        .map_err(ProposeError::Notebook)?
+        .store;
     if !s
         .tool_access
         .get(topic_id)
         .is_some_and(|a| a.read && a.write)
     {
-        return Err(
-            "This topic is not open for proposals. The person can allow it on the Konularım page."
-                .into(),
-        );
+        return refuse("This topic is not open for proposals. The person can allow it on the Konularım page.");
     }
     if !PROPOSAL_KINDS.contains(&kind) {
-        return Err("kind must be one of: note, decision, question, task, objection".into());
+        return refuse("kind must be one of: note, decision, question, task, objection");
     }
     if !bounded(text, PROPOSAL_BYTES, true) {
-        return Err("text is required and limited to 8000 bytes".into());
+        return refuse("text is required and limited to 8000 bytes");
     }
     let related = relates_to.map(|id| {
         s.records
@@ -278,12 +374,22 @@ pub fn tool_propose(
             .filter(|r| r.topic_id == topic_id && r.trashed_at.is_none())
     });
     if matches!(related, Some(None)) {
-        return Err("relatesTo must be a record id from this topic".into());
+        return refuse("relatesTo must be a record id from this topic");
     }
     if kind == "objection" && !related.flatten().is_some_and(|r| !stateful(&r.kind)) {
-        return Err(
-            "An objection needs relatesTo: the id of an opinion or decision in this topic".into(),
-        );
+        return refuse("An objection needs relatesTo: the id of an opinion or decision in this topic");
+    }
+    match basis {
+        None if BASIS_REQUIRED.contains(&kind) => {
+            return refuse("A decision or an objection needs basis: {quote, source}, the exact text it rests on and where that text comes from. Nothing was left in the inbox.");
+        }
+        Some(b) if !bounded(&b.quote, BASIS_QUOTE_BYTES, true) => {
+            return refuse("basis.quote is required and limited to 2000 bytes");
+        }
+        Some(b) if !bounded(&b.source, BASIS_SOURCE_BYTES, true) => {
+            return refuse("basis.source is required and limited to 500 bytes");
+        }
+        _ => {}
     }
     let pending = read_inbox(&root)
         .iter()
@@ -293,7 +399,7 @@ pub fn tool_propose(
         .map(|m| m.len())
         .unwrap_or(0);
     if pending >= INBOX_PENDING || size > INBOX_BYTES {
-        return Err("The töre inbox is full. Wait until the person has reviewed it.".into());
+        return refuse("The töre inbox is full. Wait until the person has reviewed it.");
     }
     let tool: String = tool.chars().filter(|c| !c.is_control()).take(60).collect();
     let item = InboxItem {
@@ -308,8 +414,9 @@ pub fn tool_propose(
         kind: kind.into(),
         text: text.into(),
         relates_to: relates_to.map(str::to_owned),
+        basis: basis.cloned(),
     };
-    let mut line = serde_json::to_vec(&item).map_err(|_| "Proposal could not be encoded")?;
+    let mut line = serde_json::to_vec(&item).map_err(|_| refused("The proposal could not be encoded."))?;
     line.push(b'\n');
     let mut options = OpenOptions::new();
     options.append(true).create(true);
@@ -321,7 +428,7 @@ pub fn tool_propose(
     options
         .open(inbox_path(&root))
         .and_then(|mut f| f.write_all(&line).and_then(|_| f.sync_all()))
-        .map_err(|_| "The töre inbox could not be written")?;
+        .map_err(|_| refused("The töre inbox could not be written. Nothing was stored."))?;
     Ok(item.id)
 }
 
@@ -415,7 +522,20 @@ impl Disk {
                     .and_then(|id| self.data.records.get(id))
                     .filter(|r| r.trashed_at.is_none())
                     .map(|r| json!({"id":r.id,"kind":r.kind,"text":r.text}));
-                json!({"item":i,"topicTitle":self.data.topics[&i.topic_id].title,"related":related})
+                // When the tool names a record of this topic as the source of
+                // its quote, show that record and whether the quote really is
+                // in it. Anything else stays the tool's unchecked claim.
+                let basis_record = i
+                    .basis
+                    .as_ref()
+                    .and_then(|b| Some((b, self.data.records.get(b.source.trim())?)))
+                    .filter(|(_, r)| r.topic_id == i.topic_id && r.trashed_at.is_none())
+                    .map(|(b, r)| {
+                        let found = r.text.contains(b.quote.trim())
+                            || r.reason.contains(b.quote.trim());
+                        json!({"id":r.id,"kind":r.kind,"text":r.text,"quoteFound":found})
+                    });
+                json!({"item":i,"topicTitle":self.data.topics[&i.topic_id].title,"related":related,"basisRecord":basis_record})
             })
             .collect();
         Ok(json!({"items":items,"toolAccess":self.tool_access_view()}))
@@ -451,12 +571,31 @@ impl Disk {
             (Some(x), _) => format!("İlgili kayıt: {}", x.text),
             _ => String::new(),
         };
+        // The basis travels with the record in its reason, in words that keep
+        // it the tool's claim. It is never the record's source quote.
+        let basis = item.basis.as_ref().map(|b| {
+            format!(
+                "Aracın gösterdiği dayanak (doğrulanmadı): \"{}\"\nDayanağın kaynağı (aracın beyanı): {}",
+                b.quote, b.source
+            )
+        });
+        let room = 12000usize.saturating_sub(basis.as_ref().map_or(0, |b| b.len() + 1));
+        let mut reason: String = reason.chars().take(2000).collect();
+        while reason.len() > room {
+            reason.pop();
+        }
+        if let Some(basis) = basis {
+            if !reason.is_empty() {
+                reason.push('\n');
+            }
+            reason.push_str(&basis);
+        }
         let record = Record {
             id: id(),
             topic_id: item.topic_id.clone(),
             kind: kind.into(),
             text: item.text.clone(),
-            reason: reason.chars().take(2000).collect(),
+            reason,
             source: Some(Source {
                 id: format!("tool:{}", item.id),
                 kind: "tool".into(),

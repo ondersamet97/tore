@@ -139,6 +139,18 @@ Uygulama önizlemeyi bütün kaynak karması ve mevcut konu defteri karmasına b
 
 `write` izni `read` olmadan verilemez; `read:false` izni kaldırır. İzinler konu deposunda `toolAccess`, işlenen öneriler `inboxHandled` alanındadır; boşken serileştirilmez. Araç önerileri deftere değil `tool-inbox.jsonl` dosyasına eklenir; bozuk ya da tanınmayan satırlar yok sayılır. Kabul edilen öneri `attribution:"assistant_proposal"`, `review:"pending"` ve `source:{kind:"tool",id:"tool:<öneri kimliği>",provider:"mcp",role:"assistant",title:<aracın adı>}` taşıyan yeni bir kayıt olur. `objection` türü yalnız aynı konudaki bir görüş ya da karara bağlanır; o kayıt haritadaysa itiraz altına `placement:"suggested"` olarak yerleşir. Geri yükleme bütün `toolAccess` izinlerini kapatır. Sınırlar: öneri başına 8000 bayt, 200 bekleyen öneri, 2 MiB dosya.
 
+### Önerinin dayanağı (0.19.0)
+
+Gelen kutusu öğesi isteğe bağlı `basis:{quote,source}` taşır: önerinin dayandığı birebir metin ve aracın beyan ettiği kaynak (aynı konudaki bir kaydın kimliği ya da serbest metin/URL). `decision` ve `objection` türünde zorunludur; yoksa ya da boşsa araç çağrısı reddedilir ve dosyaya satır eklenmez. Öteki türlerde isteğe bağlıdır. Sınırlar sunucuda uygulanır: `quote` en fazla 2000, `source` en fazla 500 bayt; ikisi de boş olamaz. Alan yokken serileştirilmez; `basis` taşımayan eski satırlar okunmaya ve deftere alınmaya devam eder. Sınırı aşan `basis` taşıyan satır yok sayılır.
+
+`inbox` yanıtındaki her öğe `{item,topicTitle,related,basisRecord}` olur. `basis.source` aynı konudaki, çöpte olmayan bir kaydın kimliğiyse `basisRecord` `{id,kind,text,quoteFound}` döner; `quoteFound`, alıntının o kaydın metninde ya da gerekçesinde birebir geçip geçmediğidir. Başka her durumda `basisRecord` `null` olur ve dayanak aracın doğrulanmamış beyanı olarak gösterilir.
+
+Kayıt modeli genişletilmedi. `inbox-accept` dayanağı yeni kaydın `reason` alanına, ilgili kayıt satırının ardından şu iki satırla yazar: `Aracın gösterdiği dayanak (doğrulanmadı): "<quote>"` ve `Dayanağın kaynağı (aracın beyanı): <source>`. Kaydın `source` alanı değişmez (`kind:"tool"`, `excerpt` önerinin metni); dayanak alıntısı kaydın kaynak alıntısı ya da kişinin sözü sayılmaz. `reason` 12000 baytı aşmasın diye gerekirse ilgili kayıt satırı kısaltılır, dayanak kısaltılmaz.
+
+### Bağlı araca yapılı çıktı (0.19.0)
+
+`tore_get_topic` ve `tore_get_shared_context`, metne ek olarak aynı kayıtları `tore.context/1` şemasıyla yapılı veri olarak verir. Kural: yapılı çıktı metnin taşıdığından fazlasını taşımaz. Konu çıktısı metinle aynı geçişte, aynı kayıtlardan yazılır. Konu metni her kayıt için bir `Atıf:` satırı taşır (kaydın `attribution` değeri: `user_authored`, `user_statement`, `user_interpretation` ya da `assistant_proposal`) ve yapıdaki `origin` bu satırın aynısıdır; kaynak alıntısı, konuşmacı, tarih ve revizyon konu çıktısına girmez. Devam metni çıktısında bir kayıt, yalnız kendisinden üretilen satırlar paket metninde birebir bulunuyorsa verilir; paketin hazırlandığı revizyon esas alınır, kaydın sonraki hâli çıktıya girmez. Alanlar ve sınırlar: `docs/MCP-STRUCTURED-OUTPUT.md`.
+
 ## Düşünce haritası — kayıtların okur için yerleşimi (0.13.0)
 
 | İşlem | İstek | Yanıt |
@@ -190,7 +202,7 @@ Bağlı AI aracının (MCP) okuyucusu ise ileriye uyumludur. Uzun süre açık k
 - konuları, kayıtları, devam paketlerini, araç izinlerini ve gelen kutusu kararlarını tek tek okur; okuyamadığı ya da doğrulayamadığı öğeyi atlar. Atlanan kayıt gizlenir, atlanan izin kapalı sayılır, okunamayan kayda dayanan paket ve okunamayan soruya bağlı yanıt da gizlenir;
 - kullanmadığı bölümleri (harita, düşünür bağları, konuşma bağlantıları, makbuzlar, yanıtlar) hiç okumaz; tanımadığı üst düzey alanları yok sayar;
 - `schemaVersion` 1'den büyükse defterin tamamını okumaz;
-- atlama ve okuma hatalarının nedenini stderr'e yalnız hata türü, alan adı ve kimlik olarak yazar; kayıt içeriği yazılmaz. Araç cevabı kişiye bağlayıcıyı yeniden bağlamasını söyler (`/mcp` → tore → Reconnect). Konu metninde gizlenen kayıt sayısı ayrıca belirtilir.
+- atlama ve okuma hatalarının nedenini stderr'e yalnız hata türü, alan adı ve kimlik olarak yazar; kayıt içeriği yazılmaz. Araç cevabı kişiye bağlayıcıyı AI aracında yeniden bağlamasını söyler; araca giden iletilerde ürün adı ya da ürüne özgü komut geçmez. Reddedilen öneri (konu öneriye kapalı, gelen kutusu dolu, dayanak eksik vb.) kendi iletisiyle yanıtlanır; "defter okunamadı" iletisi yalnız defter gerçekten okunamadığında verilir. `--data` klasöründe `conversations` dizini yoksa (töre o klasörle hiç açılmamışsa) bütün araçlar defterin henüz bulunmadığını söyleyen ayrı bir ileti döndürür ve hiçbir şey oluşturmaz. Konu metninde gizlenen kayıt sayısı ayrıca belirtilir.
 
 Kural: bağlı araca neyin görüneceğini kısıtlayan yeni bir bilgi ya kaydın (ya da izin, paket öğesinin) içinde tutulur, böylece eski okuyucu o öğeyi atlar; ya da `schemaVersion` artırılır. Böyle bir bilgi yeni bir üst düzey alan olarak eklenmez, çünkü eski okuyucu onu yok sayar. Bilinen bir alana yeni bir değer eklemek (yeni `kind` gibi) eski okuyucuda yalnız o kaydı gizler.
 

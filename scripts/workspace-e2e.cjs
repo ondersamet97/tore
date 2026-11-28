@@ -130,7 +130,7 @@ async function start() {
         state.url = url.origin;
         state.token = ready.localToken;
         const status = await api('status');
-        assert.equal(status.version, '0.18.0');
+        assert.equal(status.version, '0.19.0');
         return status;
       }
     } catch (error) {

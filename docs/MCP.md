@@ -1,6 +1,6 @@
 # Connected AI tool (MCP)
 
-Status: contexts since 0.13.0 (read-only); topics and the proposal inbox since 0.14.0; a Claude Code plugin since 0.15.0. The notebook itself is never written by a tool.
+Status: contexts since 0.13.0 (read-only); topics and the proposal inbox since 0.14.0; a Claude Code plugin since 0.15.0; structured output and the basis of a proposal since 0.19.0. The notebook itself is never written by a tool.
 
 töre can let an AI tool on the same computer read a prepared continuation context directly, through the [Model Context Protocol](https://modelcontextprotocol.io), instead of you copying and pasting it. The first targets are Claude Desktop and Claude Code.
 
@@ -79,7 +79,8 @@ Then ask, for example, "List my shared töre contexts and continue from the late
 
 - Transport: stdio, one JSON-RPC 2.0 message per line, UTF-8. stdout carries protocol messages only; short diagnostics without personal content go to stderr.
 - Methods: `initialize` (protocol versions `2025-06-18`, `2025-03-26`, `2024-11-05`; the client's version is echoed when supported, otherwise `2025-06-18`), `notifications/initialized`, `ping`, `tools/list`, `tools/call`. Unknown methods return `-32601`, bad parameters `-32602`, unparsable lines `-32700`. Unknown notifications are ignored.
-- Both tools carry `annotations` with `readOnlyHint: true`, `destructiveHint: false`, `openWorldHint: false`.
+- The read-only tools carry `annotations` with `readOnlyHint: true`, `destructiveHint: false`, `openWorldHint: false`.
+- The four read-only tools declare an `outputSchema` and return `structuredContent` next to their text. The text is the same for every protocol version; a client that does not know these members ignores them. See [MCP-STRUCTURED-OUTPUT.md](MCP-STRUCTURED-OUTPUT.md).
 
 ## Limitations
 
@@ -87,15 +88,31 @@ Then ask, for example, "List my shared töre contexts and continue from the late
 - The page is in Turkish; the tool descriptions and the preamble line are in English, the context text itself is in the language you wrote it in.
 - Verified on macOS only. Only stdio is supported; there is no HTTP transport.
 - One notebook per configured server entry; the `--data` path is fixed in the tool configuration.
-- A connector keeps running the töre build it started with. After töre is updated, a record written in a newer format is hidden from the older connector, and a notebook it cannot read at all returns an error that asks the person to reconnect (in Claude Code: `/mcp`, choose tore, Reconnect). The reason is written to stderr as error kind and field name only, never record content.
+- A connector keeps running the töre build it started with. After töre is updated, a record written in a newer format is hidden from the older connector, and a notebook it cannot read at all returns an error that asks the person to reconnect the connector in their AI tool (in Claude Code: `/mcp`, choose tore, Reconnect). The reason is written to stderr as error kind and field name only, never record content.
+- Messages the server sends to the tool name no AI product and none of its commands. A refused proposal (topic closed for proposals, inbox full, missing basis and so on) is answered in its own words; only a notebook that cannot be read gets the reconnect message.
+- If töre has never been started with the configured `--data` folder, every tool answers that no töre notebook was found in this folder yet and asks the person to start töre once with it. Nothing is created.
 
 ## Topics and the proposal inbox (0.14.0)
 
 Besides single prepared contexts, you can open a whole topic to the connected tool on **Konularım**.
 
-- **Okumaya aç** lets the tool call `tore_list_topics` and `tore_get_topic`. It sees the topic's title and goal, your adopted and current decisions and opinions, your open tasks and your open questions, each with its record id. It does not see unreviewed AI proposals, rejected or superseded records, sources, conversations or any other topic.
+- **Okumaya aç** lets the tool call `tore_list_topics` and `tore_get_topic`. It sees the topic's title and goal, your adopted and current decisions and opinions, your open tasks and your open questions, each with its record id and, since 0.19.0, its origin: one line (`Atıf`) saying whether the wording is your own (written by you, quoted from you or rephrased by you) or an AI suggestion you reviewed and kept. It does not see unreviewed AI proposals, rejected or superseded records, source quotes, dates, conversations or any other topic.
 - **Öneri bırakmasına izin ver** is a second, separate checkbox. With it the tool may call `tore_propose` with a kind (`note`, `decision`, `question`, `task`, `objection`), a text of at most 8000 bytes and optionally `relatesTo`, the id of a record in that topic (required for an objection).
 - A proposal is appended to `conversations/tool-inbox.jsonl`. The MCP process still does not take the notebook lock and does not write `records-v1.json`.
 - In töre the proposal appears in **Gelen kutusu** with the tool's name. **Deftere al** turns it into a pending record marked as an AI proposal; it is not reviewed and not adopted until you review it like any other record. **Kaldır** discards it. Nothing a tool writes can adopt a view, close a task or close a question.
 - Closing a topic takes effect on the tool's next call. Restoring a backup closes every topic.
 - A tool can be wrong, and text it read elsewhere can try to steer it. That is why proposals wait in a separate inbox, carry the tool's name and never become your view by themselves.
+
+## The three voices as structured data (0.19.0)
+
+`tore_get_topic` and `tore_get_shared_context` also return their records as structured data, schema `tore.context/1`: each record with its id, kind, `voice` (`person` or `ai_suggestion`; a quoted source is a nested object with `voice: "source"`), status, origin and text. The structure never says more than the text: it holds the same records and, for each, only what the text already shows. Fields, values, the version rule and the limits are in [MCP-STRUCTURED-OUTPUT.md](MCP-STRUCTURED-OUTPUT.md).
+
+## A proposal must say what it rests on (0.19.0)
+
+- When `kind` is `decision` or `objection`, `tore_propose` requires `basis`: `{quote, source}`. `quote` is the exact text the proposal rests on (not empty, at most 2000 bytes). `source` says where the quote comes from: a record id from `tore_get_topic`, or a short description or URL (not empty, at most 500 bytes).
+- Without a valid `basis` the call is refused with a tool error in English and nothing is written to the inbox. A `basis` of the wrong shape (not an object, a member missing or not a string, an extra member) is a `-32602` protocol error.
+- For `note`, `question` and `task` the `basis` is optional; when given, the same limits apply.
+- The basis is stored with the proposal in `conversations/tool-inbox.jsonl`. Lines written before the field existed are still read.
+- **Gelen kutusu** shows the quote and its source under the proposal, as the tool's claim and in the AI's colour, never as your words. If the source is a record of the same topic, töre shows that record and says whether the quote appears in it word for word. Anything else is marked as not checked.
+- **Deftere al** keeps the basis: it is written into the reason of the new pending AI proposal, worded as the tool's unchecked claim.
+- The limits are enforced by the server. The tool still does not take the notebook lock and does not write `records-v1.json`.

@@ -59,6 +59,9 @@ button.primary,.link-button.primary{background:var(--green);border-color:var(--g
 .source-panel blockquote,.source-excerpt{font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.55;border-left:2px solid var(--source);padding-left:14px;color:var(--ink)}
 .inbox-item{background:var(--ai-wash);border-color:transparent}
 .inbox-item .related{border-left:2px solid var(--ai)}
+.inbox-basis{margin:12px 0 6px;padding-left:12px;border-left:2px solid var(--ai);max-width:70ch}
+.inbox-basis blockquote{margin:4px 0 6px;font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.inbox-basis .small{margin:2px 0;overflow-wrap:anywhere}
 .voice-source{font-family:var(--serif);font-style:italic;border-left:2px solid var(--source);padding-left:14px}
 .voice-ai{background:var(--ai-wash);border-radius:12px;padding:12px 14px}
 .voice-ai-label{font:600 11px/1.4 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ai)}

@@ -19,9 +19,14 @@ use axum::{
 };
 use base64::Engine;
 pub use records::{
-    EXPORT_CSS, SharedContext, ToolTopic, shared_contexts, tool_propose, tool_topic_text,
+    CONTEXT_SCHEMA, EXPORT_CSS, ProposalBasis, ProposeError, SharedContext, ToolTopic,
+    ToolTopicContext, notebook_exists, shared_contexts, tool_propose, tool_topic_context,
     tool_topics,
 };
+/// The notebook writer, for tests elsewhere in the crate that need a real
+/// synthetic notebook on disk.
+#[cfg(test)]
+pub(crate) use records::Disk as TestNotebook;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
